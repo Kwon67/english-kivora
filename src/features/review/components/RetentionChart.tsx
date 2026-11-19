@@ -1,8 +1,3 @@
-'use client'
-
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
-import { chartPalette as palette } from '@/lib/chartTheme'
-
 interface RetentionData {
   name: string
   value: number
@@ -23,31 +18,8 @@ export default function RetentionChart({ data }: { data: RetentionData[] }) {
 
   return (
     <>
-      <div className="workspace-chart h-48">
-        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={80}
-              paddingAngle={5}
-              dataKey="value"
-              stroke="none"
-              isAnimationActive={false}
-            >
-              {data.map((entry) => (
-                <Cell key={entry.name} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip
-              contentStyle={palette.tooltip}
-              itemStyle={palette.itemStyle}
-              formatter={(value) => [`${value} frases`, '']}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+      <div className="my-4 flex h-3 overflow-hidden rounded-full bg-brand-dark/10" aria-hidden="true">
+        {data.map(({ name, value, color }) => <span key={name} style={{ width: `${100 * value / total}%`, background: color }} />)}
       </div>
       <ul className="grid gap-2 text-sm text-brand-dark" aria-label="Distribuição do vocabulário">
         {data.map(({ name, value, color }) => <li key={name} className="flex items-center justify-between gap-3">

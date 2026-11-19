@@ -1,0 +1,94 @@
+.hero {
+  display: grid;
+  align-items: center;
+  gap: clamp(16px, 3vw, 36px);
+  margin-bottom: 24px;
+  padding: clamp(20px, 4vw, 44px);
+  border-radius: var(--workspace-radius);
+  background: var(--brand-sage);
+  color: var(--kivora-ink);
+}
+
+.copy { min-width: 0; }
+
+.kicker {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.hero h1.headline {
+  margin: 8px 0;
+  color: inherit;
+  font-size: clamp(30px, 4.3vw, 50px);
+  line-height: 1.06;
+  letter-spacing: -.05em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.description, .guidance {
+  max-width: 58ch;
+  line-height: 1.5;
+}
+
+.guidance { margin-top: 12px; }
+.guidance > :not(:first-child) { margin-top: 8px; }
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+  margin-top: 16px;
+}
+
+.actions :is(a, button) {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 14px;
+  text-align: start;
+}
+
+.actions a:hover { text-decoration: underline; }
+.actions svg { flex: none; }
+
+.figure {
+  display: block;
+  justify-self: center;
+  width: min(100%, 224px);
+  height: auto;
+}
+
+.compact {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 72px);
+  column-gap: 12px;
+  margin-bottom: 10px;
+  padding: 0;
+  background: transparent;
+}
+
+.hero.compact h1.headline {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 44px);
+}
+
+.compact .actions { margin-top: 0; }
+.compact .figure { width: 100%; }
+
+@media (min-width: 640px) {
+  .hero {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  }
+
+  .figure {
+    width: min(100%, 320px);
+  }
+
+  .compact {
+    grid-template-columns: minmax(0, 1fr) 104px;
+  }
+}
+

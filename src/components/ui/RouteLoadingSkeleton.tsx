@@ -1,6 +1,6 @@
 import { Card } from '@/components/shadcn/card'
 import type { ReactNode } from 'react'
-import { homeCardClass, homeFrostedSurface } from '@/lib/homeStyles'
+import { homeCardClass } from '@/lib/homeStyles'
 
 /**
  * Sistema de skeleton do app.
@@ -11,8 +11,7 @@ import { homeCardClass, homeFrostedSurface } from '@/lib/homeStyles'
  * traziam um spinner embaixo dizendo o que os próprios blocos já diziam.
  *
  * Daí as duas peças aqui: `Skeleton` é a barra de conteúdo, `SkeletonSurface` é o card que a
- * contém — e ele usa o mesmo material frosted das telas reais, para a troca não piscar de um
- * visual para outro.
+ * contém, com a mesma geometria do conteúdo que será carregado.
  */
 
 /** Barra de conteúdo. O raio vem de fora porque texto, pílula e avatar têm raios diferentes. */
@@ -41,7 +40,7 @@ function SkeletonText({ lines = 3, className = '' }: { lines?: number; className
 
 /** Card no material das telas reais, para o skeleton ter a mesma moldura do conteúdo. */
 function SkeletonSurface({ className = '', children }: { className?: string; children?: ReactNode }) {
-  return <Card asChild unstyled><div className={`${homeCardClass} ${homeFrostedSurface} ${className}`}>{children}</div></Card>
+  return <Card asChild unstyled><div className={`${homeCardClass} workspace-loading-surface ${className}`}>{children}</div></Card>
 }
 
 interface RouteLoadingSkeletonProps {
@@ -56,7 +55,7 @@ interface RouteLoadingSkeletonProps {
 
 export default function RouteLoadingSkeleton({ label, children }: RouteLoadingSkeletonProps) {
   return (
-    <div className="animate-fade-in space-y-4 pb-8" role="status" aria-busy="true" aria-live="polite">
+    <div className="workspace-loading animate-fade-in space-y-4 pb-8" role="status" aria-busy="true" aria-live="polite">
       <span className="sr-only">{label}</span>
       {children}
     </div>

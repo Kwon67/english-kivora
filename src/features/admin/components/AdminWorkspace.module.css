@@ -1,0 +1,167 @@
+.workspace {
+  min-width: 0;
+  padding-block: 4px 36px;
+  color: var(--kivora-ink);
+}
+
+.workspace :global(.admin-page-header) {
+  padding-block: 0 8px;
+}
+
+.workspace :global(.admin-page-description) {
+  max-width: 54ch;
+  font-size: 0.9375rem;
+}
+
+.workspace :global(.admin-context-pill) {
+  padding: 0;
+  background: transparent;
+  color: var(--kivora-muted);
+  border: 0;
+}
+
+.workspace :global(.admin-metric-band) {
+  gap: 0;
+  border-block: 1px solid var(--kivora-line);
+}
+
+.workspace :global(.admin-metric-band > *) {
+  min-width: 0;
+}
+
+.workspace :global(.admin-metric-band) :global(.admin-metric-cell) {
+  min-height: 86px;
+  gap: 0.35rem;
+  padding: 12px clamp(8px, 1.35vw, 20px);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  flex-direction: column;
+}
+
+.workspace :global(.admin-metric-label) {
+  color: var(--kivora-muted);
+  font-size: 0.8125rem;
+}
+
+.workspace :global(.admin-metric-value) {
+  font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+}
+
+.panel {
+  min-width: 0;
+  padding-block: 14px;
+}
+
+.insight {
+  min-width: 0;
+  padding-block: 14px;
+  border-top: 1px solid var(--kivora-line);
+}
+
+.insightRow {
+  min-width: 0;
+  padding-block: 10px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--kivora-line);
+}
+
+.actionRow {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--kivora-line);
+  color: var(--kivora-ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.actionRow:hover { background: var(--kivora-inset); }
+
+.workspace :is(a, button, input, select, textarea, [tabindex='0']):focus-visible {
+  outline: 2px solid var(--kivora-ink);
+  outline-offset: 2px;
+}
+
+.workspace :is(a, button, input, select, textarea) { scroll-margin-block: 12px; }
+
+.workspace :global(.admin-responsive-table thead tr) {
+  background: transparent;
+  font-size: 0.75rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+@media (max-width: 767px) {
+  .workspace :global(.admin-responsive-table tbody tr) {
+    gap: 4px 12px;
+    margin: 0;
+    padding: 10px 2px;
+    border: 0;
+    border-bottom: 1px solid var(--kivora-line);
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .workspace :global(.admin-responsive-table tbody td) {
+    padding: 3px 2px !important;
+  }
+}
+
+.workspace :global(.member-directory-list) {
+  gap: 0;
+  margin-block-start: 16px;
+}
+
+.workspace :global(.member-directory-card),
+.workspace :global(.member-session-card) {
+  min-width: 0;
+  padding: 14px 2px;
+  border: 0;
+  border-bottom: 1px solid var(--kivora-line);
+  border-radius: 0;
+  background: transparent;
+  overflow-wrap: anywhere;
+}
+
+.workspace :global(.admin-dispatch-ticket) {
+  border: 0;
+  border-bottom: 1px solid var(--kivora-line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.flushPanel {
+  min-width: 0;
+  padding-block: 16px;
+  border-top: 1px solid var(--kivora-line);
+}
+
+.dialog {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  background: var(--kivora-surface);
+  color: var(--kivora-ink);
+  border: 1px solid var(--kivora-line);
+  border-radius: var(--workspace-inset-radius);
+}
+
+.dialog :is(input, select, button) { min-height: 44px; }
+
+.dialog :is(input, select, button):focus-visible {
+  outline: 2px solid var(--kivora-ink);
+  outline-offset: 2px;
+}
+
+.dialog:global(.workspace-confirmation) {
+  background: var(--kivora-surface);
+  box-shadow: none;
+  backdrop-filter: none;
+  border-color: var(--kivora-line);
+}

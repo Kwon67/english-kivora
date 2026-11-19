@@ -1,0 +1,209 @@
+.assessment-screen,
+.assignment-activity {
+  width: min(100%, 46rem);
+  margin-inline: auto;
+  padding-block: clamp(12px, 3vw, 32px) 32px;
+  color: var(--kivora-ink);
+  overflow-wrap: anywhere;
+}
+
+.premium-theme [data-kivora-workspace] .assessment-screen h1,
+.premium-theme [data-kivora-workspace] .assignment-activity .activity-result-title {
+  font-size: clamp(29px, 5vw, 42px);
+  line-height: 1.12;
+}
+
+.premium-theme [data-kivora-workspace] .assessment-screen .assessment-question {
+  font-size: clamp(23px, 4vw, 34px);
+  line-height: 1.25;
+}
+
+.assessment-progress {
+  height: 5px;
+  margin-top: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--kivora-line);
+}
+
+.assessment-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--product-accent);
+}
+
+.assessment-options {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.assessment-option,
+.assessment-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  border-radius: var(--workspace-inset-radius);
+  border: 1px solid var(--kivora-line);
+  background: var(--surface-white);
+  color: var(--kivora-ink);
+  font: inherit;
+}
+
+.assessment-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.assessment-option input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--kivora-ink);
+}
+
+.assessment-option:hover,
+.assessment-option:has(input:checked) {
+  border-color: var(--kivora-ink);
+}
+
+.assessment-option:has(input:checked) { background: var(--brand-sage); }
+.assessment-option:has(input:focus-visible) { outline: 2px solid var(--kivora-ink); outline-offset: 2px; }
+.assessment-option:has(input:disabled) { cursor: default; }
+.assessment-input:focus-visible { border-color: var(--kivora-ink); }
+
+.assessment-actions,
+.activity-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 24px;
+}
+
+.assessment-actions-between { justify-content: space-between; }
+.assessment-actions-between a { display: inline-flex; align-items: center; min-height: 44px; }
+.assessment-note {
+  max-width: 64ch;
+  margin-top: 24px;
+  padding-top: 14px;
+  border-top: 1px solid var(--kivora-line);
+  color: var(--kivora-muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.assessment-score {
+  margin-block: 12px 6px;
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.assessment-review {
+  margin-top: 24px;
+  border-block: 1px solid var(--kivora-line);
+}
+
+@media (max-width: 479px) {
+  .assessment-actions-between { flex-direction: column-reverse; }
+  .assessment-actions > *, .activity-actions > * { width: 100%; justify-content: center; }
+}
+
+.assignment-activity { width: min(100%, 54rem); }
+.assignment-activity .practice-intro {
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.assignment-activity .practice-intro-meta { flex-wrap: wrap; gap: 12px 32px; }
+.assignment-activity .practice-intro-start { width: auto; gap: 16px; }
+
+.activity-toolbar {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--kivora-line);
+}
+
+.premium-theme [data-kivora-workspace] .activity-lesson-title {
+  margin-top: 4px;
+  font-size: clamp(18px, 3.3vw, 24px);
+  line-height: 1.2;
+}
+
+.activity-exit {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border: 1px solid var(--kivora-line);
+  border-radius: var(--workspace-inset-radius);
+  background: var(--surface-white);
+}
+
+.activity-exit:hover { background: var(--kivora-inset); }
+
+.activity-metric {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--kivora-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.activity-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 20px;
+  margin-top: 20px;
+  padding-block: 14px;
+  border-block: 1px solid var(--kivora-line);
+}
+
+.activity-stat { min-width: 0; }
+.activity-stat > p + p { margin-top: 4px; font-size: clamp(19px, 3vw, 28px); font-variant-numeric: tabular-nums; }
+.activity-review-heading { margin-bottom: 20px; }
+
+[data-kivora-workspace] .assignment-activity .exercise-prompt.game-glass-card:not(button) {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+[data-kivora-workspace] .assignment-activity .exercise-prompt button {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.assignment-activity .exercise-prompt :is(input[type='text'], textarea) {
+  border-radius: var(--workspace-inset-radius);
+}
+
+.assignment-activity .exercise-prompt :is(input[type='text'], textarea):focus-visible {
+  outline: 2px solid var(--kivora-ink);
+  outline-offset: 2px;
+}
+
+@media (min-width: 560px) {
+  .activity-stats-three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .activity-stats-four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-width: 479px) {
+  .assignment-activity .practice-intro-start { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .assignment-activity :is(.exercise-prompt, .activity-exercise) *,
+  .assessment-screen .assessment-progress-fill {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}

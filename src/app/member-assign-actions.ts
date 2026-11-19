@@ -99,11 +99,7 @@ export async function selfAssignPackAction(input: {
   const { data, error } = existingAssignment
     ? await supabase
         .from('assignments')
-        .update({
-          status: 'pending',
-          assigned_by: 'self',
-          reward_badge_id: null,
-        })
+        .update({ status: 'pending' })
         .eq('id', existingAssignment.id)
         .eq('user_id', user.id)
         .select('id')

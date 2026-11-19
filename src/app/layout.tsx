@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import { DM_Mono, Inter } from 'next/font/google';
 import { Toaster } from 'sonner';
-import MotionProvider from '@/components/layout/MotionProvider';
 import AnalyticsProvider from '@/components/layout/AnalyticsProvider';
 import PWAExperience from '@/features/pwa/components/PWAExperience';
 import { BRAND_PRIMARY } from '@/lib/brandColors';
@@ -110,7 +109,6 @@ export default async function RootLayout({
 	        >
 	          Ir para o conteúdo principal
 	        </a>
-	        <MotionProvider>
 	          {children}
 	          <AnalyticsProvider />
 	          <PWAExperience publicVapidKey={publicVapidKey} />
@@ -142,7 +140,6 @@ export default async function RootLayout({
 	              },
 	            }}
 	          />
-	        </MotionProvider>
 	      </body>
 	    </html>);
 

@@ -78,7 +78,7 @@ export function DashboardLayoutWrapper({
   }, [])
 
   return (
-    <div className={twMerge(
+    <div data-kivora-workspace="learning" className={twMerge(
       clsx('premium-app min-h-screen min-h-[100svh] max-w-full min-w-0 bg-bg-primary', {
         'stitch-mobile-nav-pad premium-app-with-nav': !isZenMode && !isOnboardingWizard,
       })

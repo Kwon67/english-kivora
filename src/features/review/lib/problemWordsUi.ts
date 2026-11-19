@@ -1,39 +1,14 @@
-import { landingHeroCardClass, landingRadiusLg } from '@/lib/landingStyles'
-import {
-  homeCardClass,
-  homeIconBox,
-  homeNestedCardClass,
-  homePrimaryButton,
-  homeSecondaryButton,
-  homeShellClass,
-  homeSmallPillClass,
-  homeSectionTitleClass,
-} from '@/lib/homeStyles'
+import { homePrimaryButton, homeSecondaryButton, homeShellClass, homeSectionTitleClass } from '@/lib/homeStyles'
 
 export const problemWordsShell = `${homeShellClass} focus-lab pb-20 sm:pb-10`
-
-export const problemWordsFrostedSurface = 'home-frosted-surface home-frosted-surface-soft'
-export const problemWordsFrostedSubtle = 'home-frosted-subtle'
-
-/** Hero — offset shadow only, no macOS chrome */
-export const problemWordsHero = `${landingHeroCardClass} ${problemWordsFrostedSurface} focus-hero-shadow relative overflow-hidden`
-
-export const problemWordsCard = `${homeCardClass} ${problemWordsFrostedSurface}`
-export const problemWordsTile = `${homeNestedCardClass} ${problemWordsFrostedSubtle} p-4 sm:p-6`
-export const problemWordsPill = homeSmallPillClass
 export const problemWordsSoftBtn = homeSecondaryButton
-export const problemWordsPrimaryBtn = `${homePrimaryButton} px-4 py-2.5 text-sm sm:px-5 sm:py-3 sm:text-base`
-export const problemWordsIconBox = homeIconBox
+export const problemWordsPrimaryBtn = `${homePrimaryButton} min-h-11 px-4 py-2.5 text-sm`
 export const problemWordsSectionTitle = homeSectionTitleClass
-export const problemWordsPanel = `${problemWordsCard} p-5 sm:p-7`
+export const problemWordsPanel = 'min-w-0 wrap-anywhere'
 
-export const problemWordsTelemetryBand = `grid grid-cols-2 gap-2 sm:grid-cols-4 ${landingRadiusLg} border border-brand-dark bg-bg-card p-2 sm:gap-3 sm:p-3 ${problemWordsFrostedSurface}`
-
-export const problemWordsTelemetryCell = `flex min-w-0 flex-col gap-0.5 ${landingRadiusLg} border border-brand-dark/25 bg-bg-primary px-3 py-2.5 sm:px-4 sm:py-3 ${problemWordsFrostedSubtle}`
-
-export const problemWordsSearchInput = `min-h-11 w-full rounded-control border border-brand-dark bg-bg-primary px-10 py-3 font-body text-sm font-medium text-brand-dark outline-none transition-all placeholder:text-brand-secondary focus:bg-white focus:shadow-offset-accent`
-
-export const problemWordsWordCard = `${problemWordsCard} problem-word-card overflow-hidden p-4 transition-transform hover:-translate-y-0.5 sm:p-5`
+export const problemWordsTelemetryBand = 'grid grid-cols-2 gap-x-4 gap-y-3 border-b border-[var(--kivora-line)] pb-4 sm:grid-cols-4'
+export const problemWordsTelemetryCell = 'flex min-w-0 flex-col gap-2'
+export const problemWordsSearchInput = 'min-h-12 w-full rounded-control border border-[var(--kivora-line)] bg-bg-card px-10 py-3 font-body text-base text-brand-dark placeholder:text-brand-secondary'
 
 export type ProblemWordSeverity = 'CRÍTICO' | 'MÉDIO' | 'LEVE'
 

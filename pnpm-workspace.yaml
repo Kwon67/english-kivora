@@ -1,6 +1,8 @@
 # Preserve the existing security overrides during the lockfile migration.
 overrides:
-  minimatch: ^10.2.6
+  # These two consumers use the named matcher API, which minimatch 11 still exposes.
+  '@ts-morph/common@0.27.0>minimatch': 11.0.9
+  '@typescript-eslint/typescript-estree@8.60.0>minimatch': 11.0.9
   postcss: ^8.5.26
   tar: ^7.5.22
 # Only reviewed native-tool installers may run; core-js only prints funding notices.

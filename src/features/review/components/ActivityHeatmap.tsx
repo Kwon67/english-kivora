@@ -1,9 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { landingRadiusLg } from '@/lib/landingStyles'
 import { getAppDateString } from '@/lib/timezone'
-import { historyFrostedSubtle } from '@/features/history/lib/historyUi'
 import {
   buildHeatmapModel,
   formatHeatmapDisplayDate,
@@ -26,29 +24,12 @@ export default function ActivityHeatmap({ activityData }: ActivityHeatmapProps) 
   )
 
   return (
-    <div className={`${landingRadiusLg} border border-brand-dark bg-bg-primary p-3 sm:p-4 ${historyFrostedSubtle}`}>
-      <div className="mb-4 grid grid-cols-3 gap-1.5 sm:gap-3">
-        <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card px-1.5 py-2 sm:px-3 sm:py-2.5 ${historyFrostedSubtle}`}>
-          <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
-            Dias ativos
-          </p>
-          <p className="mt-1 font-heading text-lg font-bold text-brand-dark sm:text-xl">{stats.activeDays}</p>
-        </div>
-        <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card px-1.5 py-2 sm:px-3 sm:py-2.5 ${historyFrostedSubtle}`}>
-          <p className="font-heading text-2xs font-bold uppercase tracking-wide text-brand-secondary">
-            Interações
-          </p>
-          <p className="mt-1 font-heading text-lg font-bold text-brand-dark sm:text-xl">{stats.totalInteractions}</p>
-        </div>
-        <div className={`${landingRadiusLg} border border-brand-dark bg-bg-card px-1.5 py-2 sm:px-3 sm:py-2.5 ${historyFrostedSubtle}`}>
-          <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
-            Pico
-          </p>
-          <p className="mt-1 font-heading text-lg font-bold text-brand-dark sm:text-xl">
-            {stats.bestCount > 0 ? stats.bestCount : '—'}
-          </p>
-        </div>
-      </div>
+    <div className="mt-3 min-w-0">
+      <dl className="mb-4 grid grid-cols-3 gap-3 border-y border-brand-dark/15 py-3">
+        <div><dt className="text-xs text-brand-secondary">Dias ativos</dt><dd className="text-lg font-semibold">{stats.activeDays}</dd></div>
+        <div><dt className="text-xs text-brand-secondary">Interações</dt><dd className="text-lg font-semibold">{stats.totalInteractions}</dd></div>
+        <div><dt className="text-xs text-brand-secondary">Pico</dt><dd className="text-lg font-semibold">{stats.bestCount || '—'}</dd></div>
+      </dl>
 
       <HeatmapGrid
         weeks={HEATMAP_WEEKS_FULL}

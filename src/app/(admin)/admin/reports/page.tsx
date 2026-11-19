@@ -1,3 +1,5 @@
+import { redirect } from 'next/navigation'
+import styles from '@/features/admin/components/AdminWorkspace.module.css'
 import { WorkspaceList, WorkspaceTableBody } from '@/components/ui/WorkspacePagination'
 import WorkspaceSections from '@/components/ui/WorkspaceSections'
 import type { ReactNode } from 'react'
@@ -24,15 +26,12 @@ import SectionBadge from '@/components/ui/SectionBadge'
 import {
   accentBadge,
   adminReportsIconBox,
-  adminReportsInsightCard,
   adminReportsLeaderboardRow,
-  adminReportsPanel,
   adminReportsRankBadge,
   adminReportsRankBadgeTop,
   adminReportsShell,
   adminReportsTelemetryBand,
   neutralBadge,
-  nestedCardClass,
   sectionDivider,
   tableBodyRow,
   tableDivider,
@@ -40,6 +39,7 @@ import {
 } from '@/features/admin/lib/adminReportsUi'
 import { homeIconGlyphSm } from '@/lib/homeStyles'
 import ExportReportButton from './ExportReportButton'
+import { readReportPages } from '@/features/admin/lib/reportPagination'
 import ReportsHeader from './ReportsHeader'
 
 export const dynamic = 'force-dynamic'
@@ -101,14 +101,14 @@ function InsightPanel({
   children: ReactNode
 }) {
   return (
-    <section className={`${adminReportsPanel} p-4 sm:p-5`}>
+    <section className={styles.insight}>
       <div className="mb-4 flex items-start gap-3">
         <span className={adminReportsIconBox}>
           <Icon className={homeIconGlyphSm} strokeWidth={1.5} />
         </span>
         <div className="min-w-0">
           <SectionBadge label={badge} animate={false} />
-          <h2 className="mt-2 font-heading text-lg font-bold text-brand-dark sm:text-xl">{title}</h2>
+          <h2 className="font-heading text-lg font-bold text-brand-dark sm:text-xl">{title}</h2>
         </div>
       </div>
       {children}
@@ -117,22 +117,29 @@ function InsightPanel({
 }
 
 export default async function AdminReportsPage() {
-  const supabase = createAdminClient() ?? await createClient()
+  const session = await createClient()
+  const { data: { user } } = await session.auth.getUser()
+  if (!user) redirect('/login')
+  const { data: profile } = await session.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'admin') redirect('/home')
+
+  const supabase = createAdminClient()
+  if (!supabase) throw new Error('A consulta administrativa está temporariamente indisponível.')
   const today = getAppDateString()
   const thirtyDaysAgo = shiftAppDate(today, -30)
 
   const [membersResult, reviewsResult, sessionsResult, resourceEventsResult, planHistoryResult] = await Promise.all([
-    supabase.from('profiles').select('id, username, role').order('username'),
-    supabase
+    readReportPages((from, to) => supabase.from('profiles').select('id, username, role').order('username').order('id').range(from, to)),
+    readReportPages((from, to) => supabase
       .from('card_reviews')
       .select('*')
       .gte('review_date', getAppDayStartUtcIso(thirtyDaysAgo))
-      .order('review_date', { ascending: false }),
-    supabase
+      .order('review_date', { ascending: false }).order('id').range(from, to)),
+    readReportPages((from, to) => supabase
       .from('game_sessions')
       .select('*, profiles(username), assignments(game_mode, packs(name)), session_errors(*, cards(english_phrase, portuguese_translation, audio_url))')
       .gte('completed_at', getAppDayStartUtcIso(thirtyDaysAgo))
-      .order('completed_at', { ascending: false }),
+      .order('completed_at', { ascending: false }).order('id').range(from, to)),
     supabase
       .from('learning_resource_events')
       .select('user_id,resource_id,resource_title,stage,level,resource_kind,created_at')
@@ -308,7 +315,7 @@ export default async function AdminReportsPage() {
   ).slice(0, 8)
 
   return (
-    <div className={adminReportsShell}>
+    <div className={`${adminReportsShell} ${styles.workspace}`}>
       <div className="relative z-10 mx-auto w-full min-w-0 max-w-full space-y-6 pb-8 sm:space-y-8">
 <AdminMotionSection>
           <ReportsHeader
@@ -333,16 +340,16 @@ export default async function AdminReportsPage() {
             <AdminMetric tone="tutor" label="Membros" value={String(members.length)} icon={LayoutList} />
           </AdminMotionItem>
           <AdminMotionItem>
-            <AdminMetric tone="review" label="Revisões hoje" value={String(todayReviews.length)} icon={BookOpen} />
+            <AdminMetric tone="review" label="Cards revisados hoje" value={String(todayReviews.length)} icon={BookOpen} />
           </AdminMotionItem>
           <AdminMotionItem>
-            <AdminMetric tone="success" label="Precisão" value={`${successRate}%`} icon={Percent} />
+            <AdminMetric tone="success" label="Notas SRS ≥ 3" value={reviews.length ? `${successRate}%` : '—'} icon={Percent} />
           </AdminMotionItem>
           <AdminMotionItem>
-            <AdminMetric tone="streak" label="Qualidade" value={`${averageQuality.toFixed(1)}/5`} icon={BarChart3} />
+            <AdminMetric tone="streak" label="Nota média SRS" value={reviews.length ? `${averageQuality.toFixed(1)}/5` : '—'} icon={BarChart3} />
           </AdminMotionItem>
           <AdminMotionItem>
-            <AdminMetric tone="vocabulary" label="Total revisões" value={reviews.length.toLocaleString()} icon={BookOpen} />
+            <AdminMetric tone="vocabulary" label="Cards acompanhados" value={reviews.length.toLocaleString()} icon={BookOpen} />
           </AdminMotionItem>
           <AdminMotionItem>
             <AdminMetric tone="listening" label="Sessões" value={String(typedRecentSessions.length)} icon={LayoutList} />
@@ -353,17 +360,17 @@ export default async function AdminReportsPage() {
           <AdminMotionItem>
             <AdminMetric tone="warning" label="Planos travados" value={String(stalledPlanRows.length)} icon={Target} />
           </AdminMotionItem>
-        </AdminMotionSection></div>
+        </AdminMotionSection><p className="text-sm text-brand-secondary">Indicadores SRS usam o último estado de cada card por pessoa no período. Não somam todas as tentativas nem medem proficiência. Um traço indica ausência de dados.</p></div>
 <div className="workspace-panel-stack"><AdminMotionSection>
-          <section id="ranking" className={`${adminReportsPanel} scroll-mt-4 overflow-hidden`}>
+          <section id="ranking" className={`${styles.panel} scroll-mt-4 overflow-hidden`}>
             <div className={`flex flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6 ${sectionDivider}`}>
               <div className="flex items-start gap-3">
                 <span className={adminReportsIconBox}>
                   <Trophy className={homeIconGlyphSm} strokeWidth={1.5} />
                 </span>
                 <div>
-                  <SectionBadge label="Ranking" animate={false} />
-                  <h2 className="mt-2 font-heading text-xl font-bold text-brand-dark sm:text-2xl">Ranking da semana</h2>
+
+                  <h2 className="font-heading text-xl font-bold text-brand-dark sm:text-2xl">Ranking da semana</h2>
                 </div>
               </div>
               <span className={`${neutralBadge} inline-flex items-center gap-1.5`}>
@@ -406,9 +413,9 @@ export default async function AdminReportsPage() {
         </AdminMotionSection></div>
 <div className="workspace-panel-stack"><AdminMotionSection className="grid gap-4 lg:grid-cols-2" stagger><AdminMotionItem>
             <InsightPanel badge="Cards críticos" title="Maior fricção" icon={AlertCircle}>
-              <div className="space-y-3">
+              <div className="min-w-0">
                 {topWeakCards.map((card) => (
-                  <div key={card.id} className={`${adminReportsInsightCard} ${nestedCardClass} p-3`}>
+                  <div key={card.id} className={`${styles.insightRow}`}>
                     <p className="font-heading text-sm font-bold text-brand-dark">{card.en}</p>
                     <div className="mt-2 flex items-center justify-between gap-3">
                       <p className="font-body text-xs text-brand-secondary">{card.pt}</p>
@@ -426,9 +433,9 @@ export default async function AdminReportsPage() {
           </AdminMotionItem>
 <AdminMotionItem>
             <InsightPanel badge="Packs difíceis" title="Menor acerto" icon={BookOpen}>
-              <div className="space-y-3">
+              <div className="min-w-0">
                 {weakestPacks.map((pack) => (
-                  <div key={pack.packName} className={`${adminReportsInsightCard} ${nestedCardClass} p-3`}>
+                  <div key={pack.packName} className={`${styles.insightRow}`}>
                     <p className="font-heading text-sm font-bold text-brand-dark">{pack.packName}</p>
                     <div className="mt-2 flex items-center justify-between gap-3">
                       <span className="font-body text-xs text-brand-secondary">{pack.sessions} sessões</span>
@@ -444,11 +451,11 @@ export default async function AdminReportsPage() {
           </AdminMotionItem>
 <AdminMotionItem>
             <InsightPanel badge="Dificuldade por modo" title="Por aluno" icon={LayoutList}>
-              <div className="space-y-3">
+              <div className="min-w-0">
                 {weakestMemberModes.map((entry) => (
                   <div
                     key={`${entry.username}-${entry.modeLabel}`}
-                    className={`${adminReportsInsightCard} ${nestedCardClass} p-3`}
+                    className={`${styles.insightRow}`}
                   >
                     <p className="font-heading text-sm font-bold text-brand-dark">{entry.username}</p>
                     <div className="mt-2 flex items-center justify-between gap-3">
@@ -465,9 +472,9 @@ export default async function AdminReportsPage() {
           </AdminMotionItem></AdminMotionSection></div>
 <div className="workspace-panel-stack"><AdminMotionSection className="grid gap-4 lg:grid-cols-2" stagger><AdminMotionItem>
             <InsightPanel badge="Recursos inteligentes" title="Mais abertos" icon={MousePointerClick}>
-              <div className="space-y-3">
+              <div className="min-w-0">
                 {topLearningResources.map((resource) => (
-                  <div key={resource.resourceId} className={`${adminReportsInsightCard} ${nestedCardClass} p-3`}>
+                  <div key={resource.resourceId} className={`${styles.insightRow}`}>
                     <p className="font-heading text-sm font-bold text-brand-dark">{resource.title}</p>
                     <div className="mt-2 flex items-center justify-between gap-3">
                       <span className="font-body text-xs text-brand-secondary">
@@ -496,12 +503,12 @@ export default async function AdminReportsPage() {
           </AdminMotionItem>
 <AdminMotionItem>
             <InsightPanel badge="Planos inteligentes" title="Resultado recente" icon={Target}>
-              <div className="space-y-3">
+              <div className="min-w-0">
                 {planOutcomeRows.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {planOutcomeRows.map((row) => (
                       <span key={row.status} className={row.status === 'stalled' ? neutralBadge : accentBadge}>
-                        {row.status}: {row.count}
+                        {({ pending: 'Aguardando evidências', engaged: 'Em prática', improved: 'Indicadores melhoraram', stalled: 'Sem mudança observada' } as Record<string, string>)[row.status] || 'Sem classificação'}: {row.count}
                       </span>
                     ))}
                   </div>
@@ -509,7 +516,7 @@ export default async function AdminReportsPage() {
                 {stalledPlanRows.map((plan) => (
                   <div
                     key={`${plan.user_id}-${plan.plan_date}-${plan.stage}`}
-                    className={`${adminReportsInsightCard} ${nestedCardClass} p-3`}
+                    className={`${styles.insightRow}`}
                   >
                     <p className="font-heading text-sm font-bold text-brand-dark">
                       {memberNameById.get(plan.user_id) ?? 'Membro'}
@@ -531,45 +538,48 @@ export default async function AdminReportsPage() {
             </InsightPanel>
           </AdminMotionItem></AdminMotionSection></div>
 <div className="workspace-panel-stack"><AdminMotionSection>
-          <section id="membros" className={`${adminReportsPanel} scroll-mt-4 overflow-hidden`}>
+          <section id="membros" className={`${styles.panel} scroll-mt-4 overflow-hidden`}>
             <div className={`px-4 py-5 sm:px-6 ${sectionDivider}`}>
               <div className="flex items-start gap-3">
                 <span className={adminReportsIconBox}>
                   <LayoutList className={homeIconGlyphSm} strokeWidth={1.5} />
                 </span>
                 <div>
-                  <SectionBadge label="Relatório por membro" animate={false} />
-                  <h2 className="mt-2 font-heading text-xl font-bold text-brand-dark sm:text-2xl">Resumo por membro</h2>
+
+                  <h2 className="font-heading text-xl font-bold text-brand-dark sm:text-2xl">Resumo por membro</h2>
                 </div>
               </div>
             </div>
 
-            <div className="admin-table-scroll overflow-x-auto" role="region" aria-label="Tabela de dados" tabIndex={0}>
+            <div className="admin-table-scroll overflow-x-auto" role="region" aria-label="Resumo por membro" tabIndex={0}>
 
               <table role="table" className="admin-responsive-table w-full text-left text-sm">
                 <thead>
                   <tr className={tableHeadRow}>
-                    <th className="px-5 py-3">Membro</th>
-                    <th className="px-3 py-3 text-center">Revisões</th>
-                    <th className="px-3 py-3 text-center">Qualidade média</th>
-                    <th className="px-3 py-3 text-center">Taxa boa</th>
-                    <th className="px-5 py-3 text-center">Maior repetição</th>
+                    <th scope="col" className="px-5 py-3">Membro</th>
+                    <th scope="col" className="px-3 py-3 text-center">Cards</th>
+                    <th scope="col" className="px-3 py-3 text-center">Nota média SRS</th>
+                    <th scope="col" className="px-3 py-3 text-center">Notas ≥ 3</th>
+                    <th scope="col" className="px-5 py-3 text-center">Maior repetição</th>
                   </tr>
                 </thead>
                 <WorkspaceTableBody pageSize={4} columns={5} className={tableDivider}>
+                  {memberRows.length === 0 && (
+                    <tr><td colSpan={5} className="p-4 text-brand-secondary">Nenhum membro no relatório.</td></tr>
+                  )}
                   {memberRows.map(
                     (row) =>
                       (row.reviews > 0 || row.username) && (
                         <tr key={row.id} className={tableBodyRow}>
                           <td data-label="Membro" className="px-5 py-3 font-heading font-bold text-brand-dark">{row.username}</td>
-                          <td data-label="Revisões" className="px-3 py-3 text-center font-semibold text-brand-secondary">
+                          <td data-label="Cards" className="px-3 py-3 text-center font-semibold text-brand-secondary">
                             {row.reviews}
                           </td>
-                          <td data-label="Qualidade média" className="px-3 py-3 text-center">
-                            <span className={accentBadge}>{row.averageQuality.toFixed(1)}/5</span>
+                          <td data-label="Nota média SRS" className="px-3 py-3 text-center">
+                            <span className={accentBadge}>{row.reviews ? `${row.averageQuality.toFixed(1)}/5` : '—'}</span>
                           </td>
-                          <td data-label="Taxa boa" className="px-3 py-3 text-center">
-                            <span className={neutralBadge}>{row.goodRate}%</span>
+                          <td data-label="Notas ≥ 3" className="px-3 py-3 text-center">
+                            <span className={neutralBadge}>{row.reviews ? `${row.goodRate}%` : '—'}</span>
                           </td>
                           <td data-label="Maior repetição" className="px-5 py-3 text-center font-semibold text-brand-secondary">
                             {row.bestRepetition}

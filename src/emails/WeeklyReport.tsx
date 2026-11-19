@@ -13,7 +13,7 @@ import {
   Row,
   Section,
   Text,
-} from '@react-email/components'
+} from 'react-email'
 import {
   BRAND_ON_PRIMARY,
   BRAND_PRIMARY,

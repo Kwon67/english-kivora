@@ -1,11 +1,10 @@
 'use client'
 
-import { CELEBRATION_COLORS } from '@/lib/brandColors'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, m } from 'motion/react'
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
-import { X } from 'lucide-react'
+import { Check, X, Zap } from 'lucide-react'
 import MultipleChoice from '@/features/game/components/MultipleChoice'
 import TypingMode from '@/features/game/components/TypingMode'
 import MatchingGame from '@/features/game/components/MatchingGame'
@@ -18,6 +17,7 @@ import BlitzShell from '@/features/blitz/components/BlitzShell'
 import ModalPortal from '@/components/ui/ModalPortal'
 import { AUDIO_STOP_EVENT } from '@/components/ui/AudioButton'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import RouteLoadingSkeleton, { Skeleton } from '@/components/ui/RouteLoadingSkeleton'
 import { saveBlitzRun } from '@/app/actions'
 import type { BlitzAiPackDraft } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
@@ -62,6 +62,7 @@ import type { SpeakingWrongDetails } from '@/features/game/components/SpeakingMo
 import type { Card } from '@/types/database.types'
 
 interface BlitzClientProps {
+  userId: string
   cards: Card[]
   newCardIds?: string[]
   personalBest: number
@@ -70,6 +71,7 @@ interface BlitzClientProps {
 }
 
 export default function BlitzClient({
+  userId,
   cards,
   newCardIds,
   personalBest,
@@ -88,6 +90,9 @@ export default function BlitzClient({
   const [cardQueue, setCardQueue] = useState(() => [...cards])
   const reduceMotion = useHydratedReducedMotion()
   const [roundStartTime, setRoundStartTime] = useState(0)
+  const [startedAt, setStartedAt] = useState(0)
+  const [roundFeedback, setRoundFeedback] = useState<{ kind: 'correct' | 'wrong'; label: string } | null>(null)
+  const [saveStatus, setSaveStatus] = useState<'pending' | 'saved' | 'failed'>('pending')
   const [showExitModal, setShowExitModal] = useState(false)
   const [savedBest, setSavedBest] = useState(personalBest)
   const [runRewards, setRunRewards] = useState<{
@@ -152,11 +157,11 @@ export default function BlitzClient({
   }, [setZenMode])
 
   useEffect(() => {
-    const snapshot = loadBlitzResultSnapshot()
+    const snapshot = loadBlitzResultSnapshot(userId)
 
     const restoreTimer = window.setTimeout(() => {
       if (!snapshot || (snapshot.source ?? 'standard') !== source) {
-        if (snapshot) clearBlitzResultSnapshot()
+        if (snapshot) clearBlitzResultSnapshot(userId)
         setPhase('playing')
         return
       }
@@ -173,10 +178,11 @@ export default function BlitzClient({
       setActiveSource(snapshot.source ?? 'standard')
       setActiveAiPack(snapshot.aiPack ?? null)
       hasSavedRef.current = true
+      setSaveStatus(snapshot.saveStatus === 'pending' ? 'failed' : snapshot.saveStatus ?? 'saved')
     }, 0)
 
     return () => window.clearTimeout(restoreTimer)
-  }, [finishRun, source])
+  }, [finishRun, source, userId])
 
   useEffect(() => {
     if (phase !== 'playing') return
@@ -186,6 +192,7 @@ export default function BlitzClient({
 
     const startTimer = window.setTimeout(() => {
       if (finishedRef.current) return
+      setStartedAt(now)
       setRoundStartTime(now)
       // Sem embaralhar: o servidor já ordenou por relevância (`rankCards`), com o que a pessoa
       // erra na frente e packs intercalados. Um `shuffleArray` aqui jogaria essa escolha fora.
@@ -264,6 +271,7 @@ export default function BlitzClient({
         reviewAttempts: priorityAttempts.current.slice(),
       })
       if (sessionStartRef.current !== startedAt) return
+      setSaveStatus(result.success ? 'saved' : 'failed')
       setPriorityReviewCardIds(result.priorityReviewCardIds ?? [])
       if (result.bestScore > savedBest) {
         setSavedBest(result.bestScore)
@@ -276,7 +284,10 @@ export default function BlitzClient({
         })
       }
     } catch (error) {
-      if (sessionStartRef.current === startedAt) setPriorityReviewCardIds([])
+      if (sessionStartRef.current === startedAt) {
+        setPriorityReviewCardIds([])
+        setSaveStatus('failed')
+      }
       console.error('Erro ao salvar partida de Blitz:', error)
     }
   }, [cardsAnswered, maxCombo, savedBest, score])
@@ -290,11 +301,12 @@ export default function BlitzClient({
   useEffect(() => {
     if (phase !== 'result') return
 
-    saveBlitzResultSnapshot({
+    saveBlitzResultSnapshot(userId, {
       score,
       maxCombo,
       cardsAnswered,
       savedBest,
+      saveStatus,
       personalBest: Math.max(savedBest, score),
       isNewRecord: score > personalBest,
       misses,
@@ -303,7 +315,7 @@ export default function BlitzClient({
       aiPack: activeAiPack,
       runRewards,
     })
-  }, [phase, score, maxCombo, cardsAnswered, savedBest, personalBest, misses, activeSource, activeAiPack, runRewards, priorityReviewCardIds])
+  }, [phase, score, maxCombo, cardsAnswered, savedBest, personalBest, misses, activeSource, activeAiPack, runRewards, priorityReviewCardIds, saveStatus, userId])
 
   const completeBlitzRound = useCallback((options?: { latencyMs?: number; consumedCards?: number }) => {
     if (finishedRef.current) return
@@ -318,17 +330,7 @@ export default function BlitzClient({
     setCardsAnswered((value) => value + 1)
     feedback.streak(Math.min(nextCombo, 3))
 
-    if (nextCombo >= 5) {
-      void import('canvas-confetti').then(({ default: confetti }) => {
-        confetti({
-          disableForReducedMotion: true,
-          particleCount: 40,
-          spread: 50,
-          origin: { y: 0.7 },
-          colors: CELEBRATION_COLORS,
-        })
-      })
-    }
+    setRoundFeedback({ kind: 'correct', label: 'Última resposta: correta' })
 
     setCardQueue((queue) => {
       const activeQueue = queue.length > 0 ? queue : [...cards]
@@ -355,11 +357,13 @@ export default function BlitzClient({
   const handleMatchingPairCorrect = useCallback(() => {
     if (finishedRef.current) return
     feedback.streak(1)
+    setRoundFeedback({ kind: 'correct', label: 'Último par: correto' })
   }, [])
 
   const handleMatchingWrong = useCallback((attempt?: MatchingWrongAttempt) => {
     if (finishedRef.current) return
     feedback.error()
+    setRoundFeedback({ kind: 'wrong', label: 'Último par: incorreto · −1 vida' })
     const matchingMiss = createMatchingBlitzMiss(
       matchingCards,
       attempt ? `${attempt.english} ↔ ${attempt.portuguese}` : undefined
@@ -399,6 +403,7 @@ export default function BlitzClient({
     }
 
     feedback.error()
+    setRoundFeedback({ kind: 'wrong', label: 'Última resposta: incorreta · −1 vida' })
     setLives(nextLives)
     setCombo(0)
     setCardsAnswered((value) => value + 1)
@@ -426,8 +431,8 @@ export default function BlitzClient({
   }, [matchingCards.length, completeBlitzRound])
 
   const handleLeaveResult = useCallback(() => {
-    clearBlitzResultSnapshot()
-  }, [])
+    clearBlitzResultSnapshot(userId)
+  }, [userId])
 
   const handleCloseResult = useCallback(() => {
     handleLeaveResult()
@@ -435,11 +440,13 @@ export default function BlitzClient({
   }, [handleLeaveResult, router])
 
   const handlePlayAgain = useCallback(() => {
-    clearBlitzResultSnapshot()
+    clearBlitzResultSnapshot(userId)
     hasSavedRef.current = false
     finishedRef.current = false
     sessionStartRef.current = Date.now()
     setRunRewards(null)
+    setSaveStatus('pending')
+    setRoundFeedback(null)
     setPriorityReviewCardIds(null)
     priorityAttempts.current = []
     correctCardIdsRef.current = []
@@ -460,7 +467,7 @@ export default function BlitzClient({
     setPressureLabel('')
     setCardQueue(replayDeck.current)
     setCurrentMode(DEFAULT_BLITZ_MODE)
-  }, [aiPack, cards, source])
+  }, [aiPack, cards, source, userId])
 
   if (!currentCard) {
     return (
@@ -472,22 +479,26 @@ export default function BlitzClient({
 
   return (
     <BlitzShell>
+      {phase === 'initializing' && (
+        <RouteLoadingSkeleton label="Preparando partida do Blitz">
+          <div className="blitz-match space-y-5" aria-hidden="true">
+            <Skeleton className="h-8 w-24 rounded-control" />
+            <Skeleton className="h-16 rounded-control" />
+            <Skeleton className="h-10 w-3/4 rounded-control" />
+          </div>
+        </RouteLoadingSkeleton>
+      )}
       {phase === 'playing' && (
-        <div className="mx-auto w-full min-w-0 max-w-3xl">
-          {/* No breadcrumb during a live match: this screen runs in zen mode, a timed run should
-              not offer two navigation trails out of it, and the exit button already covers leaving
-              (with its confirm dialog, which a breadcrumb link bypassed entirely). */}
+        <div className="blitz-match">
           <header className="blitz-match-heading">
-            <div>
-              <p className="blitz-kicker">Partida</p>
-              <h1>{activeSource === 'ai' ? 'Blitz IA' : 'Blitz'}</h1>
-            </div>
+            <h1><Zap size={20} aria-hidden="true" /> {activeSource === 'ai' ? 'Blitz IA' : 'Blitz'}</h1>
             <button type="button" onClick={() => setShowExitModal(true)} className="blitz-close" aria-label="Sair do Blitz">
               <X size={20} aria-hidden="true" />
             </button>
           </header>
 
           <BlitzHud
+            startedAt={startedAt}
             adaptationLabel={pressureLabel}
             lives={lives}
             score={score}
@@ -497,12 +508,21 @@ export default function BlitzClient({
             totalCards={cards.length}
           />
 
+          <div className="blitz-round-feedback" role="status" aria-atomic="true" data-kind={roundFeedback?.kind}>
+            {roundFeedback && (
+              <>
+                {roundFeedback.kind === 'correct' ? <Check size={16} aria-hidden="true" /> : <X size={16} aria-hidden="true" />}
+                {roundFeedback.label}
+              </>
+            )}
+          </div>
+
           <AnimatePresence mode="wait">
             <m.div
               key={`${currentMode}-${currentCard.id}`}
-              initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
+              initial={reduceMotion ? false : { opacity: .88 }}
+              animate={{ opacity: 1 }}
+              exit={reduceMotion ? undefined : { opacity: .88 }}
               transition={{ duration: reduceMotion ? 0 : 0.2 }}
               className="blitz-round"
             >
@@ -546,6 +566,7 @@ export default function BlitzClient({
                 <MatchingGame
                   cards={matchingCards}
                   layout="compact"
+                  celebration={false}
                   onCorrect={handleMatchingPairCorrect}
                   onWrong={handleMatchingWrong}
                   onFinish={handleMatchingFinish}
@@ -579,6 +600,7 @@ export default function BlitzClient({
         >
           <BlitzResult
             score={score}
+            saveStatus={saveStatus}
             maxCombo={maxCombo}
             cardsAnswered={cardsAnswered}
             personalBest={Math.max(savedBest, score)}

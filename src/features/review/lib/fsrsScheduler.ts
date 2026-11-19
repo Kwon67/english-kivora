@@ -142,5 +142,5 @@ export function scheduleWithFsrs(grade: number, state: FsrsState, now: Date = ne
 /** Days of memory left before recall probability drops to the target. Powers "what to review". */
 export function getRetrievability(state: FsrsState, now: Date = new Date()): number | null {
   if (state.stability === null || state.difficulty === null || !state.lastReview) return null
-  return scheduler.get_retrievability(toFsrsCard(state, now), now, false) as number
+  return scheduler.retrievability(toFsrsCard(state, now), now)
 }

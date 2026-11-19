@@ -1,0 +1,1551 @@
+{
+  "format": 1,
+  "scope": "Proposta local; não autoriza escrita remota. Somente tradução PT, preservando inglês, áudio e variantes.",
+  "source_sha256": "ea6c4ea74a5af7f0163795cdd41e5570bc3bf1717e461b69dfaa2a980ee63c0c",
+  "counts": {
+    "correcao_objetiva_pt": 32,
+    "contexto_pedagogico": 34,
+    "validacao_especializada": 9,
+    "proposta_rejeitada": 1,
+    "ingles_e_audio_pendentes": 6,
+    "ajuste_opcional": 34
+  },
+  "decisions": [
+    {
+      "ref": "4.4",
+      "card_id": "722ecfe1-2886-4dfa-b2f3-8edd16de009b",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Simple present com now não é modelo natural para ação em curso sem contexto especial.",
+      "original_proposal": {
+        "proposal_en": "We're ordering pizza now.",
+        "proposal_pt": "Estamos pedindo pizza agora.",
+        "action": "Se o alvo for simple present, usar We order pizza on Fridays com tradução correspondente."
+      }
+    },
+    {
+      "ref": "10.10",
+      "card_id": "d8bc24b2-0383-416b-99c7-3270784af14f",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Pillow pode ser travesseiro ou almofada; objeto visual/contexto não disponível.",
+      "original_proposal": {
+        "action": "Aceitar ambas as traduções conforme contexto, ou usar cushion para almofada decorativa."
+      }
+    },
+    {
+      "ref": "15.1",
+      "card_id": "4809f61c-0750-4014-8c4c-5012af03ff6a",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "School begins não é a escola física que começa.",
+      "original_proposal": {
+        "proposal_pt": "As aulas começam no dia primeiro."
+      }
+    },
+    {
+      "ref": "22.6",
+      "card_id": "6e7eca42-de87-476d-95d7-49eecfdd9791",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Baby brother não é apenas diminutivo de irmão mais novo.",
+      "original_proposal": {
+        "proposal_pt": "Eu tenho um irmão bebê."
+      }
+    },
+    {
+      "ref": "23.6",
+      "card_id": "99fb73a2-34a2-4c5f-a146-9b2abd64eebc",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "How do you spell it pede soletração; como se escreve pode ser aceito, mas esclarecer alvo.",
+      "original_proposal": {
+        "action": "Aceitar Como se soletra? e apresentar resposta letra por letra."
+      }
+    },
+    {
+      "ref": "23.9",
+      "card_id": "b7154016-a1fc-4771-b884-8579dbf8e88c",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Modelo usual de instrução: open your book to page, consistente com 29.9.",
+      "original_proposal": {
+        "proposal_en": "Open your book to page ten.",
+        "proposal_pt": "Abra seu livro na página dez."
+      }
+    },
+    {
+      "ref": "31.2",
+      "card_id": "1f992a51-68d5-469d-93fc-6e3f0632edfb",
+      "category": "ingles_e_audio_pendentes",
+      "decision": "Revisar a formulação inglesa e sua correspondência com áudio antes de alterar o par. Fora do lote conservador de traduções.",
+      "original_finding": "Agora foi acrescentado sem estar no original; falta interrogação EN.",
+      "original_proposal": {
+        "proposal_en": "Can we go outside?",
+        "proposal_pt": "Podemos sair?"
+      }
+    },
+    {
+      "ref": "33.4",
+      "card_id": "3e1cd737-da2a-4a27-9e4b-5eac46ff8deb",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Sits foi omitido, perdendo postura/ação.",
+      "original_proposal": {
+        "proposal_pt": "O cachorro se senta ao meu lado."
+      }
+    },
+    {
+      "ref": "40.8",
+      "card_id": "ba8a0f58-3938-4e1a-a17d-8b20e5d4b39f",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Yes, she does não pode receber tradução fixa sim, ela faz sem pergunta anterior.",
+      "original_proposal": {
+        "proposal_en": "Does she work here? — Yes, she does.",
+        "proposal_pt": "Ela trabalha aqui? — Sim, trabalha.",
+        "action": "Aplicar estrutura pergunta + resposta aos 12 cartões deste pack; preservar auxiliar na explicação, aceitar resposta contextual PT."
+      }
+    },
+    {
+      "ref": "40.7",
+      "card_id": "9aa84c83-3ac1-41a7-9486-ab113c1da33c",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Yes, I am pode corresponder a sou ou estou; sem pergunta, a chave é ambígua.",
+      "original_proposal": {
+        "proposal_en": "Are you a student? — Yes, I am.",
+        "proposal_pt": "Você é estudante? — Sim, sou."
+      }
+    },
+    {
+      "ref": "40.10",
+      "card_id": "c71e11a9-4f4b-4802-8b2c-9ed237a226ef",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Yes, you do não significa invariavelmente você faz.",
+      "original_proposal": {
+        "proposal_en": "Do I need a ticket? — Yes, you do.",
+        "proposal_pt": "Eu preciso de ingresso? — Sim, precisa."
+      }
+    },
+    {
+      "ref": "38.5",
+      "card_id": "61ddba18-3cac-46b2-bbb1-2aa9752cdc88",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Duas traduções separadas por barra podem ser exigidas como texto único pelo avaliador.",
+      "original_proposal": {
+        "action": "Registrar Com licença e Desculpe como variantes aceitas separadas e definir cenário; não exigir barra do aluno."
+      }
+    },
+    {
+      "ref": "36.9",
+      "card_id": "e866dd89-c31f-4e36-82f8-7447002788f8",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Na primeira deixa substantivo implícito no modelo inicial.",
+      "original_proposal": {
+        "proposal_pt": "Pegue a primeira rua à esquerda depois do banco."
+      }
+    },
+    {
+      "ref": "50.0",
+      "card_id": "48938039-2022-4a4b-84e5-d12a675e7456",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Para um modelo inicial, left my phone é a formulação mais clara para objeto deixado em local; não rejeitar automaticamente variantes do aluno.",
+      "original_proposal": {
+        "proposal_en": "I left my phone at home."
+      }
+    },
+    {
+      "ref": "54.4",
+      "card_id": "8d79f024-cf28-46f3-90bc-e63955da1273",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Minibar em português pode ser explicitado como consumo do frigobar.",
+      "original_proposal": {
+        "proposal_pt": "Você me cobrou pelo consumo do frigobar?"
+      }
+    },
+    {
+      "ref": "54.7",
+      "card_id": "97ed3bca-0f7c-4634-95f2-aa0eb670d9ba",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Posso ter é tradução literal pouco natural de pedido de serviço.",
+      "original_proposal": {
+        "proposal_pt": "Você poderia trazer toalhas extras para o meu quarto?"
+      }
+    },
+    {
+      "ref": "55.6",
+      "card_id": "bfba8b87-da61-444e-89dc-f2d713d7f4aa",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "But still young não oferece contraste claro com altura sem contexto.",
+      "original_proposal": {
+        "proposal_en": "She is taller than her brother, even though she is younger.",
+        "proposal_pt": "Ela é mais alta que o irmão, embora seja mais nova."
+      }
+    },
+    {
+      "ref": "59.6",
+      "card_id": "a2626e49-5c64-4a3e-b187-6644666205e3",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Come to my birthday é elíptico; birthday party oferece modelo autossuficiente.",
+      "original_proposal": {
+        "proposal_en": "Do you want to come to my birthday party?"
+      }
+    },
+    {
+      "ref": "60.8",
+      "card_id": "b0555ae8-0603-4c61-891b-bd6e87fa9c1a",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Baked foi generalizado para fez; preservar se objetivo for verbos de preparo.",
+      "original_proposal": {
+        "proposal_pt": "Ela assou um bolo ontem para a amiga."
+      }
+    },
+    {
+      "ref": "63.0",
+      "card_id": "00aff99f-8bcf-4461-80ff-98234f527bda",
+      "category": "validacao_especializada",
+      "decision": "A decisão envolve localização, saúde, evidência, referência ou conteúdo técnico. Não aplicar reescrita como se fosse simples correção linguística.",
+      "original_finding": "Número de emergência apresentado sem país; não é regra mundial.",
+      "original_proposal": {
+        "proposal_en": "Call the local emergency number if you see a fire.",
+        "proposal_pt": "Ligue para o número de emergência local se vir um incêndio.",
+        "action": "Se mantiver número específico, definir país e verificar fonte oficial antes de publicar."
+      }
+    },
+    {
+      "ref": "63.11",
+      "card_id": "ed72f3f5-3049-4730-80c7-abfebe2c4f94",
+      "category": "validacao_especializada",
+      "decision": "A decisão envolve localização, saúde, evidência, referência ou conteúdo técnico. Não aplicar reescrita como se fosse simples correção linguística.",
+      "original_finding": "Imperativo clínico isolado foge da comunicação de necessidade.",
+      "original_proposal": {
+        "proposal_en": "I feel dizzy. Could someone help me?",
+        "proposal_pt": "Estou com tontura. Alguém poderia me ajudar?"
+      }
+    },
+    {
+      "ref": "65.3",
+      "card_id": "8f0062a1-22c7-4d03-92f2-8f10a61e6889",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "By six é até as seis, não às seis.",
+      "original_proposal": {
+        "proposal_pt": "Provavelmente terminaremos o trabalho até as seis."
+      }
+    },
+    {
+      "ref": "65.10",
+      "card_id": "e9b3b8bb-d9e4-4ff0-9bc9-9c7f250b7ade",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Planning to perdeu planejamento e virou certeza.",
+      "original_proposal": {
+        "proposal_pt": "Estamos planejando assistir a um filme no sábado."
+      }
+    },
+    {
+      "ref": "68.4",
+      "card_id": "358e4d2a-2608-4719-9b11-7dfcef2ae4d5",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Fruit é modelo usual para compra genérica; fruits requer tipos/variedades.",
+      "original_proposal": {
+        "proposal_en": "I'm going to the supermarket to buy some fruit."
+      }
+    },
+    {
+      "ref": "68.7",
+      "card_id": "74d23f09-ecfd-477f-844c-d784c34e42c4",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Objeto deixado em local fica mais claro com left para modelo inicial.",
+      "original_proposal": {
+        "proposal_en": "I left my keys at home again."
+      }
+    },
+    {
+      "ref": "71.5",
+      "card_id": "bb55aa05-566a-4246-9410-76b176b05f37",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Need to change deixa objeto indefinido no cartão isolado.",
+      "original_proposal": {
+        "proposal_en": "Please let me know if you need to change the time.",
+        "proposal_pt": "Por favor, me avise se precisar mudar o horário."
+      }
+    },
+    {
+      "ref": "73.4",
+      "card_id": "a5b5deda-37fd-467c-865b-5d0794fda645",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Take lunch é possível em registros específicos; have lunch é modelo cotidiano mais claro.",
+      "original_proposal": {
+        "proposal_en": "They usually have lunch at twelve."
+      }
+    },
+    {
+      "ref": "77.1",
+      "card_id": "3bbe2a08-84ec-42f7-8d9a-d9a260bea536",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Check my bag pode ser inspeção ou despacho; tradução escolhe inspeção sem contexto.",
+      "original_proposal": {
+        "action": "Definir contexto: inspect my bag para inspeção; check my bag in para despacho. Aceitar variantes coerentes."
+      }
+    },
+    {
+      "ref": "77.3",
+      "card_id": "44628c45-e34d-41eb-9b49-4679960fe985",
+      "category": "ingles_e_audio_pendentes",
+      "decision": "Revisar a formulação inglesa e sua correspondência com áudio antes de alterar o par. Fora do lote conservador de traduções.",
+      "original_finding": "Missed the boarding soa menos natural que missed our flight/couldn't board.",
+      "original_proposal": {
+        "proposal_en": "The gate had closed, so we couldn't board the plane.",
+        "proposal_pt": "O portão já tinha fechado, então não conseguimos embarcar no avião."
+      }
+    },
+    {
+      "ref": "87.0",
+      "card_id": "000c5d47-ed37-4f1c-9172-354fc6fe0aea",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Às quinze para as dez é pouco natural.",
+      "original_proposal": {
+        "proposal_pt": "Meu trem sai às nove e quarenta e cinco.",
+        "action": "Aceitar também quinze para as dez; apresentar equivalência 9:45 para apoiar compreensão."
+      }
+    },
+    {
+      "ref": "90.10",
+      "card_id": "e49b77eb-f47d-4573-9bfb-ff90d09ded7e",
+      "category": "ingles_e_audio_pendentes",
+      "decision": "Revisar a formulação inglesa e sua correspondência com áudio antes de alterar o par. Fora do lote conservador de traduções.",
+      "original_finding": "Try on é o modelo específico para experimentar roupa.",
+      "original_proposal": {
+        "proposal_en": "She tried on the dress and liked it."
+      }
+    },
+    {
+      "ref": "92.4",
+      "card_id": "7ec0af5e-2f6b-4086-a156-9cb3334e284a",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Some medicine é ambíguo; PT usa plural alguns remédios.",
+      "original_proposal": {
+        "proposal_en": "I'm allergic to some medicines.",
+        "action": "Em situação real, tarefa deve pedir nome do medicamento/alergia sem inventá-los."
+      }
+    },
+    {
+      "ref": "95.1",
+      "card_id": "022ab4e9-8fa7-4a9e-ace8-a969b7f096d9",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Modelo mais natural com artigo e posse de app.",
+      "original_proposal": {
+        "proposal_en": "Do you know how to clear the app's cache?"
+      }
+    },
+    {
+      "ref": "96.4",
+      "card_id": "37deb890-bf4c-45da-9b83-bbc82908edbd",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Traduzir Main Street como Rua Principal pode atrapalhar reconhecimento de endereço real.",
+      "original_proposal": {
+        "proposal_pt": "O motorista vai parar na Main Street."
+      }
+    },
+    {
+      "ref": "96.11",
+      "card_id": "e51d25c0-874a-4141-8081-c9e477babbf4",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Schedule de transporte é quadro/horário, não programação genérica.",
+      "original_proposal": {
+        "proposal_pt": "Ela vai conferir os horários agora."
+      }
+    },
+    {
+      "ref": "100.4",
+      "card_id": "55a7a595-1ac3-4fe0-ac6f-0dff722913c3",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Cause a fine é colocação pouco natural.",
+      "original_proposal": {
+        "proposal_en": "The driver has ignored the speed limit, which could lead to a fine."
+      }
+    },
+    {
+      "ref": "101.8",
+      "card_id": "b9442fb3-f54a-4404-a784-3094c4647901",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Wanted you to tell me e queria que tivesse contado diferem no enquadramento temporal; contexto ausente.",
+      "original_proposal": {
+        "action": "Adicionar contexto de desejo passado ou reescrever como I wish you had told me earlier se o objetivo for arrependimento retrospectivo."
+      }
+    },
+    {
+      "ref": "104.4",
+      "card_id": "36888eb9-aedb-49e9-8dfe-d3770b9b5156",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Checking for errors é procurar erros, não evitá-los.",
+      "original_proposal": {
+        "proposal_pt": "Por isso, recomendo conferir o saldo da conta diariamente para identificar erros."
+      }
+    },
+    {
+      "ref": "108.0",
+      "card_id": "6c3b60e9-e584-4d26-8ea8-ef2082b80f5b",
+      "category": "validacao_especializada",
+      "decision": "A decisão envolve localização, saúde, evidência, referência ou conteúdo técnico. Não aplicar reescrita como se fosse simples correção linguística.",
+      "original_finding": "Instrução clínica de esperar até amanhã sem cenário de avaliação.",
+      "original_proposal": {
+        "proposal_en": "My fever hasn't gone away. Could I speak to a healthcare professional?",
+        "proposal_pt": "Minha febre não passou. Posso falar com um profissional de saúde?"
+      }
+    },
+    {
+      "ref": "108.10",
+      "card_id": "f70c56ed-c082-4d65-a714-768cf10af246",
+      "category": "validacao_especializada",
+      "decision": "A decisão envolve localização, saúde, evidência, referência ou conteúdo técnico. Não aplicar reescrita como se fosse simples correção linguística.",
+      "original_finding": "Orientação clínica isolada sobre falta de ar precisa de revisão especializada; priorizar comunicação de necessidade.",
+      "original_proposal": {
+        "proposal_en": "I'm having trouble breathing and need urgent medical help.",
+        "proposal_pt": "Estou com dificuldade para respirar e preciso de ajuda médica urgente."
+      }
+    },
+    {
+      "ref": "109.8",
+      "card_id": "e1337539-e657-4e41-9b30-53a9739cf295",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Rir antes de a piada landed fica temporalmente estranho; landed não significa apenas fez sentido.",
+      "original_proposal": {
+        "proposal_en": "I remember laughing when the joke finally landed.",
+        "proposal_pt": "Lembro de rir quando a piada finalmente surtiu efeito."
+      }
+    },
+    {
+      "ref": "109.12",
+      "card_id": "f26d902a-51e2-4ccd-9f6a-58ee0abe89a6",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Past perfect e sentido de tempestade atingir a trilha foram atenuados.",
+      "original_proposal": {
+        "proposal_pt": "Já tínhamos terminado a caminhada quando a tempestade começou a atingir a trilha."
+      }
+    },
+    {
+      "ref": "110.2",
+      "card_id": "0a02d6fb-9fed-4bc0-8f78-b06102ef1af9",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Email it perdeu o meio de envio.",
+      "original_proposal": {
+        "proposal_pt": "Se você terminou o relatório, deve enviá-lo por e-mail hoje."
+      }
+    },
+    {
+      "ref": "120.0",
+      "card_id": "0979762e-b841-43dc-90f8-6eecd9f86fb6",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Call back especifica ligação, tradução acrescenta em breve.",
+      "original_proposal": {
+        "proposal_pt": "Já encaminhamos sua solicitação à equipe técnica; eles retornarão a ligação."
+      }
+    },
+    {
+      "ref": "120.5",
+      "card_id": "5e4183f5-391d-4440-b773-02be6f0b939d",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Grafia e fluência de vídeo chamada.",
+      "original_proposal": {
+        "proposal_pt": "Se a linha continuar com chiado, podemos mudar para uma videochamada."
+      }
+    },
+    {
+      "ref": "120.7",
+      "card_id": "7d1325eb-5205-4dd0-9d28-c402613e6611",
+      "category": "ingles_e_audio_pendentes",
+      "decision": "Revisar a formulação inglesa e sua correspondência com áudio antes de alterar o par. Fora do lote conservador de traduções.",
+      "original_finding": "The last information soa pouco natural.",
+      "original_proposal": {
+        "proposal_en": "I'm sorry, the connection dropped. Could you repeat the last part?",
+        "proposal_pt": "Desculpe, a conexão caiu. Você poderia repetir a última parte?"
+      }
+    },
+    {
+      "ref": "122.5",
+      "card_id": "af932664-00b0-4134-b0cf-b304cd35b64b",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Group chat will be cleared foi reduzido a grupo limpo, ambíguo entre histórico e participantes.",
+      "original_proposal": {
+        "proposal_en": "FYI, the group chat history will be deleted tomorrow at noon.",
+        "proposal_pt": "Para sua informação, o histórico da conversa em grupo será apagado amanhã ao meio-dia."
+      }
+    },
+    {
+      "ref": "122.10",
+      "card_id": "e82ed31e-fdf2-477a-a25a-ed9c11e09cbe",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Fez meu dia é decalque; lol precisa de equivalência/nota.",
+      "original_proposal": {
+        "proposal_pt": "Vi seu meme, haha, ele realmente alegrou meu dia."
+      }
+    },
+    {
+      "ref": "126.4",
+      "card_id": "7385dbcb-45f5-454b-98f4-b3c9af8caa16",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Concordância no plural e contexto alfandegário ausente.",
+      "original_proposal": {
+        "proposal_pt": "Se você tiver itens proibidos, entregue-os agora, por favor.",
+        "action": "Situar como fala fictícia de um agente; validar regras somente para jurisdição e data definidas."
+      }
+    },
+    {
+      "ref": "129.1",
+      "card_id": "07cc7c11-169b-46f2-a661-91c4fb1d1d6d",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Had many questions significa tinha perguntas, não necessariamente fez perguntas.",
+      "original_proposal": {
+        "proposal_pt": "Ele acabou de terminar a apresentação, mas o público ainda tinha muitas perguntas."
+      }
+    },
+    {
+      "ref": "129.10",
+      "card_id": "d6da2335-7397-455a-ab83-b0ab8230801d",
+      "category": "proposta_rejeitada",
+      "decision": "A proposta acrescenta que a pessoa chegou tarde, fato ausente do original. Perder o ônibus não prova atraso; preservar a frase.",
+      "original_finding": "Perder o ônibus não prova atraso; contraste fica incompleto.",
+      "original_proposal": {
+        "proposal_en": "I had never been late to work, but yesterday I missed the bus and arrived late.",
+        "proposal_pt": "Eu nunca tinha me atrasado para o trabalho, mas ontem perdi o ônibus e cheguei tarde.",
+        "action": "Se mantiver present perfect, completar com alternativa que explique como chegou no horário; escolher conforme objetivo."
+      }
+    },
+    {
+      "ref": "130.0",
+      "card_id": "107b1dcf-9b6f-4822-af28-fb948bb7b68b",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Desentupi o ralo entupido é redundante.",
+      "original_proposal": {
+        "proposal_pt": "Já desentupi o ralo, mas a água ainda escoa devagar."
+      }
+    },
+    {
+      "ref": "131.2",
+      "card_id": "48709a26-ba65-4c78-a1bc-9a05df3ac7ca",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Security deposit pede caução no contexto e devolução depende das condições, não apenas limpeza.",
+      "original_proposal": {
+        "proposal_pt": "A caução será devolvida se o apartamento for deixado limpo.",
+        "action": "Enquadrar como condição de contrato fictício; revisão jurídica necessária se virar orientação real."
+      }
+    },
+    {
+      "ref": "131.11",
+      "card_id": "cbd22c9c-91f4-486b-89bf-263264361212",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "More affordable não significa redução nominal do aluguel.",
+      "original_proposal": {
+        "proposal_pt": "Se o proprietário incluir as contas, o aluguel caberá melhor no orçamento."
+      }
+    },
+    {
+      "ref": "132.4",
+      "card_id": "6634d3a6-9f91-4c67-b824-bc08cd021678",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Go with a choice pede escolher, não ir com.",
+      "original_proposal": {
+        "proposal_pt": "Eu escolheria a segunda opção."
+      }
+    },
+    {
+      "ref": "133.4",
+      "card_id": "6ce32592-5e11-42c8-afd2-2482cea2de4b",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Tradução perde a condicionalidade cortês.",
+      "original_proposal": {
+        "proposal_pt": "Se você pudesse oferecer um desconto, eu estaria disposto a continuar."
+      }
+    },
+    {
+      "ref": "133.8",
+      "card_id": "c6002c6d-9040-4dee-b40e-5e3bc82ba239",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Should cover foi fortalecido para cobre.",
+      "original_proposal": {
+        "proposal_pt": "Acho que a garantia deveria cobrir esse defeito, então espero uma solução."
+      }
+    },
+    {
+      "ref": "140.8",
+      "card_id": "ddab362f-844f-4245-9efa-06d323eaf8f2",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Just barely deslocado é pouco natural; shortcut vira rota alternativa, perdendo atalho.",
+      "original_proposal": {
+        "proposal_en": "We only just avoided the traffic jam because the driver took a shortcut.",
+        "proposal_pt": "Só escapamos do congestionamento por pouco, porque o motorista pegou um atalho."
+      }
+    },
+    {
+      "ref": "140.6",
+      "card_id": "d2723117-706b-4980-aef0-c133704d3e9d",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Presente love foi passado para adorei.",
+      "original_proposal": {
+        "proposal_pt": "Eu adoro a rapidez com que ele resolveu o problema; foi impressionante."
+      }
+    },
+    {
+      "ref": "141.6",
+      "card_id": "d667ce80-1736-47c9-99aa-3d1f1842d179",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Suggests vira mostram, elevando certeza.",
+      "original_proposal": {
+        "proposal_pt": "Nossos dados sugerem que o modelo atual de preços está limitando a aquisição de clientes em mercados emergentes."
+      }
+    },
+    {
+      "ref": "143.3",
+      "card_id": "1680c782-efc4-432c-b377-8deadc89bdef",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Can turn perde possibilidade na tradução.",
+      "original_proposal": {
+        "proposal_pt": "Ao reconhecer as qualidades uns dos outros, podemos transformar esse conflito em uma oportunidade de aprendizado."
+      }
+    },
+    {
+      "ref": "144.6",
+      "card_id": "70a1bac8-9ecd-4588-88ed-4ca78a382902",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Squeaking de brinquedo é ruído agudo, não necessariamente grasnar.",
+      "original_proposal": {
+        "proposal_pt": "Quando as luzes voltaram a piscar, uma pequena galinha de borracha estava no chão, emitindo um guincho alto.",
+        "action": "Rever continuidade com vela em 144.10 antes de ordenar a narrativa."
+      }
+    },
+    {
+      "ref": "146.0",
+      "card_id": "0c0f0b02-ae98-48e9-8d66-4a8775fd9d31",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Falls flat pede falha em causar efeito; não passa nada fica impreciso.",
+      "original_proposal": {
+        "proposal_pt": "Sinceramente, os efeitos especiais do filme são chamativos, mas a história não convence."
+      }
+    },
+    {
+      "ref": "146.1",
+      "card_id": "12bf9f09-5d7d-480a-85b1-324f7aba5583",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Concordância com atuação e naturalidade de overacted.",
+      "original_proposal": {
+        "proposal_en": "I'm not a fan of that actor's performance; he overacts.",
+        "proposal_pt": "Não gosto da atuação daquele ator; ele exagera demais."
+      }
+    },
+    {
+      "ref": "146.7",
+      "card_id": "8bf69e14-0e0e-4a5f-a1bb-abdaa31a0c25",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Might enjoy vira vai gostar, eliminando possibilidade.",
+      "original_proposal": {
+        "proposal_pt": "Se você prefere música clássica, talvez goste do álbum mais recente desse compositor."
+      }
+    },
+    {
+      "ref": "148.6",
+      "card_id": "5a2881fc-4e64-47e0-8013-f4faef47fb4f",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Moved não prova adiamento; pode ser antecipação.",
+      "original_proposal": {
+        "proposal_pt": "Fomos informados de que o prazo havia sido alterado para a próxima sexta-feira."
+      }
+    },
+    {
+      "ref": "149.1",
+      "card_id": "06cd4cae-12e8-46b3-9e84-85164ec4c749",
+      "category": "validacao_especializada",
+      "decision": "A decisão envolve localização, saúde, evidência, referência ou conteúdo técnico. Não aplicar reescrita como se fosse simples correção linguística.",
+      "original_finding": "Hybrid classrooms pode sugerir ensino presencial/remoto, mas exemplo contrasta tipos de atividade.",
+      "original_proposal": {
+        "action": "Definir hybrid no cenário ou trocar por classes que combinam teoria e prática; validar a alegação pedagógica se tratada como fato."
+      }
+    },
+    {
+      "ref": "149.6",
+      "card_id": "51cbd567-38a3-4d19-b4e1-7d521a2048a6",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Could develop foi fortalecido para desenvolveriam.",
+      "original_proposal": {
+        "proposal_pt": "Se as escolas incluíssem mais sessões de revisão entre pares, os estudantes poderiam desenvolver o pensamento crítico mais rapidamente."
+      }
+    },
+    {
+      "ref": "150.7",
+      "card_id": "b3c3c50b-8af1-4ff0-95bc-f60b5abcaea0",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Had been provided remete a condição passada não realizada; fosse oferecido enfraquece a referência temporal.",
+      "original_proposal": {
+        "proposal_pt": "O desempenho da equipe teria melhorado consideravelmente se tivesse sido oferecido mais treinamento entre áreas."
+      }
+    },
+    {
+      "ref": "151.4",
+      "card_id": "59ea9d93-b238-44cd-8c44-3f63e58d4acf",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Once in a blue moon é mais raro que de vez em quando.",
+      "original_proposal": {
+        "proposal_pt": "Nós nos vemos muito raramente, mas as conversas são sempre profundas."
+      }
+    },
+    {
+      "ref": "151.6",
+      "card_id": "81067165-1b9c-46de-9a7d-269d22b96e6a",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Skipped the lunch meeting foi reduzido a pulou o almoço.",
+      "original_proposal": {
+        "proposal_pt": "Ela estava indisposta, então trabalhou de casa e não participou da reunião durante o almoço."
+      }
+    },
+    {
+      "ref": "151.7",
+      "card_id": "ae3d0fbf-9472-44cd-9322-2fe13d335e0e",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "O prazo vai escapar é pouco natural.",
+      "original_proposal": {
+        "proposal_pt": "Se você não enfrentar o problema agora, o prazo não será cumprido e haverá grandes atrasos."
+      }
+    },
+    {
+      "ref": "151.11",
+      "card_id": "fe467168-12fa-48a7-9b5f-ccc1676674ec",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Tradução acrescenta talento; contexto de promessa de torcer por si mesma soa artificial.",
+      "original_proposal": {
+        "proposal_en": "She kept her fingers crossed before the interview, hoping the hiring manager would notice her skills.",
+        "proposal_pt": "Ela ficou na torcida antes da entrevista, esperando que o recrutador percebesse suas habilidades."
+      }
+    },
+    {
+      "ref": "152.0",
+      "card_id": "0b61b1e2-68af-4ba7-b64b-a80c12709caf",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Cross-funcional é híbrido pouco acessível.",
+      "original_proposal": {
+        "proposal_pt": "Se eu assumir esse projeto entre áreas, ele poderá demonstrar minha capacidade de gerir equipes diversificadas."
+      }
+    },
+    {
+      "ref": "152.5",
+      "card_id": "77a3fa64-83e2-46d8-99b6-338cfdc40c8c",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Return to school não implica necessariamente faculdade.",
+      "original_proposal": {
+        "proposal_pt": "Ela decidiu voltar a estudar para fazer a transição de finanças para análise de dados."
+      }
+    },
+    {
+      "ref": "156.6",
+      "card_id": "9276b816-9680-44f6-9285-689f6952b21e",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "After work ligado à localização gera ambiguidade desnecessária.",
+      "original_proposal": {
+        "proposal_en": "Could you tell me where the nearest subway station is? I need to get home after work.",
+        "proposal_pt": "Você poderia me dizer onde fica a estação de metrô mais próxima? Preciso voltar para casa depois do trabalho."
+      }
+    },
+    {
+      "ref": "157.4",
+      "card_id": "410833c3-bfea-4238-be4d-7782fc7f4543",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Regência portuguesa: pontos com que concordamos.",
+      "original_proposal": {
+        "proposal_pt": "Antes de terminarmos, deixe-me resumir os principais pontos com que concordamos nesta reunião."
+      }
+    },
+    {
+      "ref": "158.4",
+      "card_id": "473569af-d2b1-4e2c-9024-4325807945b0",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Might as well sugere alternativa razoável na ausência de opção melhor; é melhor começarmos intensifica recomendação.",
+      "original_proposal": {
+        "proposal_pt": "Já que é assim, podemos começar agora.",
+        "action": "Adicionar situação que sustente a escolha pragmática."
+      }
+    },
+    {
+      "ref": "159.9",
+      "card_id": "cd1ea915-9055-4fb4-9a9b-7bf99fd9a4fd",
+      "category": "validacao_especializada",
+      "decision": "A decisão envolve localização, saúde, evidência, referência ou conteúdo técnico. Não aplicar reescrita como se fosse simples correção linguística.",
+      "original_finding": "A frase associa cansaço inespecífico a burnout sem contexto; inadequado como item didático isolado.",
+      "original_proposal": {
+        "proposal_en": "I've been feeling drained lately, and I'd like to talk to someone about it.",
+        "proposal_pt": "Tenho me sentido esgotado ultimamente e gostaria de conversar com alguém sobre isso."
+      }
+    },
+    {
+      "ref": "160.2",
+      "card_id": "3db3c38c-69f5-4ba3-b3a4-aac2569388e3",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Battery life neste contexto é autonomia por carga, não vida útil.",
+      "original_proposal": {
+        "proposal_pt": "Aumentar a autonomia da bateria costuma exigir limitar o uso de dados em segundo plano nos dispositivos."
+      }
+    },
+    {
+      "ref": "161.8",
+      "card_id": "96d615a1-a821-4e03-80f7-89d1a80f342b",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Backed up é fazer cópia de segurança, não apenas copiar.",
+      "original_proposal": {
+        "proposal_pt": "Devem ser feitas cópias de segurança diárias de todos os arquivos do projeto para evitar perda de dados."
+      }
+    },
+    {
+      "ref": "161.11",
+      "card_id": "f298fdf5-3845-4b5b-b3d5-233e2e8107d7",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Meeting agenda corresponde a pauta.",
+      "original_proposal": {
+        "proposal_pt": "A pauta da reunião foi finalizada pelo gerente de projeto após a contribuição da equipe."
+      }
+    },
+    {
+      "ref": "162.6",
+      "card_id": "a0cf47ec-c73b-47cc-b684-24b4f66d35e8",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Q&A sem expansão reduz acessibilidade da tradução.",
+      "original_proposal": {
+        "proposal_pt": "Se precisar de esclarecimento sobre algum ponto, não hesite em sinalizar durante a sessão de perguntas e respostas."
+      }
+    },
+    {
+      "ref": "162.11",
+      "card_id": "f9b4f212-00cb-40ca-8c9a-ed8839caad7c",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Frame the problem foi traduzido por colocar o problema; today virou aqui.",
+      "original_proposal": {
+        "proposal_pt": "Para começar, deixe-me contextualizar o problema que estamos abordando hoje."
+      }
+    },
+    {
+      "ref": "163.2",
+      "card_id": "347cd32e-f675-40ef-95c2-ce173d90f9ed",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "A oportunidade está quente é decalque evitável.",
+      "original_proposal": {
+        "proposal_pt": "Devemos aproveitar a oportunidade enquanto ela existe e garantir a parceria antes dos concorrentes."
+      }
+    },
+    {
+      "ref": "163.4",
+      "card_id": "50cf34a9-32b7-47b0-a822-9d6372a2b0be",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Finança corporativa soa pouco natural; quase duplica o cartão 163.8.",
+      "original_proposal": {
+        "proposal_pt": "Ela decidiu se arriscar e abrir sua própria consultoria depois de anos em finanças corporativas.",
+        "action": "Diferenciar contexto/objetivo de 163.8 ou consolidar localmente antes de publicar."
+      }
+    },
+    {
+      "ref": "165.0",
+      "card_id": "077b2dfd-f9e1-4f6d-9e27-6d1d75c59ef1",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Morale no sentido de ânimo pede o moral.",
+      "original_proposal": {
+        "proposal_pt": "Embora as estatísticas apoiem sua afirmação, elas não consideram o impacto qualitativo no moral dos funcionários."
+      }
+    },
+    {
+      "ref": "165.10",
+      "card_id": "d780cac1-1797-47b4-af7c-6ae381ccd2d7",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Faz um caso forte é decalque de make a strong case.",
+      "original_proposal": {
+        "proposal_pt": "Você apresenta um argumento convincente a favor da cautela, mas assumir um risco controlado poderia acelerar a entrada no mercado."
+      }
+    },
+    {
+      "ref": "166.7",
+      "card_id": "a64d5eea-f281-4cd0-85c6-194a5eba5787",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "A tradução troca avaliação de eficácia por hábito.",
+      "original_proposal": {
+        "proposal_pt": "Acho eficaz intercalar breves pausas, sinalizando que estou considerando cuidadosamente a pergunta antes de responder."
+      }
+    },
+    {
+      "ref": "166.8",
+      "card_id": "b5885392-d9e3-40f9-894b-085ca7263c1f",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Pergunta de que não tenho certeza deixa impreciso o objeto da incerteza.",
+      "original_proposal": {
+        "proposal_pt": "Quando não tenho certeza de como responder a uma pergunta, reconheço a incerteza e proponho um plano para reunir as informações necessárias."
+      }
+    },
+    {
+      "ref": "169.11",
+      "card_id": "fd1ac0e8-c5ff-46e7-ae01-29175327e59e",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Extensive vacation photos e extensas fotos são colocações pouco naturais.",
+      "original_proposal": {
+        "proposal_en": "I'm sure the boss will appreciate my extensive collection of holiday photos.",
+        "proposal_pt": "Tenho certeza de que o chefe vai adorar minha enorme coleção de fotos de férias.",
+        "action": "Adicionar contexto que sustente a leitura irônica."
+      }
+    },
+    {
+      "ref": "170.10",
+      "card_id": "f7542b54-d5d9-4c77-9fb5-a7c4a009a4e4",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Could have perde a possibilidade quando traduzido por teríamos.",
+      "original_proposal": {
+        "proposal_pt": "Se tivéssemos previsto a mudança no mercado, poderíamos ter reposicionado nossa linha de produtos mais cedo."
+      }
+    },
+    {
+      "ref": "171.2",
+      "card_id": "352c11e0-5bb6-45a5-b12e-982768bc700a",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Isso dito é decalque pouco fluente.",
+      "original_proposal": {
+        "proposal_pt": "Dito isso, às vezes uso incentivos sutis — como destacar benefícios mútuos — para manter o ritmo quando orientações formais parecem excessivas."
+      }
+    },
+    {
+      "ref": "171.3",
+      "card_id": "3987ffc1-9735-4689-9702-a1c265758eec",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Polished draft não é rascunho finalizado; stakeholder brief pode ser material para stakeholders, não deles.",
+      "original_proposal": {
+        "proposal_pt": "Vou delegar a você o resumo para as partes interessadas, mas espero uma versão bem elaborada até sexta; por favor, trate isso como prioridade."
+      }
+    },
+    {
+      "ref": "171.5",
+      "card_id": "83cbbced-1947-47be-829c-24f96a60d4f3",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Morale corresponde a o moral.",
+      "original_proposal": {
+        "proposal_pt": "Enquanto alinhamos nossos objetivos, vamos manter o moral da equipe elevado — afinal, uma equipe feliz é produtiva."
+      }
+    },
+    {
+      "ref": "172.5",
+      "card_id": "73d6083d-3558-4e2d-a072-5328f14074e1",
+      "category": "ingles_e_audio_pendentes",
+      "decision": "Revisar a formulação inglesa e sua correspondência com áudio antes de alterar o par. Fora do lote conservador de traduções.",
+      "original_finding": "Homogenous é escolha técnica menos apropriada aqui do que homogeneous para composição uniforme da amostra.",
+      "original_proposal": {
+        "proposal_en": "Despite the robust design, the study's external validity remains uncertain due to the homogeneous participant pool."
+      }
+    },
+    {
+      "ref": "172.9",
+      "card_id": "cdf1f4ec-e669-41cd-bffa-983c96a3c88c",
+      "category": "validacao_especializada",
+      "decision": "A decisão envolve localização, saúde, evidência, referência ou conteúdo técnico. Não aplicar reescrita como se fosse simples correção linguística.",
+      "original_finding": "Smith (2020) aparece como citação sem referência verificável no registro.",
+      "original_proposal": {
+        "action": "Marcar estudo explicitamente fictício ou fornecer referência real verificada antes de publicação; não inventar bibliografia."
+      }
+    },
+    {
+      "ref": "173.7",
+      "card_id": "812ffde9-b527-434a-81a5-b7bde8ae2226",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Quase só empatando não comunica claramente barely breaking even.",
+      "original_proposal": {
+        "proposal_pt": "Se estou interpretando os números corretamente, mal estamos cobrindo os custos neste trimestre."
+      }
+    },
+    {
+      "ref": "173.10",
+      "card_id": "cc7eca1b-ea99-48b9-9418-1285a3fead1b",
+      "category": "ingles_e_audio_pendentes",
+      "decision": "Revisar a formulação inglesa e sua correspondência com áudio antes de alterar o par. Fora do lote conservador de traduções.",
+      "original_finding": "Keeping appearances pede keeping up appearances; a tradução também perde paralelismo.",
+      "original_proposal": {
+        "proposal_en": "I'm inclined to think that his enthusiasm is more about keeping up appearances than genuine interest.",
+        "proposal_pt": "Tenho a impressão de que o entusiasmo dele tem mais a ver com manter as aparências do que com interesse verdadeiro."
+      }
+    },
+    {
+      "ref": "175.10",
+      "card_id": "e865cdf2-9d4a-4e74-9c95-34e61200fab2",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Could meet vira conseguimos, fortalecendo a certeza.",
+      "original_proposal": {
+        "proposal_pt": "Se mantivermos o escopo atual, poderíamos cumprir o prazo original; caso contrário, deveríamos considerar uma implantação em fases."
+      }
+    },
+    {
+      "ref": "177.2",
+      "card_id": "1d60c3f8-098c-46dd-aa4a-20179f36d342",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "A coordenação compara progress com polite nod, deixando o referente pouco claro.",
+      "original_proposal": {
+        "proposal_en": "Her vague promise left everyone wondering whether it signalled imminent progress or was merely a polite acknowledgement.",
+        "proposal_pt": "A promessa vaga deixou todos em dúvida se ela sinalizava progresso iminente ou era apenas uma resposta cortês."
+      }
+    },
+    {
+      "ref": "178.8",
+      "card_id": "e76ef67e-eddf-4d22-84f3-5d7c47093935",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "A tradução perde features e troca o referente por deploys.",
+      "original_proposal": {
+        "proposal_pt": "Nossa equipe de engenharia adotou uma arquitetura de microsserviços, que nos permite implantar funcionalidades de forma independente."
+      }
+    },
+    {
+      "ref": "178.7",
+      "card_id": "e73a031f-85bb-4b38-b156-828b326b98cb",
+      "category": "validacao_especializada",
+      "decision": "A decisão envolve localização, saúde, evidência, referência ou conteúdo técnico. Não aplicar reescrita como se fosse simples correção linguística.",
+      "original_finding": "Validar a colocação técnica risk-adjusted beta e a explicação com especialista antes de publicar; frase isolada não ensina o conceito.",
+      "original_proposal": {
+        "action": "Revisão técnica pendente, sem correção financeira presumida."
+      }
+    },
+    {
+      "ref": "178.11",
+      "card_id": "f372be32-2424-46dd-8248-7e4404c64df6",
+      "category": "validacao_especializada",
+      "decision": "A decisão envolve localização, saúde, evidência, referência ou conteúdo técnico. Não aplicar reescrita como se fosse simples correção linguística.",
+      "original_finding": "Guarantee provenance apresenta garantia absoluta; falta cenário que delimite a afirmação.",
+      "original_proposal": {
+        "proposal_en": "Our supply chain uses a blockchain ledger to record provenance claims and make changes easier to trace.",
+        "action": "Validar tecnicamente e adaptar a tradução; não ensinar que tecnologia garante veracidade da entrada."
+      }
+    },
+    {
+      "ref": "179.0",
+      "card_id": "0aa618ca-04c5-4c57-a3b5-0c8513e06b1a",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "A tradução omite o projeto.",
+      "original_proposal": {
+        "proposal_pt": "A nova política vai atrapalhar o andamento do projeto."
+      }
+    },
+    {
+      "ref": "179.6",
+      "card_id": "817ca842-fd1a-4fe5-a541-6d68876cbca8",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Sem hesitar acrescenta ausência de hesitação; bite the bullet enfatiza enfrentar algo difícil/desagradável.",
+      "original_proposal": {
+        "proposal_pt": "Ele decidiu enfrentar a situação difícil."
+      }
+    },
+    {
+      "ref": "180.4",
+      "card_id": "60b9154f-2975-4a0b-a999-7ae38a691c63",
+      "category": "correcao_objetiva_pt",
+      "decision": "Corrigir perda de sentido, modalidade, referência temporal ou gramática na tradução. Inglês e variantes permanecem intactos.",
+      "original_finding": "Moral da equipe pede masculino e a segunda oração fica pouco natural.",
+      "original_proposal": {
+        "proposal_pt": "O moral da equipe estava no fundo do poço, então organizamos um almoço em que cada um trouxe um prato; o resultado foi um carnaval de sabores."
+      }
+    },
+    {
+      "ref": "180.7",
+      "card_id": "86cf15bf-6509-4cb3-9587-91754d536012",
+      "category": "ajuste_opcional",
+      "decision": "Melhoria de fluência, registro ou explicitação possível, mas não bloqueadora. Há traduções/variantes defensáveis; manter sem aplicação automática.",
+      "original_finding": "Joga seguro é decalque pouco natural em PT-BR.",
+      "original_proposal": {
+        "proposal_pt": "Ele sempre evita riscos, mas desta vez decidiu arriscar e investir em uma startup que pode ser o próximo grande sucesso."
+      }
+    },
+    {
+      "ref": "181.8",
+      "card_id": "9d77e335-55d0-42c0-88fd-67449e93a8b1",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Forma telegráfica informal e on com sentido de evento confirmado precisam de contexto; não equivale necessariamente a adiamento.",
+      "original_proposal": {
+        "proposal_en": "The meeting is on for next week.",
+        "proposal_pt": "A reunião está confirmada para a próxima semana.",
+        "action": "Separar de has been postponed e moved; preservar o original somente com contexto informal explícito."
+      }
+    },
+    {
+      "ref": "184.0",
+      "card_id": "154562f6-17cc-430a-8a94-02abf8c2edc0",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Time-out não cria um trocadilho suficientemente claro com relógio quebrado; tradução fica artificial.",
+      "original_proposal": {
+        "action": "Substituir por exemplo original com duas leituras demonstráveis e explicação curta."
+      }
+    },
+    {
+      "ref": "184.1",
+      "card_id": "5d610df5-b33f-4043-b249-2836471dfaef",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Mexê-la preserva apenas a leitura culinária; explicar salsa música/molho e stir it up como dupla leitura.",
+      "original_proposal": {
+        "action": "Acrescentar nota de mecanismo e tarefa de adaptação, sem exigir tradução literal única."
+      }
+    },
+    {
+      "ref": "184.4",
+      "card_id": "b360a406-1558-4f50-b5b0-7706b21e5b9e",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Ligação entre Rolling Stones e keep their roots é fraca; não há dupla leitura evidente.",
+      "original_proposal": {
+        "action": "Reescrever após escolher mecanismo de humor claro; não classificar automaticamente como trocadilho."
+      }
+    },
+    {
+      "ref": "184.6",
+      "card_id": "c8b6829d-f317-409e-9838-5a4578556691",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Pão rolando é tradução inadequada de dough roll e o mecanismo humorístico é fraco.",
+      "original_proposal": {
+        "action": "Substituir o exemplo ou explicar roll como movimento/pão com tradução funcional; verificar referência e origem."
+      }
+    },
+    {
+      "ref": "184.7",
+      "card_id": "c8ef5880-efd6-457a-9040-787e34c4f79c",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Referência a um filme não identificada; hook/hooked não é explicado.",
+      "original_proposal": {
+        "action": "Verificar referência e autoria; preferir contexto original autossuficiente."
+      }
+    },
+    {
+      "ref": "184.3",
+      "card_id": "ad70a455-4eb9-4cdd-915d-ab29708c272e",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Tradução transmite só a leitura de interesse, perdendo impossibilidade física de largar.",
+      "original_proposal": {
+        "action": "Manter tradução funcional e explicar as duas leituras em nota, aceitar reformulações."
+      }
+    },
+    {
+      "ref": "184.5",
+      "card_id": "be4cc546-80ee-4051-ba3b-34c90f7a0ee5",
+      "category": "contexto_pedagogico",
+      "decision": "Depende do cenário, alvo didático ou registro. A proposta não constitui correção automática; manter o original até revisão contextual.",
+      "original_finding": "Cheesy permanece sem explicação em português.",
+      "original_proposal": {
+        "proposal_pt": "Tentei escrever uma piada sobre pizza, mas ficou muito brega.",
+        "action": "Explicar cheesy como brega e com queijo; não substituir a polissemia por uma resposta única."
+      }
+    }
+  ],
+  "patches": [
+    {
+      "ref": "65.3",
+      "card_id": "8f0062a1-22c7-4d03-92f2-8f10a61e6889",
+      "pack_id": "2df1aece-be25-4266-a93d-26b9f2f1f86f",
+      "english_phrase": "We will probably finish work by six.",
+      "field": "portuguese_translation",
+      "before": "Provavelmente vamos terminar o trabalho às seis.",
+      "after": "Provavelmente terminaremos o trabalho até as seis.",
+      "reason": "By six é até as seis, não às seis."
+    },
+    {
+      "ref": "65.10",
+      "card_id": "e9b3b8bb-d9e4-4ff0-9bc9-9c7f250b7ade",
+      "pack_id": "2df1aece-be25-4266-a93d-26b9f2f1f86f",
+      "english_phrase": "We're planning to watch a movie Saturday.",
+      "field": "portuguese_translation",
+      "before": "Nós vamos assistir a um filme no sábado.",
+      "after": "Estamos planejando assistir a um filme no sábado.",
+      "reason": "Planning to perdeu planejamento e virou certeza."
+    },
+    {
+      "ref": "104.4",
+      "card_id": "36888eb9-aedb-49e9-8dfe-d3770b9b5156",
+      "pack_id": "eadbede8-3072-43a6-8a39-59313aa00a28",
+      "english_phrase": "Therefore, I recommend checking the account balance daily for errors.",
+      "field": "portuguese_translation",
+      "before": "Por isso, recomendo conferir o saldo da conta todo dia para evitar erros.",
+      "after": "Por isso, recomendo conferir o saldo da conta diariamente para identificar erros.",
+      "reason": "Checking for errors é procurar erros, não evitá-los."
+    },
+    {
+      "ref": "110.2",
+      "card_id": "0a02d6fb-9fed-4bc0-8f78-b06102ef1af9",
+      "pack_id": "29f9a7e3-c089-404a-825e-3ab1628eda6a",
+      "english_phrase": "If you have finished the report, you should email it today.",
+      "field": "portuguese_translation",
+      "before": "Se você terminou o relatório, deve enviá-lo hoje.",
+      "after": "Se você terminou o relatório, deve enviá-lo por e-mail hoje.",
+      "reason": "Email it perdeu o meio de envio."
+    },
+    {
+      "ref": "120.0",
+      "card_id": "0979762e-b841-43dc-90f8-6eecd9f86fb6",
+      "pack_id": "580c8ea5-b64f-4c7c-9af0-55b79a48f2b6",
+      "english_phrase": "We have already forwarded your request to the technical team, they will call back.",
+      "field": "portuguese_translation",
+      "before": "Já encaminhamos sua solicitação para a equipe técnica, eles retornam em breve.",
+      "after": "Já encaminhamos sua solicitação à equipe técnica; eles retornarão a ligação.",
+      "reason": "Call back especifica ligação, tradução acrescenta em breve."
+    },
+    {
+      "ref": "120.5",
+      "card_id": "5e4183f5-391d-4440-b773-02be6f0b939d",
+      "pack_id": "580c8ea5-b64f-4c7c-9af0-55b79a48f2b6",
+      "english_phrase": "If the line is still noisy, we can switch to a video call instead.",
+      "field": "portuguese_translation",
+      "before": "Se a linha ainda estiver com chiado, podemos mudar para vídeo chamada.",
+      "after": "Se a linha continuar com chiado, podemos mudar para uma videochamada.",
+      "reason": "Grafia e fluência de vídeo chamada."
+    },
+    {
+      "ref": "129.1",
+      "card_id": "07cc7c11-169b-46f2-a661-91c4fb1d1d6d",
+      "pack_id": "bd958fb5-2879-4339-ab28-d00c30cab9fe",
+      "english_phrase": "He just finished his presentation, yet the audience still had many questions.",
+      "field": "portuguese_translation",
+      "before": "Ele acabou de terminar a apresentação, mas o público ainda fez várias perguntas.",
+      "after": "Ele acabou de terminar a apresentação, mas o público ainda tinha muitas perguntas.",
+      "reason": "Had many questions significa tinha perguntas, não necessariamente fez perguntas."
+    },
+    {
+      "ref": "131.11",
+      "card_id": "cbd22c9c-91f4-486b-89bf-263264361212",
+      "pack_id": "0d258fbe-bbb7-411f-8dc2-fe83ca3a7118",
+      "english_phrase": "If the landlord includes utilities, the rent will be more affordable.",
+      "field": "portuguese_translation",
+      "before": "Se o dono incluir as contas, o aluguel ficará mais barato.",
+      "after": "Se o proprietário incluir as contas, o aluguel caberá melhor no orçamento.",
+      "reason": "More affordable não significa redução nominal do aluguel."
+    },
+    {
+      "ref": "133.4",
+      "card_id": "6ce32592-5e11-42c8-afd2-2482cea2de4b",
+      "pack_id": "4bc42bc8-09f4-48ac-b95b-00112351f959",
+      "english_phrase": "If you could offer a discount, I would be willing to stay.",
+      "field": "portuguese_translation",
+      "before": "Se você oferecer um desconto, eu fico disposto a continuar.",
+      "after": "Se você pudesse oferecer um desconto, eu estaria disposto a continuar.",
+      "reason": "Tradução perde a condicionalidade cortês."
+    },
+    {
+      "ref": "133.8",
+      "card_id": "c6002c6d-9040-4dee-b40e-5e3bc82ba239",
+      "pack_id": "4bc42bc8-09f4-48ac-b95b-00112351f959",
+      "english_phrase": "I think the warranty should cover this defect, so I expect a solution.",
+      "field": "portuguese_translation",
+      "before": "Acho que a garantia cobre esse defeito, então espero uma solução.",
+      "after": "Acho que a garantia deveria cobrir esse defeito, então espero uma solução.",
+      "reason": "Should cover foi fortalecido para cobre."
+    },
+    {
+      "ref": "141.6",
+      "card_id": "d667ce80-1736-47c9-99aa-3d1f1842d179",
+      "pack_id": "173cf271-0097-4ae3-b15a-ec956c25ed6b",
+      "english_phrase": "Our data suggests that the current pricing model is limiting customer acquisition in emerging markets.",
+      "field": "portuguese_translation",
+      "before": "Nossos dados mostram que o modelo de preços atual está limitando a aquisição de clientes nos mercados emergentes.",
+      "after": "Nossos dados sugerem que o modelo atual de preços está limitando a aquisição de clientes em mercados emergentes.",
+      "reason": "Suggests vira mostram, elevando certeza."
+    },
+    {
+      "ref": "143.3",
+      "card_id": "1680c782-efc4-432c-b377-8deadc89bdef",
+      "pack_id": "d4da1e74-6692-4f52-aa49-0c75f6237b50",
+      "english_phrase": "By acknowledging each other's strengths, we can turn this conflict into a learning opportunity.",
+      "field": "portuguese_translation",
+      "before": "Reconhecendo as qualidades de cada um, transformamos esse conflito em oportunidade de aprendizado.",
+      "after": "Ao reconhecer as qualidades uns dos outros, podemos transformar esse conflito em uma oportunidade de aprendizado.",
+      "reason": "Can turn perde possibilidade na tradução."
+    },
+    {
+      "ref": "146.7",
+      "card_id": "8bf69e14-0e0e-4a5f-a1bb-abdaa31a0c25",
+      "pack_id": "5ebec52b-fecd-4217-8c89-421e3cf40401",
+      "english_phrase": "If you prefer classical, you might enjoy that composer's latest album.",
+      "field": "portuguese_translation",
+      "before": "Se você curte clássica, vai gostar do último álbum desse compositor.",
+      "after": "Se você prefere música clássica, talvez goste do álbum mais recente desse compositor.",
+      "reason": "Might enjoy vira vai gostar, eliminando possibilidade."
+    },
+    {
+      "ref": "148.6",
+      "card_id": "5a2881fc-4e64-47e0-8013-f4faef47fb4f",
+      "pack_id": "3787826c-a1d7-4236-9f41-9bb3f765b9c5",
+      "english_phrase": "We were told that the deadline had been moved to next Friday.",
+      "field": "portuguese_translation",
+      "before": "Fomos informados de que o prazo havia sido adiado para a próxima sexta-feira.",
+      "after": "Fomos informados de que o prazo havia sido alterado para a próxima sexta-feira.",
+      "reason": "Moved não prova adiamento; pode ser antecipação."
+    },
+    {
+      "ref": "149.6",
+      "card_id": "51cbd567-38a3-4d19-b4e1-7d521a2048a6",
+      "pack_id": "8c962cdc-94f9-42f1-9a52-1f9ee853eaea",
+      "english_phrase": "If schools integrated more peer-review sessions, students could develop critical thinking faster.",
+      "field": "portuguese_translation",
+      "before": "Se as escolas incluíssem mais sessões de revisão entre pares, os estudantes desenvolveriam o pensamento crítico mais rápido.",
+      "after": "Se as escolas incluíssem mais sessões de revisão entre pares, os estudantes poderiam desenvolver o pensamento crítico mais rapidamente.",
+      "reason": "Could develop foi fortalecido para desenvolveriam."
+    },
+    {
+      "ref": "150.7",
+      "card_id": "b3c3c50b-8af1-4ff0-95bc-f60b5abcaea0",
+      "pack_id": "80a87035-3061-4685-a0e0-a01a699f80a7",
+      "english_phrase": "The team's performance would have improved significantly if more cross-functional training had been provided.",
+      "field": "portuguese_translation",
+      "before": "O desempenho da equipe teria melhorado consideravelmente se fosse oferecido mais treinamento multifuncional.",
+      "after": "O desempenho da equipe teria melhorado consideravelmente se tivesse sido oferecido mais treinamento entre áreas.",
+      "reason": "Had been provided remete a condição passada não realizada; fosse oferecido enfraquece a referência temporal."
+    },
+    {
+      "ref": "151.6",
+      "card_id": "81067165-1b9c-46de-9a7d-269d22b96e6a",
+      "pack_id": "cfb61856-6644-47a0-918d-a1c6ae2c914a",
+      "english_phrase": "She felt under the weather, so she worked from home and skipped the lunch meeting.",
+      "field": "portuguese_translation",
+      "before": "Ela não estava bem, então trabalhou de casa e pulou o almoço.",
+      "after": "Ela estava indisposta, então trabalhou de casa e não participou da reunião durante o almoço.",
+      "reason": "Skipped the lunch meeting foi reduzido a pulou o almoço."
+    },
+    {
+      "ref": "152.5",
+      "card_id": "77a3fa64-83e2-46d8-99b6-338cfdc40c8c",
+      "pack_id": "272f2932-c0e5-4d33-8a6f-29911125e725",
+      "english_phrase": "She decided to return to school to transition from finance to data analytics.",
+      "field": "portuguese_translation",
+      "before": "Ela decidiu voltar à faculdade para fazer a transição de finanças para análise de dados.",
+      "after": "Ela decidiu voltar a estudar para fazer a transição de finanças para análise de dados.",
+      "reason": "Return to school não implica necessariamente faculdade."
+    },
+    {
+      "ref": "157.4",
+      "card_id": "410833c3-bfea-4238-be4d-7782fc7f4543",
+      "pack_id": "698527c3-d3a2-4a4e-9919-f2f01e2363b3",
+      "english_phrase": "Before we end, let me summarize the key points we agreed on during this meeting.",
+      "field": "portuguese_translation",
+      "before": "Antes de terminarmos, deixe-me resumir os pontos principais que concordamos nesta reunião.",
+      "after": "Antes de terminarmos, deixe-me resumir os principais pontos com que concordamos nesta reunião.",
+      "reason": "Regência portuguesa: pontos com que concordamos."
+    },
+    {
+      "ref": "160.2",
+      "card_id": "3db3c38c-69f5-4ba3-b3a4-aac2569388e3",
+      "pack_id": "4b663f78-eee0-4887-b963-183cdea7c8b7",
+      "english_phrase": "Optimizing battery life often requires limiting background data usage for devices.",
+      "field": "portuguese_translation",
+      "before": "Otimizar a vida útil da bateria costuma exigir limitar o uso de dados em segundo plano nos dispositivos.",
+      "after": "Aumentar a autonomia da bateria costuma exigir limitar o uso de dados em segundo plano nos dispositivos.",
+      "reason": "Battery life neste contexto é autonomia por carga, não vida útil."
+    },
+    {
+      "ref": "161.8",
+      "card_id": "96d615a1-a821-4e03-80f7-89d1a80f342b",
+      "pack_id": "4d19ca11-fe05-49bc-a529-5182b8fdecc7",
+      "english_phrase": "All project files should be backed up daily to prevent data loss.",
+      "field": "portuguese_translation",
+      "before": "Todos os arquivos do projeto devem ser copiados diariamente para evitar perda de dados.",
+      "after": "Devem ser feitas cópias de segurança diárias de todos os arquivos do projeto para evitar perda de dados.",
+      "reason": "Backed up é fazer cópia de segurança, não apenas copiar."
+    },
+    {
+      "ref": "161.11",
+      "card_id": "f298fdf5-3845-4b5b-b3d5-233e2e8107d7",
+      "pack_id": "4d19ca11-fe05-49bc-a529-5182b8fdecc7",
+      "english_phrase": "The meeting agenda was finalized by the project manager after the team's input.",
+      "field": "portuguese_translation",
+      "before": "A agenda da reunião foi finalizada pelo gerente de projeto após a contribuição da equipe.",
+      "after": "A pauta da reunião foi finalizada pelo gerente de projeto após a contribuição da equipe.",
+      "reason": "Meeting agenda corresponde a pauta."
+    },
+    {
+      "ref": "162.11",
+      "card_id": "f9b4f212-00cb-40ca-8c9a-ed8839caad7c",
+      "pack_id": "c8b265eb-ac34-4452-bb06-9f95c87cf796",
+      "english_phrase": "To begin, let me frame the problem we're tackling today.",
+      "field": "portuguese_translation",
+      "before": "Para começar, deixe eu colocar o problema que estamos enfrentando aqui.",
+      "after": "Para começar, deixe-me contextualizar o problema que estamos abordando hoje.",
+      "reason": "Frame the problem foi traduzido por colocar o problema; today virou aqui."
+    },
+    {
+      "ref": "165.0",
+      "card_id": "077b2dfd-f9e1-4f6d-9e27-6d1d75c59ef1",
+      "pack_id": "b8eec019-b7fe-46ac-b879-618949cc25d8",
+      "english_phrase": "While the statistics support your claim, they don't account for the qualitative impact on employee morale.",
+      "field": "portuguese_translation",
+      "before": "Embora as estatísticas apoiem sua afirmação, elas não consideram o impacto qualitativo na moral dos funcionários.",
+      "after": "Embora as estatísticas apoiem sua afirmação, elas não consideram o impacto qualitativo no moral dos funcionários.",
+      "reason": "Morale no sentido de ânimo pede o moral."
+    },
+    {
+      "ref": "166.7",
+      "card_id": "a64d5eea-f281-4cd0-85c6-194a5eba5787",
+      "pack_id": "558b33f2-9e4b-4c9a-801a-8a4524a56c3e",
+      "english_phrase": "I find it effective to intersperse brief pauses, signaling that I am thoughtfully considering the question before replying.",
+      "field": "portuguese_translation",
+      "before": "Costumo inserir breves pausas, sinalizando que estou ponderando cuidadosamente a pergunta antes de responder.",
+      "after": "Acho eficaz intercalar breves pausas, sinalizando que estou considerando cuidadosamente a pergunta antes de responder.",
+      "reason": "A tradução troca avaliação de eficácia por hábito."
+    },
+    {
+      "ref": "170.10",
+      "card_id": "f7542b54-d5d9-4c77-9fb5-a7c4a009a4e4",
+      "pack_id": "a36112d2-0ad9-46ab-b66f-f537419cbb83",
+      "english_phrase": "Had we anticipated the market shift, we could have repositioned our product line earlier.",
+      "field": "portuguese_translation",
+      "before": "Se tivéssemos antecipado a mudança de mercado, teríamos reposicionado nossa linha de produtos mais cedo.",
+      "after": "Se tivéssemos previsto a mudança no mercado, poderíamos ter reposicionado nossa linha de produtos mais cedo.",
+      "reason": "Could have perde a possibilidade quando traduzido por teríamos."
+    },
+    {
+      "ref": "171.5",
+      "card_id": "83cbbced-1947-47be-829c-24f96a60d4f3",
+      "pack_id": "0ceb3d62-183b-4d50-9a40-fb6c55fc2908",
+      "english_phrase": "While we're aligning our objectives, let's keep the team's morale high - after all, a happy crew is a productive crew.",
+      "field": "portuguese_translation",
+      "before": "Enquanto alinhamos nossos objetivos, vamos manter a moral da equipe alta - pois, afinal, uma equipe feliz é mais produtiva.",
+      "after": "Enquanto alinhamos nossos objetivos, vamos manter o moral da equipe elevado — afinal, uma equipe feliz é produtiva.",
+      "reason": "Morale corresponde a o moral."
+    },
+    {
+      "ref": "175.10",
+      "card_id": "e865cdf2-9d4a-4e74-9c95-34e61200fab2",
+      "pack_id": "e7a7fffd-7dfb-4868-895f-72939e528b4a",
+      "english_phrase": "If we keep the current scope, we could meet the original deadline; otherwise, we should consider a phased rollout.",
+      "field": "portuguese_translation",
+      "before": "Se mantivermos o escopo atual, conseguimos cumprir o prazo original; caso contrário, seria melhor pensar em um lançamento em fases.",
+      "after": "Se mantivermos o escopo atual, poderíamos cumprir o prazo original; caso contrário, deveríamos considerar uma implantação em fases.",
+      "reason": "Could meet vira conseguimos, fortalecendo a certeza."
+    },
+    {
+      "ref": "178.8",
+      "card_id": "e76ef67e-eddf-4d22-84f3-5d7c47093935",
+      "pack_id": "98bb1da9-fd80-4298-9be9-1e7f34dbe996",
+      "english_phrase": "Our engineering squad adopted a microservices architecture, which allows us to deploy features in isolation.",
+      "field": "portuguese_translation",
+      "before": "Nossa equipe de engenharia adotou uma arquitetura de microsserviços, permitindo que deploys sejam feitos em isolamento.",
+      "after": "Nossa equipe de engenharia adotou uma arquitetura de microsserviços, que nos permite implantar funcionalidades de forma independente.",
+      "reason": "A tradução perde features e troca o referente por deploys."
+    },
+    {
+      "ref": "179.0",
+      "card_id": "0aa618ca-04c5-4c57-a3b5-0c8513e06b1a",
+      "pack_id": "403f8fa4-b6ec-46e9-a752-a12577defa9e",
+      "english_phrase": "The new policy will throw a wrench into the project.",
+      "field": "portuguese_translation",
+      "before": "A nova política vai complicar as coisas.",
+      "after": "A nova política vai atrapalhar o andamento do projeto.",
+      "reason": "A tradução omite o projeto."
+    },
+    {
+      "ref": "179.6",
+      "card_id": "817ca842-fd1a-4fe5-a541-6d68876cbca8",
+      "pack_id": "403f8fa4-b6ec-46e9-a752-a12577defa9e",
+      "english_phrase": "He decided to bite the bullet.",
+      "field": "portuguese_translation",
+      "before": "Ele decidiu encarar a situação sem hesitar.",
+      "after": "Ele decidiu enfrentar a situação difícil.",
+      "reason": "Sem hesitar acrescenta ausência de hesitação; bite the bullet enfatiza enfrentar algo difícil/desagradável."
+    },
+    {
+      "ref": "180.4",
+      "card_id": "60b9154f-2975-4a0b-a999-7ae38a691c63",
+      "pack_id": "bdd19183-72b2-45a5-a546-3b31fd58ef30",
+      "english_phrase": "The team's morale was at rock bottom, so we organized a potluck and it turned into a carnival of flavors.",
+      "field": "portuguese_translation",
+      "before": "A moral da equipe estava no fundo do poço, então organizamos um almoço comunitário e transformou-se num carnaval de sabores.",
+      "after": "O moral da equipe estava no fundo do poço, então organizamos um almoço em que cada um trouxe um prato; o resultado foi um carnaval de sabores.",
+      "reason": "Moral da equipe pede masculino e a segunda oração fica pouco natural."
+    }
+  ],
+  "context_notes": [
+    {
+      "card_id": "7d66c09d-4ca6-4633-8ce5-810f36ab1145",
+      "english_phrase": "I am afraid I have left my wallet at home.",
+      "primary": "Receio ter deixado minha carteira em casa.",
+      "accepted_translations": [
+        "Eu receio que tenha deixado minha carteira em casa.",
+        "Infelizmente, deixei minha carteira em casa."
+      ],
+      "decision": "Preservar todas as variantes atuais; nenhuma mudança proposta.",
+      "explanation": "I am afraid pode anunciar uma notícia desagradável com pesar ou polidez. Receio ter deixado admite essa leitura e também uma leitura de incerteza; Infelizmente, deixei explicita o pesar. No contexto de um imprevisto de pagamento, ambas são plausíveis. Uma atividade que queira avaliar especificamente incerteza precisa fornecer contexto; não rejeitar Infelizmente por literalismo."
+    }
+  ]
+}

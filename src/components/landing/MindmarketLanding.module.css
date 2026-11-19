@@ -823,7 +823,7 @@
 .featureNote {
   margin-top:12px!important;
   font-size:10px!important;
-  color:#6b6d64
+  color:var(--ink)
 }
 .conversationVisual {
   position:relative;
@@ -1074,7 +1074,7 @@
   font-size:10px;
   font-weight:400;
   flex-shrink:0;
-  color:#767970
+  color:#666960
 }
 .faqItem summary>svg {
   flex-shrink:0;

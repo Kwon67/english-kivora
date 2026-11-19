@@ -18,6 +18,7 @@ interface MatchingGameProps {
   onWrong: (attempt?: MatchingWrongAttempt) => void
   onFinish: () => void
   layout?: 'default' | 'compact'
+  celebration?: boolean
 }
 
 interface MatchItem {
@@ -33,6 +34,7 @@ export default function MatchingGame({
   onWrong,
   onFinish,
   layout = 'default',
+  celebration = true,
 }: MatchingGameProps) {
   const isCompact = layout === 'compact'
   const gameCards = useMemo(
@@ -96,19 +98,21 @@ export default function MatchingGame({
       nextMatched.add(item.id)
       setMatchedIds(nextMatched)
       setSelected(null)
-      triggerConfetti()
+      if (celebration) triggerConfetti()
       onCorrect()
 
       if (nextMatched.size === gameCards.length) {
         setTimeout(async () => {
-          const { default: confetti } = await import('canvas-confetti')
-          confetti({
-            disableForReducedMotion: true,
-            particleCount: 150,
-            spread: 100,
-            origin: { y: 0.6 },
-            colors: CELEBRATION_COLORS,
-          })
+          if (celebration) {
+            const { default: confetti } = await import('canvas-confetti')
+            confetti({
+              disableForReducedMotion: true,
+              particleCount: 150,
+              spread: 100,
+              origin: { y: 0.6 },
+              colors: CELEBRATION_COLORS,
+            })
+          }
           onFinish()
         }, 1000)
       }
@@ -185,6 +189,8 @@ export default function MatchingGame({
               role="button"
               tabIndex={isMatched ? -1 : 0}
               aria-disabled={isMatched}
+              aria-pressed={isSelected}
+              data-match-state={isMatched ? 'matched' : isError ? 'error' : isSelected ? 'selected' : undefined}
               onClick={() => handleSelect(item)}
               onKeyDown={(event) => {
                 if (isMatched) return

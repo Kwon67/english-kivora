@@ -5,6 +5,7 @@ import { Crown, Loader2 } from 'lucide-react'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { cancelProSubscriptionAction } from '@/app/billing-actions'
 import type { BillingSummary } from '@/features/billing/lib/billingSummary'
+import styles from '@/features/profile/components/Settings.module.css'
 import { notify } from '@/lib/toast'
 import {
   settingsGroup,
@@ -21,6 +22,7 @@ function formatDate(value: string | null) {
 
 export default function BillingSettings({ summary }: { summary: BillingSummary }) {
   const [cancelPending, setCancelPending] = useState(false)
+  const [cancelError, setCancelError] = useState('')
   const [confirmingCancel, setConfirmingCancel] = useState(false)
   const isAdmin = summary.access === 'admin'
   const isPro = summary.access === 'pro'
@@ -32,10 +34,11 @@ export default function BillingSettings({ summary }: { summary: BillingSummary }
   async function cancelSubscription() {
     setConfirmingCancel(false)
     setCancelPending(true)
+    setCancelError('')
     const result = await cancelProSubscriptionAction()
     setCancelPending(false)
     if (!result.ok) {
-      notify.error(result.error || 'Não foi possível cancelar.')
+      setCancelError(result.error || 'Não foi possível cancelar.')
       return
     }
     notify.success('Assinatura cancelada.')
@@ -74,11 +77,12 @@ export default function BillingSettings({ summary }: { summary: BillingSummary }
               onClick={() => setConfirmingCancel(true)}
               className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-[11px] border border-brand-dark bg-bg-card px-4 font-heading text-sm font-bold text-brand-dark disabled:opacity-50"
             >
-              {cancelPending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+              {cancelPending ? <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" aria-hidden="true" /> : null}
               Cancelar assinatura
             </button>
           ) : null}
         </div>
+        {cancelError && <p className={styles.feedback} data-state="error" role="alert">{cancelError}</p>}
       </div>
 
       {confirmingCancel ? (

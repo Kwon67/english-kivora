@@ -1,17 +1,15 @@
 import { WorkspaceList } from '@/components/ui/WorkspacePagination'
 import Link from 'next/link'
 import { AlertTriangle, ArrowRight } from 'lucide-react'
-import SectionBadge from '@/components/ui/SectionBadge'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { LEECH_LAPSES_THRESHOLD } from '@/features/review/lib/leech'
 import type { LeechCard } from '@/features/review/lib/leechCards'
 import {
   problemWordsPanel,
-  problemWordsFrostedSubtle,
   problemWordsSectionTitle,
   problemWordsSoftBtn,
 } from '@/features/review/lib/problemWordsUi'
-import { homeNestedCardClass, homeSmallPillClass } from '@/lib/homeStyles'
+import { homeSmallPillClass } from '@/lib/homeStyles'
 
 /**
  * As frases que saíram da fila automática.
@@ -25,29 +23,20 @@ export default function LeechSection({ cards }: { cards: LeechCard[] }) {
 
   return (
     <section className={problemWordsPanel} aria-labelledby="leech-titulo">
-      <div className="flex flex-wrap items-center gap-2">
-        <SectionBadge label="Fora da fila" />
-        <span className={homeSmallPillClass}>{cards.length}</span>
-      </div>
-
-      <h2 id="leech-titulo" className={`${problemWordsSectionTitle} mt-3`}>
-        Frases que a repetição não resolveu
-      </h2>
+      <h2 id="leech-titulo" className={problemWordsSectionTitle}>Frases fora da fila automática</h2>
       <p className="mt-2 max-w-xl font-body text-sm leading-relaxed text-brand-secondary">
-        Você já esqueceu cada uma pelo menos {LEECH_LAPSES_THRESHOLD} vezes depois de tê-la
-        aprendido. Elas saíram da revisão automática para não ocupar suas vagas do dia — repetir do
-        mesmo jeito é justamente o que não funcionou. Tente ouvir, escrever ou quebrar a frase em
-        partes menores.
+        Você esqueceu cada frase pelo menos {LEECH_LAPSES_THRESHOLD} vezes depois de aprendê-la.
+        Tente ouvir, escrever ou dividir a frase em partes menores antes de revisar.
       </p>
 
-      <WorkspaceList as="ol" pageSize={4} className="mt-5 grid gap-3 sm:grid-cols-2">
+      <WorkspaceList as="ol" pageSize={4} className="problem-words-rows mt-4">
         {cards.map((card) => (
-          <li key={card.cardId} className={`${homeNestedCardClass} ${problemWordsFrostedSubtle} p-4`}>
+          <li key={card.cardId} className="py-4">
             <div className="flex items-start justify-between gap-3">
-              <p className="min-w-0 font-heading text-sm font-bold text-brand-dark">{card.en}</p>
+              <p lang="en" className="min-w-0 font-heading text-base font-semibold text-brand-dark">{card.en}</p>
               <span className={`${homeSmallPillClass} shrink-0 gap-1`}>
                 <AlertTriangle className="h-3 w-3 shrink-0" strokeWidth={1.5} />
-                {card.lapses}
+                {card.lapses} {card.lapses === 1 ? 'erro' : 'erros'}
               </span>
             </div>
             <p className="mt-1.5 font-body text-sm leading-relaxed text-brand-secondary">{card.pt}</p>

@@ -8,7 +8,7 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="admin-ops-deck admin-premium-shell min-h-[100svh] bg-bg-primary font-body text-brand-dark">
+    <div data-kivora-workspace="admin" className="admin-ops-deck admin-premium-shell min-h-[100svh] bg-bg-primary font-body text-brand-dark">
         <Suspense fallback={<AdminSidebarFallback />}>
           <AdminSidebar />
         </Suspense>

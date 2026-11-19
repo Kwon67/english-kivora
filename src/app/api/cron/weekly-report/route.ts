@@ -105,6 +105,7 @@ async function sendReportForProfile(
     calculateLevelProgress(cardsStudied, accuracy)
 
   await sendResendEmail({
+    idempotencyKey: `weekly-report/${profile.id}/${period.endDate}`,
     to: profile.email,
     subject: `Seu relatório semanal Kivora English — ${period.label}`,
     react: createElement(WeeklyReport, {

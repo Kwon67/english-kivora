@@ -1,21 +1,9 @@
-import { Card } from '@/components/shadcn/card'
-import { Flame, Snowflake, Target } from 'lucide-react'
 import CefrLevelBadge from '@/features/cefr/components/CefrLevelBadge'
 import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
 import { getUserOnboardingStatus } from '@/features/onboarding/lib/onboardingStatus'
 import { createClient } from '@/lib/supabase/server'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'
-import {
-  homeCardClass,
-  homeIconBox,
-  homeNestedCardClass,
-  homePillClass,
-  homeSmallPillClass,
-} from '@/lib/homeStyles'
-import {
-  settingsFrostedSubtle,
-  settingsFrostedSurface,
-} from '@/features/profile/lib/settingsPageUi'
+import styles from './Settings.module.css'
 
 /**
  * Nível, meta diária e sequência.
@@ -67,62 +55,32 @@ export default async function AccountProgress() {
     onboardingStatus.row?.level_source === 'skipped' && !cefrProfile.assessing
 
   return (
-    <Card asChild unstyled><section className={`${homeCardClass} ${settingsFrostedSurface} p-5 sm:p-6`} aria-labelledby="account-progress-title">
-      <div className="flex items-center gap-3">
-        <span className={homeIconBox}>
-          <Flame className="h-4 w-4" strokeWidth={1.5} />
-        </span>
-        <h2 id="account-progress-title" className="font-heading text-lg font-bold text-brand-dark">
-          Seu progresso
-        </h2>
-      </div>
-
-      <div className="account-progress-metrics">
-        <Card asChild unstyled><article className={`${homeNestedCardClass} ${settingsFrostedSubtle} p-4`}>
-          <div className="flex flex-wrap items-center gap-2">
-            <p className={homePillClass}>Sequência</p>
-            {hasBankedFreeze ? (
-              <span className={`${homeSmallPillClass} gap-1`}>
-                <Snowflake className="h-3 w-3 shrink-0" strokeWidth={1.5} />
-                Protegida
-              </span>
-            ) : null}
-          </div>
-          <p className="mt-3 font-heading text-2xl font-bold leading-tight text-brand-dark">
-            {streak} {streak === 1 ? 'dia' : 'dias'}
-          </p>
-          <p className="mt-2 font-body text-xs leading-relaxed text-brand-secondary">
-            Recorde: {longestStreak} {longestStreak === 1 ? 'dia' : 'dias'}
-          </p>
-        </article></Card>
-
-        <Card asChild unstyled><article className={`${homeNestedCardClass} ${settingsFrostedSubtle} p-4`}>
-          <p className={homePillClass}>Meta diária</p>
-          <p className="mt-3 flex items-center gap-2 font-heading text-2xl font-bold text-brand-dark">
-            <Target className="h-5 w-5 shrink-0" strokeWidth={1.5} />
-            {dailyGoalMinutes ? `${dailyGoalMinutes} min` : '—'}
-          </p>
-          <p className="mt-2 font-body text-xs leading-relaxed text-brand-secondary">
-            {dailyGoalMinutes ? 'Por dia, definida no onboarding.' : 'Ainda não definida.'}
-          </p>
-        </article></Card>
-
-        <Card asChild unstyled><article className={`${homeNestedCardClass} ${settingsFrostedSubtle} p-4`}>
-          <p className={homePillClass}>
-            {skippedLevelWithoutAssessment ? 'Nível sugerido' : 'Nível detectado'}
-          </p>
-          <div className="mt-3">
-            <CefrLevelBadge profile={cefrProfile} compact />
-          </div>
-          <p className="mt-2 font-body text-xs leading-relaxed text-brand-secondary">
-            {skippedLevelWithoutAssessment
+    <section aria-labelledby="account-progress-title">
+      <h2 id="account-progress-title" className={styles.groupLabel}>Seu progresso</h2>
+      <dl className={styles.accountSummary}>
+        <div>
+          <dt>Sequência</dt>
+          <dd>{streak} {streak === 1 ? 'dia' : 'dias'}{hasBankedFreeze && <small>Protegida</small>}
+            <small>Recorde: {longestStreak} {longestStreak === 1 ? 'dia' : 'dias'}</small>
+          </dd>
+        </div>
+        <div>
+          <dt>Meta diária</dt>
+          <dd>{dailyGoalMinutes ? `${dailyGoalMinutes} min` : '—'}
+            <small>{dailyGoalMinutes ? 'Definida no onboarding.' : 'Ainda não definida.'}</small>
+          </dd>
+        </div>
+        <div>
+          <dt>{skippedLevelWithoutAssessment ? 'Nível sugerido' : 'Nível detectado'}</dt>
+          <dd><CefrLevelBadge profile={cefrProfile} compact />
+            <small>{skippedLevelWithoutAssessment
               ? 'Faça o teste quando quiser.'
               : cefrProfile.nextLevel
                 ? `Próximo: ${cefrProfile.nextLevel} (${cefrProfile.progressToNext ?? 0}%)`
-                : 'Melhora conforme você pratica.'}
-          </p>
-        </article></Card>
-      </div>
-    </section></Card>
+                : 'Melhora conforme você pratica.'}</small>
+          </dd>
+        </div>
+      </dl>
+    </section>
   )
 }

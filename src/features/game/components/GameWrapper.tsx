@@ -1,28 +1,18 @@
 'use client'
 
-import { Card } from '@/components/shadcn/card'
-import type { LearningTone } from '@/lib/learningTones'
 import type { ReactNode } from 'react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, m, useReducedMotion } from 'motion/react'
 import {
-  AlertTriangle,
   ArrowRight,
-  BookOpen,
   Clock3,
   Flame,
-  Keyboard,
   Layers,
   Loader2,
-  Mic,
-  Puzzle,
   RotateCcw,
   Target,
-  Trophy,
-  TrendingUp,
   X,
-  Headphones,
 } from 'lucide-react'
 import { startAssignmentTimer, submitGameResult } from '@/app/actions'
 import { markHomeNeedsResync } from '@/lib/homeNotices'
@@ -45,87 +35,51 @@ import {
   isGuidedWritingPack,
   isReadingComprehensionPack,
 } from '@/features/game/lib/packPedagogy'
-import { Dialog, DialogContent, DialogTitle } from '@/components/shadcn/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/shadcn/dialog'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import { feedback } from '@/lib/feedback'
-import { notify } from '@/lib/toast'
 import { useGameStore } from '@/store/gameStore'
 import { useUIStore } from '@/store/uiStore'
-import { landingRadius, landingRadiusLg } from '@/lib/landingStyles'
 import {
-  homeCardClass,
-  homeFrostedSurface,
-  homeFrostedSubtle,
-  homeFrostedModal,
-  homeCardButton,
-  homeIconBoxBase,
   homePrimaryButton,
   homeSecondaryButton,
-  homeShellBelowContentClass,
-  homeSmallPillClass,
 } from '@/lib/homeStyles'
 
-/**
- * Painéis das telas de jogo.
- *
- * `landingCtaCardShadow` saiu do painel hero: o material frosted define o próprio `box-shadow` e,
- * por viver fora de `@layer`, vence a utility do Tailwind — a sombra offset ficava no JSX sem
- * renderizar nada. Mesma correção já feita nas telas de auth.
- */
-const gamePanelClass = `${homeCardClass} ${homeFrostedSurface}`
-/** Superfície do cabeçalho da sessão (modo, precisão, progresso). */
-const gameHeaderClass = `${homeCardClass} ${homeFrostedSurface}`
-/** Flat stat tile used inside intro/result stat grids */
-const gameStatTileClass = `${landingRadiusLg} ${homeFrostedSubtle} border border-brand-dark px-4 py-3`
+import '@/features/curriculum/components/activity.css'
+
+const gameStatTileClass = 'activity-stat'
 const gameStatLabelClass = 'font-heading text-[11px] font-bold uppercase tracking-widest text-brand-secondary'
 
-const gameModeConfig: Record<string, { label: string; icon: typeof Target; note: string; tone: LearningTone }> = {
+const gameModeConfig: Record<string, { label: string; note: string }> = {
   multiple_choice: {
-    tone: 'vocabulary',
     label: 'Múltipla escolha',
-    icon: Target,
     note: 'Leitura rápida, contexto e decisão imediata.',
   },
   flashcard: {
-    tone: 'review',
     label: 'Flashcard',
-    icon: Layers,
     note: 'Memorização ativa com repetição curta e objetiva.',
   },
   typing: {
-    tone: 'writing',
     label: 'Digitação',
-    icon: Keyboard,
     note: 'Leia o português e escreva a frase em inglês de memória.',
   },
   matching: {
-    tone: 'vocabulary',
     label: 'Combinação',
-    icon: Puzzle,
     note: 'Associação visual para ganhar velocidade de recall.',
   },
   listening: {
-    tone: 'listening',
     label: 'Escuta',
-    icon: Headphones,
     note: 'Treino auditivo: ouça a frase e escreva em inglês o que ouviu.',
   },
   speaking: {
-    tone: 'speaking',
     label: 'Fala',
-    icon: Mic,
     note: 'Treino de pronúncia: ouça e repita a frase.',
   },
 }
 
-/** This page renders a breadcrumb above the shell, so it uses the no-top-bleed variant. */
 function GameShell({ children }: { children: ReactNode }) {
-  return (
-    <div className={`${homeShellBelowContentClass} min-h-[calc(100svh-5rem)]`}>
-      <div className="relative z-10">{children}</div>
-    </div>
-  )
+  return <div className="assignment-activity">{children}</div>
 }
 
 export default function GameWrapper({
@@ -164,6 +118,7 @@ export default function GameWrapper({
   } = useGameStore()
   const router = useRouter()
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
   const [starting, setStarting] = useState(false)
   const [showExitModal, setShowExitModal] = useState(false)
   const [timerState, setTimerState] = useState(timerConfig)
@@ -181,7 +136,7 @@ export default function GameWrapper({
   const [adaptiveQueue, setAdaptiveQueue] = useState(cards)
   const [adaptiveInitialCount, setAdaptiveInitialCount] = useState(0)
   const [adaptiveRetries, setAdaptiveRetries] = useState(0)
-  const saveResultPromise = useRef<Promise<void> | null>(null)
+  const saveResultPromise = useRef<Promise<boolean> | null>(null)
   const prefersReducedMotion = useReducedMotion()
 
   const currentCard = activeQueue[activeStep]
@@ -192,7 +147,6 @@ export default function GameWrapper({
   const playedMode = resolvePlayableMode(gameMode, speechAvailable)
   const isSpeechFallback = playedMode !== gameMode
   const modeConfig = gameModeConfig[playedMode] || gameModeConfig.multiple_choice
-  const ModeIcon = modeConfig.icon
   // A descrição da digitação depende do lado: no primeiro contato com o pack ela é compreensão.
   const modeNote =
     playedMode === 'typing' && typingDirection === 'en-to-pt'
@@ -213,12 +167,12 @@ export default function GameWrapper({
   const timerExpired = deadlineMs ? deadlineMs <= now : false
   const cardTransition = prefersReducedMotion
     ? { duration: 0 }
-    : { duration: 0.26, ease: [0.16, 1, 0.3, 1] as const }
+    : { duration: 0.16, ease: [0.16, 1, 0.3, 1] as const }
   const pageTransition = prefersReducedMotion
     ? { duration: 0 }
-    : { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const }
-  const cardMotionInitial = prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 18, scale: 0.985 }
-  const cardMotionExit = prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -12, scale: 0.985 }
+    : { duration: 0.2, ease: [0.16, 1, 0.3, 1] as const }
+  const cardMotionInitial = prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 4 }
+  const cardMotionExit = prefersReducedMotion ? { opacity: 1 } : { opacity: 0 }
   const errorReviewCards = useMemo(() => {
     const cardMap = new Map(cards.map((card) => [card.id, card]))
     const seen = new Set<string>()
@@ -332,54 +286,46 @@ export default function GameWrapper({
     })
   }
 
-  // Auto-save when reaching the result page to prevent data loss if user closes window
+  // Keep the result in the persisted store until the server confirms it.
   const hasSavedResult = useRef(false)
+  const saveInFlight = useRef(false)
+  const persistResult = useCallback(async () => {
+    if (saveInFlight.current) return saveResultPromise.current ?? false
+    saveInFlight.current = true; setSaving(true); setSaveError('')
+    const submissionId = useGameStore.getState().resultSubmissionId
+    const promise = submitGameResult({
+      ...(submissionId ? { clientSessionId: submissionId } : {}),
+      packId: currentCard?.pack_id || cards[0]?.pack_id || '', assignmentId: assignmentId || '',
+      correct, wrong, streakMax: maxStreak, status: 'completed', errorLog, correctCardIds: correctLog, latencyLog,
+      playedMode: isSpeechFallback && playedMode === 'listening' ? 'listening' : undefined,
+    }).then(() => { hasSavedResult.current = true; return true })
+      .catch(() => { setSaveError('Resultado ainda não confirmado. Seu resultado continua nesta tela. Tente salvar novamente.'); return false })
+      .finally(() => { saveInFlight.current = false; setSaving(false) })
+    saveResultPromise.current = promise
+    return promise
+  }, [currentCard?.pack_id, cards, assignmentId, correct, wrong, maxStreak, errorLog, correctLog, latencyLog, isSpeechFallback, playedMode])
+  const attemptedAutoSave = useRef(false)
   useEffect(() => {
-    if (phase === 'result' && !hasSavedResult.current) {
-      hasSavedResult.current = true
-
-      setSaving(true)
-      trackEvent(ANALYTICS_EVENT.SESSION_COMPLETED, {
-        mode: gameMode,
-        cards: cards.length,
-        accuracy,
-        maxStreak,
-      })
-      saveResultPromise.current = submitGameResult({
-        packId: currentCard?.pack_id || cards[0]?.pack_id || '',
-        assignmentId: assignmentId || '',
-        correct,
-        wrong,
-        streakMax: maxStreak,
-        status: 'completed',
-        errorLog,
-        correctCardIds: correctLog,
-        latencyLog,
-        playedMode: isSpeechFallback && playedMode === 'listening' ? 'listening' : undefined,
-      })
-        .catch((error: unknown) => {
-          console.error('Erro ao salvar resultado automaticamente:', error)
-          notify.error('Erro ao carregar dados')
-        })
-        .finally(() => {
-          setSaving(false)
-        })
-    }
-  }, [phase, accuracy, currentCard?.pack_id, cards, assignmentId, correct, wrong, maxStreak, errorLog, correctLog, latencyLog, gameMode, isSpeechFallback, playedMode])
+    if (phase !== 'result' || attemptedAutoSave.current) return
+    attemptedAutoSave.current = true
+    trackEvent(ANALYTICS_EVENT.SESSION_COMPLETED, { mode: gameMode, cards: cards.length, accuracy, maxStreak })
+    void persistResult()
+  }, [phase, gameMode, cards.length, accuracy, maxStreak, persistResult])
 
   async function handleFinish() {
-    try {
-      if (saveResultPromise.current) {
-        await saveResultPromise.current
-      }
-    } catch (error) {
-      console.error('Erro ao aguardar finalização do salvamento:', error)
-      // Continuamos mesmo com erro no promise para não prender o usuário na tela de resultado
-    }
+    const confirmed = hasSavedResult.current || await persistResult()
+    if (!confirmed) return
     resetGame()
     markHomeNeedsResync()
     router.push('/home?sessionComplete=true#trilha', { transitionTypes: navBackTransitionTypes })
   }
+
+  const exitButton = useRef<HTMLButtonElement>(null)
+  const keepPlayingButton = useRef<HTMLButtonElement>(null)
+  const resultHeading = useRef<HTMLHeadingElement>(null)
+  useEffect(() => {
+    if (phase === 'result' && !isAdaptiveActive && !isErrorReviewActive) resultHeading.current?.focus()
+  }, [phase, isAdaptiveActive, isErrorReviewActive])
 
   function handleExit() {
     setShowExitModal(true)
@@ -414,8 +360,7 @@ export default function GameWrapper({
   if (phase === 'intro') {
     return (
       <GameShell>
-        <m.section initial={{ opacity: 0.94, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={pageTransition} className="practice-intro" aria-labelledby="practice-intro-title">
-          <span className="practice-intro-icon" aria-hidden="true"><ModeIcon size={28} /></span>
+        <m.section initial={prefersReducedMotion ? false : { opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={pageTransition} className="practice-intro" aria-labelledby="practice-intro-title">
           <p className="editorial-eyebrow">{modeConfig.label}</p>
           <h1 id="practice-intro-title">{packName}</h1>
           <p className="practice-intro-note">{modeNote}</p>
@@ -448,7 +393,7 @@ export default function GameWrapper({
               >
                 {starting ? (
                   <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
                     Carregando
                   </>
                 ) : (
@@ -467,24 +412,24 @@ export default function GameWrapper({
   if (phase === 'result' && isAdaptiveActive) {
     return (
       <GameShell>
-      <div className="flex items-center justify-center py-3 lg:min-h-[78vh] lg:py-8">
+      <div className="mx-auto w-full max-w-2xl">
         <m.div
-          initial={{ opacity: 0.94, y: 6 }}
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={pageTransition}
           className="w-full max-w-4xl"
         >
           {!isAdaptiveComplete && currentAdaptiveCard && adaptiveMode ? (
             <div className="space-y-6">
-              <Card asChild unstyled><div className={`${homeCardClass} ${homeFrostedSubtle} p-5 sm:p-6`}>
+              <section className="activity-review-heading">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <SectionBadge label="Reforço adaptativo" />
                     <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark sm:text-3xl">
-                      Reforço antes de voltar para a digitação.
+                      Reforço para voltar à digitação
                     </h2>
                     <p className="mt-3 font-body text-sm leading-relaxed text-brand-secondary">
-                      Quando o typing pesa demais, uma passada curta em {adaptiveMode === 'flashcard' ? 'flashcards' : 'múltipla escolha'} ajuda a consolidar o significado sem travar o ritmo.
+                      Pratique em {adaptiveMode === 'flashcard' ? 'flashcards' : 'múltipla escolha'} antes de retomar a escrita.
                     </p>
                   </div>
                   <button
@@ -496,7 +441,7 @@ export default function GameWrapper({
                   </button>
                 </div>
 
-                <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                <div className="activity-stats activity-stats-three">
                   <div className={gameStatTileClass}>
                     <p className={gameStatLabelClass}>Modo</p>
                     <p className="mt-3 font-heading text-2xl font-bold text-brand-dark">
@@ -516,7 +461,7 @@ export default function GameWrapper({
                     </p>
                   </div>
                 </div>
-              </div></Card>
+              </section>
 
               {adaptiveMode === 'flashcard' ? (
                 <Flashcard
@@ -527,6 +472,7 @@ export default function GameWrapper({
                 />
               ) : (
                 <MultipleChoice
+                  variant="assignment"
                   key={`adaptive-mc-${currentAdaptiveCard.id}-${adaptiveQueue.length}-${adaptiveRetries}`}
                   card={currentAdaptiveCard}
                   allCards={cards}
@@ -540,7 +486,7 @@ export default function GameWrapper({
               )}
             </div>
           ) : (
-            <div className={`${gamePanelClass} w-full p-4 sm:p-6 lg:p-8`}>
+            <div className="w-full">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                 <div className="max-w-xl">
                   <SectionBadge label="Reforço adaptativo concluído" />
@@ -552,9 +498,6 @@ export default function GameWrapper({
                   </p>
                 </div>
 
-                <div className={`${homeIconBoxBase} h-16 w-16 p-3`}>
-                  <Layers className="h-8 w-8" strokeWidth={1.8} />
-                </div>
               </div>
 
               <button
@@ -575,24 +518,24 @@ export default function GameWrapper({
   if (phase === 'result' && isErrorReviewActive) {
     return (
       <GameShell>
-      <div className="flex items-center justify-center py-3 lg:min-h-[78vh] lg:py-8">
+      <div className="mx-auto w-full max-w-2xl">
         <m.div
-          initial={{ opacity: 0.94, y: 6 }}
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={pageTransition}
           className="w-full max-w-4xl"
         >
           {!isErrorReviewComplete && currentErrorReviewCard ? (
             <div className="space-y-6">
-              <Card asChild unstyled><div className={`${homeCardClass} ${homeFrostedSubtle} p-5 sm:p-6`}>
+              <section className="activity-review-heading">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <SectionBadge label="Revisão de erros" />
                     <h2 className="mt-4 font-heading text-2xl font-bold text-brand-dark sm:text-3xl">
-                      Mini-rodada só com os cards que saíram do eixo.
+                      Revise as respostas incorretas
                     </h2>
                     <p className="mt-3 font-body text-sm leading-relaxed text-brand-secondary">
-                      Passe pelos erros recentes e empurre de volta para o fim da fila aquilo que ainda não ficou firme.
+                      As respostas incorretas voltam para o fim da fila.
                     </p>
                   </div>
                   <button
@@ -604,7 +547,7 @@ export default function GameWrapper({
                   </button>
                 </div>
 
-                <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                <div className="activity-stats activity-stats-three">
                   <div className={gameStatTileClass}>
                     <p className={gameStatLabelClass}>Restantes</p>
                     <p className="mt-3 font-heading text-3xl font-bold text-brand-dark">
@@ -624,7 +567,7 @@ export default function GameWrapper({
                     </p>
                   </div>
                 </div>
-              </div></Card>
+              </section>
 
               <Flashcard
                 key={`error-review-${currentErrorReviewCard.id}-${errorReviewQueue.length}-${errorReviewRetries}`}
@@ -634,21 +577,18 @@ export default function GameWrapper({
               />
             </div>
           ) : (
-            <div className={`${gamePanelClass} w-full p-4 sm:p-6 lg:p-8`}>
+            <div className="w-full">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                 <div className="max-w-xl">
                   <SectionBadge label="Revisão de erros concluída" />
                   <h2 className="mt-5 font-heading text-2xl font-bold leading-[1.1] text-brand-dark sm:text-3xl">
-                    Os pontos fracos desta sessão já passaram por uma rodada extra.
+                    Revisão concluída
                   </h2>
                   <p className="mt-4 font-body text-base leading-relaxed text-brand-secondary">
                     Você revisou {errorReviewInitialCount} {errorReviewInitialCount === 1 ? 'card' : 'cards'} com erro e precisou de {errorReviewRetries} {errorReviewRetries === 1 ? 'repetição' : 'repetições'} adicionais.
                   </p>
                 </div>
 
-                <div className={`${homeIconBoxBase} h-16 w-16 p-3`}>
-                  <RotateCcw className="h-8 w-8" strokeWidth={1.8} />
-                </div>
               </div>
 
               <button
@@ -669,44 +609,27 @@ export default function GameWrapper({
   if (phase === 'result') {
     return (
       <GameShell>
-      <div className="flex items-center justify-center py-3 lg:min-h-[78vh] lg:py-8">
+      <div className="mx-auto w-full max-w-2xl">
         <m.div
-          initial={{ opacity: 0.94, y: 6 }}
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={pageTransition}
-          className={`${gamePanelClass} w-full max-w-3xl p-4 sm:p-6 lg:p-8`}
+          className="w-full"
         >
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-            <div className="max-w-xl">
-              <SectionBadge label="Sessão concluída" />
-              <h1 className="mt-3 font-heading text-2xl font-semibold leading-tight text-brand-dark sm:text-3xl">
+          <div className="max-w-xl" aria-busy={saving}>
+              <SectionBadge label={saving ? "Salvando resultado" : saveError ? "Resultado pendente" : "Rodada concluída"} />
+              <h1 ref={resultHeading} tabIndex={-1} className="activity-result-title mt-3 font-heading text-brand-dark">Resultado da prática</h1>
+              <p className="mt-3 max-w-[55ch] text-sm leading-relaxed text-brand-secondary">
                 {accuracy >= 80
-                  ? 'Resultado forte e bem encaixado.'
+                  ? 'Você respondeu com consistência.'
                   : accuracy >= 60
-                    ? 'Boa sessão. Lição concluída com sucesso!'
-                    : 'Lição Incompleta. Faltou um pouco para concluir.'}
-              </h1>
-              <p className="mt-4 font-body text-base leading-relaxed text-brand-secondary">
-                {accuracy >= 80
-                  ? 'Você manteve um bom nível de precisão e respondeu com consistência.'
-                  : accuracy >= 60
-                    ? 'A base está boa. A tarefa foi finalizada, mas mais rodadas lapidam a mente.'
-                    : 'A taxa de acerto ficou abaixo de 60%. Essa tarefa continuará pendente no seu painel para você tentar de novo.'}
+                    ? 'Confira o resultado para escolher o que revisar.'
+                    : 'Revise os erros e tente aplicar as frases em outro contexto.'}
               </p>
-            </div>
-
-            <div className={`${homeIconBoxBase} h-16 w-16 p-3 ${accuracy >= 80 ? 'bg-brand-accent' : ''}`}>
-              {accuracy >= 80 ? (
-                <Trophy className="h-8 w-8" strokeWidth={1.8} />
-              ) : accuracy >= 60 ? (
-                <TrendingUp className="h-8 w-8" strokeWidth={1.8} />
-              ) : (
-                <BookOpen className="h-8 w-8" strokeWidth={1.8} />
-              )}
-            </div>
           </div>
 
-          <div className="mt-8 grid gap-3 sm:grid-cols-4">
+          {saveError && <p role="alert" className="product-error mt-6">{saveError}</p>}
+          <div className="activity-stats activity-stats-four">
               <div className={gameStatTileClass}>
                 <p className={gameStatLabelClass}>Acertos</p>
                 <p className="mt-3 font-heading text-3xl font-bold text-brand-dark">{correct}</p>
@@ -725,7 +648,23 @@ export default function GameWrapper({
             </div>
           </div>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <div className="activity-actions">
+            <button
+              type="button"
+              onClick={handleFinish}
+              disabled={saving}
+              data-testid="game-finish-button"
+              className={`${homePrimaryButton} touch-manipulation w-full py-4 sm:w-auto`}
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                  Salvando
+                </>
+              ) : (
+                saveError ? 'Tentar salvar novamente' : 'Voltar ao início'
+              )}
+            </button>
             {shouldSuggestAdaptive && (
               <>
                 <button
@@ -756,22 +695,6 @@ export default function GameWrapper({
                 Revisar erros ({errorReviewCards.length})
               </button>
             )}
-            <button
-              type="button"
-              onClick={handleFinish}
-              disabled={saving}
-              data-testid="game-finish-button"
-              className={`${homePrimaryButton} touch-manipulation w-full py-4 sm:w-auto`}
-            >
-              {saving ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  Salvando
-                </>
-              ) : (
-                'Voltar ao início'
-              )}
-            </button>
           </div>
         </m.div>
       </div>
@@ -794,7 +717,7 @@ export default function GameWrapper({
           </div>
         </div>
       )}
-      <div className={`${gameHeaderClass} mx-auto w-full max-w-[1100px] p-4 sm:p-5`}>
+      <div className="activity-toolbar">
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3">
@@ -802,7 +725,8 @@ export default function GameWrapper({
                 type="button"
                 aria-label="Sair da lição"
                 onClick={handleExit}
-                className={`${landingRadius} touch-manipulation flex h-11 w-11 shrink-0 items-center justify-center border border-brand-dark bg-bg-card text-brand-dark shadow-offset-sm transition-[transform,box-shadow,background-color] duration-200 hover:bg-brand-accent hover:shadow-offset-accent active:translate-x-[2px] active:translate-y-[2px] active:shadow-none`}
+                ref={exitButton}
+                className="activity-exit"
                 title="Sair da lição"
               >
                 <X className="h-5 w-5" strokeWidth={1.5} />
@@ -810,22 +734,22 @@ export default function GameWrapper({
 
               <div>
                 <p className={gameStatLabelClass}>{modeConfig.label}</p>
-                <p className="mt-1 font-heading text-lg font-bold text-brand-dark">{packName}</p>
+                <h1 className="activity-lesson-title">{packName}</h1>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <div className={homeSmallPillClass}>Precisão {accuracy}%</div>
-              <div className={`${homeSmallPillClass} gap-1 bg-brand-accent`}>
-                <Flame className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
-                {currentStreak}
-              </div>
+              <span className="activity-metric">Precisão {accuracy}%</span>
+              <span className="activity-metric">
+                <Flame className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} aria-hidden="true" />
+                <span><span className="sr-only">Sequência: </span>{currentStreak}</span>
+              </span>
             </div>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="font-body text-sm text-brand-secondary">
-              Card {Math.min(activeStep + 1, activeQueue.length)} de {activeQueue.length}
+              Item {Math.min(activeStep + 1, activeQueue.length)} de {activeQueue.length}
             </div>
             <div className="w-full sm:max-w-[420px]">
               <div className="learning-progress" data-tone="grammar" role="progressbar" aria-label="Progresso da lição" aria-valuenow={Math.round(progress)}>
@@ -839,7 +763,7 @@ export default function GameWrapper({
       </div>
 
       <div
-        className={`mx-auto mt-8 w-full ${
+        className={`activity-exercise mx-auto mt-6 w-full ${
           gameMode === 'matching' ? 'max-w-[1100px]' : 'max-w-[860px]'
         }`}
       >
@@ -875,6 +799,7 @@ export default function GameWrapper({
               transition={cardTransition}
             >
               <MultipleChoice
+                  variant="assignment"
                 card={currentCard}
                 allCards={cards}
                 onCorrect={() => {
@@ -993,30 +918,28 @@ export default function GameWrapper({
         </AnimatePresence>
       </div>
 
-      {/* Modal de confirmação de saída. Era ModalPortal + m.div animado à mão: fechava só
-          clicando no fundo, sem Esc, sem foco travado, sem devolução de foco ao fechar. Dialog
-          do shadcn resolve os quatro e já traz a própria transição de entrada/saída — o
-          conteúdo (grade de acertos/erros, botão com loading) fica exatamente igual. */}
       <Dialog open={showExitModal} onOpenChange={(next) => { if (!next) setShowExitModal(false) }}>
         <DialogContent
           showCloseButton={false}
-          className={`gap-0 overflow-hidden ${landingRadiusLg} ${homeFrostedModal} border border-brand-dark p-8 sm:max-w-md`}
+          className="gap-0 sm:max-w-md"
+          onOpenAutoFocus={(event) => {
+            event.preventDefault()
+            keepPlayingButton.current?.focus()
+          }}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault()
+            exitButton.current?.focus()
+          }}
         >
-          {/* Ícone de aviso */}
-          <div className={`${homeIconBoxBase} h-14 w-14 p-3`}>
-            <AlertTriangle className="h-7 w-7" strokeWidth={1.8} />
-          </div>
-
-          <DialogTitle className="mt-5 font-heading text-2xl font-bold text-brand-dark">
+          <DialogTitle className="font-heading text-2xl font-bold text-brand-dark">
             Sair da lição?
           </DialogTitle>
-          <p className="mt-3 font-body text-sm leading-relaxed text-brand-secondary">
-            Seu progresso de acertos e erros até aqui será salvo, mas a lição ficará marcada como{' '}
-            <span className="font-bold text-brand-dark">incompleta</span> — e você precisará retomá-la depois.
-          </p>
+          <DialogDescription className="mt-3 leading-relaxed text-brand-secondary">
+            Vamos guardar seus acertos e erros. A lição ficará incompleta até você retomá-la.
+          </DialogDescription>
 
           {/* Resumo do progresso atual */}
-          <div className="mt-5 grid grid-cols-2 gap-3">
+          <div className="activity-stats">
             <div className={gameStatTileClass}>
               <p className={gameStatLabelClass}>Acertos</p>
               <p className="mt-1 font-heading text-2xl font-bold text-brand-dark">{correct}</p>
@@ -1032,11 +955,11 @@ export default function GameWrapper({
               type="button"
               onClick={confirmExit}
               disabled={saving}
-              className={`${homeCardButton} w-full sm:w-auto`}
+              className={`${homeSecondaryButton} w-full sm:w-auto`}
             >
               {saving ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
                   Salvando
                 </>
               ) : (
@@ -1046,6 +969,7 @@ export default function GameWrapper({
             <button
               type="button"
               onClick={() => setShowExitModal(false)}
+              ref={keepPlayingButton}
               className={`${homePrimaryButton} w-full sm:w-auto`}
             >
               Continuar lição

@@ -44,6 +44,14 @@ export function getAppDayStartUtcIso(dateString: string) {
   return new Date(`${dateString}T00:00:00-03:00`).toISOString()
 }
 
+export function appDateRange(value: unknown) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null
+  const date = new Date(value + 'T12:00:00Z')
+  if (!Number.isFinite(date.getTime()) || getAppDateString(date) !== value) return null
+  const start = getAppDayStartUtcIso(value)
+  return { date: value, start, end: new Date(Date.parse(start) + 86_400_000).toISOString() }
+}
+
 export function formatAppDate(
   input: Date | string | number,
   options?: Intl.DateTimeFormatOptions

@@ -16,7 +16,7 @@ export const onboardingPrimaryButton = `${homePrimaryButton} w-full min-h-11 tou
 
 export const onboardingSecondaryButton = `${homeSecondaryButton} w-full min-h-11 touch-manipulation sm:w-auto sm:min-h-0`
 
-export const onboardingMethodOptionClass = `flex w-full min-h-[4.5rem] min-w-0 touch-manipulation items-start gap-3 rounded-control border border-brand-dark bg-bg-primary p-4 text-left transition hover:bg-brand-accent/30 disabled:cursor-not-allowed disabled:opacity-60 sm:gap-4 sm:min-h-[4.75rem]`
+export const onboardingMethodOptionClass = `flex w-full min-h-[4.5rem] min-w-0 touch-manipulation items-start gap-3 rounded-control border border-brand-dark/25 bg-bg-card p-3 text-left transition-colors hover:bg-brand-accent/30 disabled:cursor-not-allowed disabled:opacity-60 sm:gap-4 sm:min-h-[4.75rem]`
 
 export const onboardingMethodOptionDisabledClass = `${onboardingMethodOptionClass} cursor-not-allowed opacity-55 hover:bg-bg-primary`
 
@@ -31,17 +31,17 @@ export const onboardingAiBadge = `inline-flex w-fit shrink-0 items-center gap-1 
 export const onboardingProgressStrip = `flex w-full min-w-0 items-center justify-between gap-3 overflow-hidden ${landingRadiusLg} border border-brand-dark bg-brand-accent/55 px-4 py-3`
 
 export const onboardingInterestChip = (selected: boolean) =>
-  `inline-flex min-h-10 min-w-0 touch-manipulation items-center justify-center rounded-full border px-4 py-2 font-heading text-sm font-bold transition ${
+  `inline-flex min-h-11 min-w-0 touch-manipulation items-center justify-center rounded-control border px-4 py-2 font-heading text-sm font-semibold transition-colors ${
     selected
       ? 'border-brand-dark bg-brand-accent text-brand-dark'
-      : 'border-brand-dark bg-bg-primary text-brand-dark hover:bg-brand-accent/30'
+      : 'border-brand-dark/25 bg-bg-card text-brand-dark hover:bg-brand-accent/30'
   }`
 
 export const onboardingGoalOptionClass = (selected: boolean) =>
   `flex w-full min-h-11 min-w-0 touch-manipulation items-center justify-between gap-3 rounded-control border px-4 py-3 text-left transition sm:min-h-[3.25rem] ${
     selected
       ? 'border-brand-dark bg-brand-accent text-brand-dark'
-      : 'border-brand-dark bg-bg-primary text-brand-dark hover:bg-brand-accent/30'
+      : 'border-brand-dark/25 bg-bg-card text-brand-dark hover:bg-brand-accent/30'
   }`
 
 export const onboardingGoalLabelClass =
@@ -54,10 +54,10 @@ export const onboardingPackCardClass = `${homeCardClass} min-w-0 overflow-hidden
 export const onboardingPackMetaPill = `${homeSmallPillClass} max-w-full min-w-0 truncate`
 
 export const onboardingPackSuggestOption = (selected: boolean) =>
-  `flex w-full min-h-11 min-w-0 touch-manipulation items-center justify-between gap-3 rounded-control border px-4 py-3 text-left transition ${
+  `flex w-full min-h-11 min-w-0 touch-manipulation items-center justify-between gap-3 rounded-control border px-4 py-3 text-left transition-colors ${
     selected
       ? 'border-brand-dark bg-brand-accent text-brand-dark'
-      : 'border-brand-dark bg-bg-primary text-brand-dark hover:bg-brand-accent/30'
+      : 'border-brand-dark/25 bg-bg-card text-brand-dark hover:bg-brand-accent/30'
   }`
 
 export const onboardingActionRow = 'flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center'
@@ -75,10 +75,10 @@ export const onboardingPlacementPromptClass =
 export const onboardingPlacementContextClass = 'text-sm leading-relaxed text-brand-secondary'
 
 export const onboardingPlacementOptionClass = (selected: boolean) =>
-  `flex w-full min-w-0 touch-manipulation items-start rounded-control border px-4 py-3.5 text-left transition disabled:cursor-not-allowed disabled:opacity-60 ${
+  `flex w-full min-w-0 touch-manipulation items-start rounded-control border px-4 py-3.5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
     selected
       ? 'border-brand-dark bg-brand-accent text-brand-dark'
-      : 'border-brand-dark bg-bg-primary text-brand-dark hover:bg-brand-accent/30'
+      : 'border-brand-dark/25 bg-bg-card text-brand-dark hover:bg-brand-accent/30'
   }`
 
 export const onboardingPlacementOptionTextClass =

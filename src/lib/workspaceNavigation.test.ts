@@ -8,7 +8,7 @@ describe('workspace navigation', () => {
     expect(learner.map(item => item.href)).toEqual(expect.arrayContaining(['/home', '/add', '/courses', '/explore', '/tutor', '/blitz', '/history', '/problem-words', '/library', '/settings']))
     expect(learner.some(item => item.href.startsWith('/admin'))).toBe(false)
     expect(new Set(learner.map(item => item.href)).size).toBe(learner.length)
-    expect(learningPrimary).toHaveLength(3)
+    expect(learningPrimary.map(item => item.href)).toEqual(['/today', '/home', '/add'])
   })
   it('matches nested destinations without matching similarly named siblings', () => {
     const explore = learner.find(item => item.href === '/explore')!

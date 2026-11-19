@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { homePrimaryButton, homeSecondaryButton } from '@/lib/homeStyles'
 import AdminBadge from '@/components/ui/SectionBadge'
 
-export const pageRoot = 'admin-section-root landing-light relative min-w-0 font-body text-brand-dark'
+export const pageRoot = 'admin-section-root relative isolate min-w-0 font-body text-brand-dark'
 export const pageInner = 'relative z-10 mx-auto w-full min-w-0 max-w-full space-y-5 pb-6'
 
 export const glassTile =

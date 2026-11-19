@@ -1,3 +1,4 @@
+import MotionProvider from '@/components/layout/MotionProvider'
 import WorkspaceMotion from '@/components/motion/WorkspaceMotion'
 import { Suspense } from 'react'
 import { DashboardChrome, DashboardChromeFallback } from '@/components/layout/DashboardChrome'
@@ -11,15 +12,17 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <DashboardLayoutWrapper>
-      <PresenceTracker />
-      <Suspense fallback={<DashboardChromeFallback />}>
-        <DashboardChrome />
-      </Suspense>
-      <main id="main-content" className="landing-light relative mx-auto w-full min-w-0 bg-bg-primary font-body text-brand-dark">
-        <SubscriptionAlert />
-        <WorkspaceMotion>{children}</WorkspaceMotion>
-      </main>
-    </DashboardLayoutWrapper>
+    <MotionProvider>
+      <DashboardLayoutWrapper>
+        <PresenceTracker />
+        <Suspense fallback={<DashboardChromeFallback />}>
+          <DashboardChrome />
+        </Suspense>
+        <main id="main-content" className="relative isolate mx-auto w-full min-w-0 bg-bg-primary font-body text-brand-dark">
+          <SubscriptionAlert />
+          <WorkspaceMotion>{children}</WorkspaceMotion>
+        </main>
+      </DashboardLayoutWrapper>
+    </MotionProvider>
   )
 }

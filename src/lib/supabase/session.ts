@@ -2,23 +2,17 @@ import { createServerClient } from '@supabase/ssr'
 import { isAuthApiError } from '@supabase/auth-js'
 import { NextResponse, type NextRequest } from 'next/server'
 import { supabaseAnonKey, supabaseUrl } from '@/lib/supabase/config'
+import { readMfaState } from '@/features/auth/lib/readMfaState'
+import { studyReturnPath } from '@/features/auth/lib/studyReturnPath'
 import { resolveAuthenticatorAssuranceLevel } from '@/features/auth/lib/auth-assurance'
 import { shouldRequireOnboarding } from '@/features/onboarding/lib/onboardingStatus'
 import { isPublicRequestPath } from '@/lib/supabase/publicPaths'
 
-const AUTH_COOKIE_PREFIXES = ['supabase.auth.token', 'sb-']
+const authCookieName = `sb-${new URL(supabaseUrl).hostname.split('.')[0]}-auth-token`
 
 type ClaimsResult = {
+  error?: unknown
   data: { claims: { sub: string; aal?: unknown; amr?: unknown } & Record<string, unknown> } | null
-}
-
-type MfaFactor = {
-  status?: string
-}
-
-type MfaFactorsResult = {
-  data: { all: MfaFactor[] } | null
-  error: unknown | null
 }
 
 type ProfileRoleResult = {
@@ -40,19 +34,8 @@ function clearAuthCookies(
   response: NextResponse,
   cookies: { name: string }[]
 ) {
-  const cookieNames = cookies.map(({ name }) => name)
-
-  for (const name of cookieNames) {
-    const shouldClear = AUTH_COOKIE_PREFIXES.some((prefix) => {
-      return (
-        name === prefix ||
-        name.startsWith(`${prefix}.`) ||
-        name.startsWith(`${prefix}-`) ||
-        name.startsWith(prefix)
-      )
-    })
-
-    if (!shouldClear) continue
+  for (const { name } of cookies) {
+    if (![authCookieName, 'supabase.auth.token'].some(base => name === base || name.startsWith(base + '.'))) continue
 
     response.cookies.set(name, '', {
       path: '/',
@@ -66,11 +49,15 @@ function isInvalidRefreshTokenError(error: unknown) {
 }
 
 async function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
-  const timeoutPromise = new Promise<T>((resolve) => {
-    const timer = setTimeout(() => resolve(fallback), ms)
-    if (timer.unref) timer.unref()
-  })
-  return Promise.race([promise, timeoutPromise])
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([promise, new Promise<T>(resolve => {
+      timer = setTimeout(() => resolve(fallback), ms)
+      timer.unref?.()
+    })])
+  } finally {
+    clearTimeout(timer)
+  }
 }
 
 export async function updateSession(request: NextRequest) {
@@ -91,9 +78,9 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
-          supabaseResponse = NextResponse.next({
-            request,
-          })
+          const previous = supabaseResponse.cookies.getAll()
+          supabaseResponse = NextResponse.next({ request })
+          for (const cookie of previous) supabaseResponse.cookies.set(cookie)
           cookiesToSet.forEach(({ name, value, options }) => {
             const safeOptions = { ...options }
             if (process.env.NODE_ENV !== 'production') {
@@ -110,55 +97,51 @@ export async function updateSession(request: NextRequest) {
   // IMPORTANT: Do not run code between createServerClient and
   // supabase.auth.getClaims(). A simple mistake could make it very hard
   // to debug issues with users being randomly logged out.
-  let invalidSession = false
   const claimsResponse = await withTimeout<ClaimsResult>(
-    supabase.auth.getClaims(),
-    4000,
-    { data: null }
-  ).catch((error: unknown) => {
-    if (isInvalidRefreshTokenError(error)) {
-      invalidSession = true
-    }
-    return { data: null }
-  })
+    supabase.auth.getClaims(), 4000, { data: null },
+  ).catch((error: unknown) => ({ data: null, error }))
 
-  const user = claimsResponse?.data?.claims
-  const currentLevel = resolveAuthenticatorAssuranceLevel(claimsResponse?.data?.claims)
-
-  if (invalidSession) {
+  const user = claimsResponse.data?.claims
+  const currentLevel = resolveAuthenticatorAssuranceLevel(user)
+  if (isInvalidRefreshTokenError(claimsResponse.error)) {
     clearAuthCookies(supabaseResponse, request.cookies.getAll())
+  }
+
+  // A redirect must deliver cookies rotated (or expired) during this same request.
+  function withSessionCookies(response: NextResponse) {
+    for (const cookie of supabaseResponse.cookies.getAll()) response.cookies.set(cookie)
+    response.headers.set('Cache-Control', 'private, no-store')
+    return response
+  }
+
+  function redirectTo(path: string) {
+    return withSessionCookies(NextResponse.redirect(new URL(path, request.url)))
   }
 
   // Public routes that don't require authentication
   const isPublicPath = isPublicRequestPath(pathname)
   const isMFAChallengePath = pathname === '/login/mfa' || pathname.startsWith('/login/mfa/')
+  const studyDestination = studyReturnPath(pathname + request.nextUrl.search)
+  const challengeUrl = studyDestination ? '/login/mfa?next=' + encodeURIComponent(studyDestination) : '/login/mfa'
 
   // MFA Enforcement: If user has factors but is only aal1, redirect to challenge
   if (user && currentLevel === 'aal1' && !isPublicPath && !isMFAChallengePath) {
-    const factorsResponse = await withTimeout<MfaFactorsResult>(
-      supabase.auth.mfa.listFactors(),
-      3000,
-      { data: { all: [] }, error: null }
-    ).catch(() => ({ data: { all: [] }, error: null }))
-    const factors = factorsResponse?.data
-
-    if (factors && factors.all.some((factor) => factor.status === 'verified')) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/login/mfa'
-      return NextResponse.redirect(url)
+    const mfa = await readMfaState(() => supabase.auth.mfa.listFactors())
+    if (mfa.status === 'signed-out') {
+      clearAuthCookies(supabaseResponse, request.cookies.getAll())
+      return redirectTo('/login')
     }
+    if (mfa.status === 'unavailable') {
+      if (pathname.startsWith('/api/')) {
+        return withSessionCookies(NextResponse.json({ error: 'Verificação de acesso indisponível.' }, { status: 503, headers: { 'Retry-After': '5' } }))
+      }
+      return redirectTo(challengeUrl)
+    }
+    if (mfa.status === 'required') return redirectTo(challengeUrl)
   }
 
   if (!user && !isPublicPath) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    const response = NextResponse.redirect(url)
-
-    if (invalidSession) {
-      clearAuthCookies(response, request.cookies.getAll())
-    }
-
-    return response
+    return redirectTo(studyDestination && studyDestination !== '/home' ? '/login?next=' + encodeURIComponent(studyDestination) : '/login')
   }
 
   const isOnboardingPath = pathname === '/onboarding' || pathname.startsWith('/onboarding/')
@@ -215,28 +198,13 @@ export async function updateSession(request: NextRequest) {
 
   // Logged-in users should not land on marketing pages (e.g. PWA cold start at /)
   if (user && (pathname === '/' || pathname === '/register' || pathname === '/forgot-password')) {
-    const url = request.nextUrl.clone()
-    url.pathname = (await resolveOnboardingComplete()) ? '/home' : '/onboarding'
-    const response = NextResponse.redirect(url)
-
-    if (invalidSession) {
-      clearAuthCookies(response, request.cookies.getAll())
-    }
-
-    return response
+    return redirectTo((await resolveOnboardingComplete()) ? '/home' : '/onboarding')
   }
 
   // If user is logged in and tries to access login, redirect to home
   if (user && pathname.startsWith('/login') && (!isMFAChallengePath || currentLevel === 'aal2')) {
-    const url = request.nextUrl.clone()
-    url.pathname = (await resolveOnboardingComplete()) ? '/home' : '/onboarding'
-    const response = NextResponse.redirect(url)
-
-    if (invalidSession) {
-      clearAuthCookies(response, request.cookies.getAll())
-    }
-
-    return response
+    const next = studyReturnPath(request.nextUrl.searchParams.get('next'))
+    return redirectTo((await resolveOnboardingComplete()) ? next ?? '/home' : '/onboarding')
   }
 
   if (
@@ -248,15 +216,7 @@ export async function updateSession(request: NextRequest) {
   ) {
     const completed = await resolveOnboardingComplete()
     if (!completed) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/onboarding'
-      const response = NextResponse.redirect(url)
-
-      if (invalidSession) {
-        clearAuthCookies(response, request.cookies.getAll())
-      }
-
-      return response
+      return redirectTo('/onboarding')
     }
   }
 
@@ -276,20 +236,8 @@ export async function updateSession(request: NextRequest) {
     const profile = profileResponse?.data
 
     if (profile?.role !== 'admin') {
-      const url = request.nextUrl.clone()
-      url.pathname = '/home'
-      const response = NextResponse.redirect(url)
-
-      if (invalidSession) {
-        clearAuthCookies(response, request.cookies.getAll())
-      }
-
-      return response
+      return redirectTo('/home')
     }
-  }
-
-  if (invalidSession) {
-    clearAuthCookies(supabaseResponse, request.cookies.getAll())
   }
 
   return supabaseResponse

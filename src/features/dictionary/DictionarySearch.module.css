@@ -1,24 +1,56 @@
-.page { width:min(100%, 800px); margin:auto; padding:clamp(24px,5vw,64px) var(--workspace-gutter) 100px; color:var(--kivora-ink); }
-.kicker { color:var(--kivora-success); font-size:11px; font-weight:700; letter-spacing:.1em; }
-.page h1 { font-family:var(--font-kivora), sans-serif; font-size:clamp(42px,7vw,64px); line-height:1.1; margin:12px 0 16px; }
-.page h1 span { color:var(--brand-violet); }
-.page header > p:last-child,.note { color:var(--kivora-muted); line-height:1.6; }
-.search,.results { margin-top:28px; padding:clamp(20px,4vw,30px); background:white; border:1px solid var(--kivora-line); border-radius:24px; box-shadow:none; }
-.search label { display:block; font-weight:600; font-size:14px; margin-bottom:10px; }
-.search > div { display:flex; gap:10px; }
-.search input { min-width:0; flex:1; border:1px solid var(--kivora-line); border-radius:12px; padding:12px 14px; min-height:48px; }
-.search button { display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 18px; border-radius:12px; color:white; background:var(--kivora-ink); font-weight:500; }
-.search button:disabled { opacity:.6; }
-.page :is(button,input,a):focus-visible { outline:3px solid var(--brand-blue); outline-offset:3px; }
+.page {
+  width: min(100%, 48rem);
+  margin-inline: auto;
+  padding: clamp(20px, 4vw, 48px) var(--workspace-gutter) 48px;
+  color: var(--kivora-ink);
+}
+.page header p {
+  margin-top: 8px;
+  color: var(--kivora-muted);
+  line-height: 1.55;
+}
+.search { margin-top: var(--workspace-stack-gap); }
+.search label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.search > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.search input {
+  flex: 1 1 12rem;
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 8px 12px;
+  border: 1px solid var(--kivora-line);
+  border-radius: var(--workspace-inset-radius);
+  background: var(--color-bg-card);
+  font-size: 16px;
+}
+.search button {
+  display: inline-flex;
+  min-height: 48px;
+  padding: 8px 16px;
+  align-items: center;
+  gap: 8px;
+}
+.page :is(button,input,a):focus-visible { outline: 2px solid var(--kivora-ink); outline-offset: 3px; }
+.results {
+  margin-top: clamp(28px, 5vw, 44px);
+  padding-top: var(--workspace-stack-gap);
+  border-top: 1px solid var(--kivora-line);
+  overflow-wrap: anywhere;
+}
 .results h2 { font-family:var(--font-kivora),sans-serif; font-size:32px; overflow-wrap:anywhere; }
-.results article { margin-top:20px; padding-top:18px; border-top:1px solid var(--kivora-line); }
+.results article { margin-top:24px; padding-top:16px; border-top:1px solid var(--kivora-line); }
 .meta { color:var(--grammar-ink); font-size:13px; font-weight:700; }
 .sense { margin-top:12px; line-height:1.6; }
 .sense p + p { margin-top:5px; }
 .example {
   margin-top:10px;
   padding:12px 14px;
-  background:#f3f6ed;
+  background:var(--kivora-inset);
   border-inline-start:3px solid #79b94d;
   border-radius:0 12px 12px 0;
   overflow-wrap:anywhere;
@@ -27,15 +59,15 @@
 .exampleEnglish { font-weight:600; color:var(--kivora-ink); }
 .examplePortuguese,.exampleUnavailable { color:var(--kivora-muted); }
 .exampleUnavailable { font-size:12px; }
-.words { margin-top:24px; padding:16px; background:var(--brand-sage); border-radius:14px; }
+.words { margin-top:24px; }
 .words p { font-weight:600; margin-bottom:8px; }
-.words button { background:white; border:1px solid #789684; border-radius:9px; padding:7px 12px; margin:4px 5px 0 0; }
+.words button { min-height:var(--workspace-control-height); background:var(--color-bg-card); border:1px solid var(--kivora-line); border-radius:var(--workspace-inset-radius); padding:6px 12px; margin:4px 6px 0 0; }
 .credit,.note { margin-top:24px; font-size:12px; line-height:1.6; color:var(--kivora-muted); }
 .credit a { text-decoration:underline; text-underline-offset:3px; }
 .error { margin-top:18px; color:var(--kivora-error); }
-@media(max-width:480px) { .search > div { flex-direction:column; } .search button { min-height:48px; } }
+@media(max-width:400px) { .search button { width:100%; justify-content:center; } }
 
-.translation { margin-top:20px; padding:18px; border-radius:14px; background:var(--brand-sage); color:var(--kivora-success); }
+.translation { margin-top:16px; border-inline-start:3px solid var(--brand-sage); padding-inline-start:16px; color:var(--kivora-ink); }
 .translation p { font-size:10px; letter-spacing:.08em; font-weight:700; }
 .translation strong { display:block; margin-top:8px; font-size:22px; line-height:1.35; overflow-wrap:anywhere; }
 .translation small { display:block; margin-top:8px; line-height:1.5; }

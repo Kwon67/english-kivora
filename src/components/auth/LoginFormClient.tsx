@@ -10,7 +10,9 @@ import LoginSubmitButton from '@/components/auth/LoginSubmitButton'
 import PasswordInput from '@/components/auth/PasswordInput'
 import { loginSchema } from '@/lib/schemas'
 
-export default function LoginFormClient() {
+const loginDestinations = ['/home', '/login/mfa', '/admin/dashboard', '/onboarding']
+
+export default function LoginFormClient({ returnTo = null }: { returnTo?: string | null }) {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const startedAtRef = useRef(0)
@@ -46,6 +48,7 @@ export default function LoginFormClient() {
       }
 
       const response = await fetch('/api/login', {
+        signal: AbortSignal.timeout(45_000),
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,17 +64,16 @@ export default function LoginFormClient() {
         ? await response.json().catch(() => null)
         : null
 
-      if (!response?.ok || !loginResult?.success) {
+      if (!response?.ok || loginResult?.success !== true || !loginDestinations.includes(loginResult.redirectUrl)) {
         if (isRedirectingRef.current) return
-        setError(loginResult?.error || 'Falha ao entrar')
+        setError(typeof loginResult?.error === 'string' ? loginResult.error : 'Não foi possível confirmar o login. Verifique a conexão e tente novamente.')
         setLoading(false)
         return
       }
 
-      const redirectUrl =
-        typeof loginResult.redirectUrl === 'string'
-          ? loginResult.redirectUrl
-          : '/home'
+      let redirectUrl = loginResult.redirectUrl
+      if (returnTo && redirectUrl === '/home') redirectUrl = returnTo
+      if (returnTo && redirectUrl === '/login/mfa') redirectUrl += '?next=' + encodeURIComponent(returnTo)
 
       isRedirectingRef.current = true
       setError(null)
@@ -129,14 +131,14 @@ export default function LoginFormClient() {
           <p className="text-center text-xs leading-5 text-brand-secondary w-full">
             Ao entrar, você concorda com os{' '}
             <Link
-              href="/terms"
+              href="/terms" prefetch={false}
               className="font-semibold text-brand-dark underline underline-offset-4"
             >
               Termos de uso
             </Link>{' '}
             e a{' '}
             <Link
-              href="/privacy"
+              href="/privacy" prefetch={false}
               className="font-semibold text-brand-dark underline underline-offset-4"
             >
               Privacidade

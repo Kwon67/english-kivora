@@ -57,9 +57,9 @@ export default function ConfirmDialog({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
-        className={`home-frosted-modal relative my-auto w-full max-w-sm overflow-hidden rounded-container border border-brand-dark ${surfaceClassName}`}
+        className={`workspace-confirmation home-frosted-modal relative my-auto w-full max-w-sm overflow-hidden rounded-container border border-brand-dark ${surfaceClassName}`}
       >
-        <div className="relative border-b border-brand-dark px-5 py-4 sm:px-6">
+        <div className="relative px-5 pt-5 sm:px-6 sm:pt-6">
           <div className="flex items-center gap-3">
             <div
               className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-control ${iconWrapClasses[variant]}`}
@@ -67,10 +67,7 @@ export default function ConfirmDialog({
               <AlertTriangle className="h-5 w-5" strokeWidth={1.5} />
             </div>
             <div className="min-w-0">
-              <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
-                Confirmação
-              </p>
-              <h2 id={titleId} className="mt-2 font-heading text-lg font-bold leading-tight text-brand-dark">
+              <h2 id={titleId} className="font-heading text-xl font-medium leading-tight text-brand-dark">
                 {title}
               </h2>
             </div>

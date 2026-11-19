@@ -15,7 +15,6 @@ import LevelExamClient from '@/features/curriculum/components/LevelExamClient'
 import { isAssignmentCompleted } from '@/features/game/lib/assignmentStatus'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
 import { createClient } from '@/lib/supabase/server'
-import { homeShellBelowContentClass } from '@/lib/homeStyles'
 
 export const dynamic = 'force-dynamic'
 
@@ -54,21 +53,17 @@ export default async function LevelExamPage({ params }: { params: Promise<{ leve
         items={[{ label: 'Trilha', href: '/courses#trilha' }, { label: `Prova final do ${level}` }]}
         className="mb-4 px-1"
       />
-      <div className={`${homeShellBelowContentClass} min-h-[calc(100svh-5rem)]`}>
-        <div className="relative z-10 mx-auto w-full max-w-2xl pb-12">
-          <LevelExamClient
-            level={level}
-            levelLabel={CEFR_LEVEL_LABELS[level]}
-            nextLevel={getNextCurriculumLevel(level)}
-            totalPacks={levelPackIds.size}
-            donePacks={donePackIds.size}
-            questionCount={EXAM_QUESTION_COUNT}
-            passMark={Math.ceil(EXAM_QUESTION_COUNT * EXAM_PASS_RATIO)}
-            cooldownMinutes={getExamCooldownMinutes(state.lastFailedAt)}
-            passedResult={passed ? { score: passed.score, total: passed.total } : null}
-          />
-        </div>
-      </div>
+      <LevelExamClient
+        level={level}
+        levelLabel={CEFR_LEVEL_LABELS[level]}
+        nextLevel={getNextCurriculumLevel(level)}
+        totalPacks={levelPackIds.size}
+        donePacks={donePackIds.size}
+        questionCount={EXAM_QUESTION_COUNT}
+        passMark={Math.ceil(EXAM_QUESTION_COUNT * EXAM_PASS_RATIO)}
+        cooldownMinutes={getExamCooldownMinutes(state.lastFailedAt)}
+        passedResult={passed ? { score: passed.score, total: passed.total } : null}
+      />
     </>
   )
 }

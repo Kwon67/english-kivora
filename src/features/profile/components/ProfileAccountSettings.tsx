@@ -6,7 +6,6 @@ import WeeklyReportPreference from '@/features/profile/components/WeeklyReportPr
 import {
   settingsGroup,
   settingsGroupLabel,
-  settingsNoteBox,
 } from '@/features/profile/lib/settingsPageUi'
 
 type MFAFactor = {
@@ -30,7 +29,7 @@ export default function ProfileAccountSettings({
     <div className="space-y-6 sm:space-y-8">
       <section id="preferences" className="scroll-mt-28 space-y-2.5" aria-labelledby="preferences-title">
         <h2 id="preferences-title" className={settingsGroupLabel}>
-          Preferências
+          Notificações
         </h2>
         <div className={settingsGroup}>
           <WeeklyReportPreference initialEnabled={initialWeeklyReportEnabled} embedded />
@@ -44,11 +43,6 @@ export default function ProfileAccountSettings({
         </h2>
         <div className={settingsGroup}>
           <MFAEnrollment initialFactors={initialFactors} />
-        </div>
-        <div className={settingsNoteBox}>
-          <p className="font-body text-xs leading-relaxed text-brand-secondary">
-            O Kivora também aplica limites automáticos contra tentativas repetidas de acesso.
-          </p>
         </div>
       </section>
     </div>

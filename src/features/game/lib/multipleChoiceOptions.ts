@@ -3,7 +3,7 @@ import type { Card } from '../../../types/database.types'
 
 export const MULTIPLE_CHOICE_WRONG_OPTIONS_COUNT = 3
 
-type DistractorKind = 'deck' | 'hybrid' | 'micro'
+type DistractorKind = 'deck' | 'micro'
 
 type DistractorCandidate = {
   kind: DistractorKind
@@ -41,7 +41,6 @@ const PORTUGUESE_FILLER_WORDS = new Set([
   'umas',
 ])
 
-const PORTUGUESE_CONNECTORS = new Set(['da', 'das', 'de', 'do', 'dos'])
 
 /**
  * Trocas de UMA palavra que mantêm a frase gramatical e mudam o sentido — o distrator ideal:
@@ -77,11 +76,9 @@ const MICRO_TRAPS: Array<{ from: string; to: string }> = [
   // `mais ↔ menos` ("não moram MAIS aqui" é "anymore", e "moram menos aqui" não é frase).
 ]
 
-/** Pontuação das trocas semânticas; os prefixos de fallback usam valores menores para nunca passar por elas. */
+/** Pontuação das trocas semânticas limitadas. */
 const MICRO_TRAP_SCORE = 94
 
-const FALLBACK_TRAP_PREFIXES = ['Não', 'Talvez', 'Quase']
-const FALLBACK_TRAP_SUFFIXES = ['agora', 'hoje', 'também']
 
 function getPortugueseTranslation(card: Card) {
   return sanitizeOption(card.portuguese_translation || card.pt || '')
@@ -123,12 +120,6 @@ function getContentTokens(value: string) {
 
 function splitWords(value: string) {
   return sanitizeOption(value).split(' ').filter(Boolean)
-}
-
-function contentIndexes(words: string[]) {
-  return words
-    .map((word, index) => ({ index, normalized: normalizeToken(word) }))
-    .filter(({ normalized }) => normalized && !PORTUGUESE_FILLER_WORDS.has(normalized))
 }
 
 function overlapScore(left: string[], right: string[]) {
@@ -181,73 +172,6 @@ function replaceWord(words: string[], index: number, replacement: string) {
   return nextWords.join(' ')
 }
 
-function usesCompatibleConnector(words: string[], targetIndex: number, donorWords: string[], donorIndex: number) {
-  const targetPrevious = normalizeToken(words[targetIndex - 1] || '')
-  const donorPrevious = normalizeToken(donorWords[donorIndex - 1] || '')
-  return PORTUGUESE_CONNECTORS.has(targetPrevious) === PORTUGUESE_CONNECTORS.has(donorPrevious)
-}
-
-function buildHybridDistractors(correctTranslation: string, donorTranslations: string[], blockedOptions: Set<string>) {
-  const candidates: DistractorCandidate[] = []
-  const correctWords = splitWords(correctTranslation)
-  const correctContent = contentIndexes(correctWords)
-
-  if (correctContent.length === 0) return candidates
-
-  for (const donorTranslation of donorTranslations) {
-    const donorWords = splitWords(donorTranslation)
-    const donorContent = contentIndexes(donorWords)
-
-    if (donorContent.length === 0) continue
-
-    for (const [contentOffset, correctItem] of correctContent.entries()) {
-      const preferredDonor = donorContent[contentOffset] || donorContent[donorContent.length - 1]
-      if (!preferredDonor) continue
-
-      const donorWord = donorWords[preferredDonor.index]
-      if (!donorWord || normalizeToken(donorWord) === correctItem.normalized) continue
-      if (!usesCompatibleConnector(correctWords, correctItem.index, donorWords, preferredDonor.index)) continue
-
-      addCandidate(
-        candidates,
-        blockedOptions,
-        replaceWord(correctWords, correctItem.index, donorWord),
-        'hybrid',
-        88 - Math.abs(correctItem.index - preferredDonor.index) * 3
-      )
-    }
-
-    const correctFirst = correctContent[0]
-    const donorFirst = donorContent[0]
-    if (!correctFirst || !donorFirst) continue
-
-    const correctTail = correctWords.slice(correctFirst.index + 1).join(' ')
-    const donorTail = donorWords.slice(donorFirst.index + 1).join(' ')
-
-    if (correctTail && donorWords[donorFirst.index]) {
-      addCandidate(
-        candidates,
-        blockedOptions,
-        `${donorWords[donorFirst.index]} ${correctTail}`,
-        'hybrid',
-        84
-      )
-    }
-
-    if (donorTail && correctWords[correctFirst.index]) {
-      addCandidate(
-        candidates,
-        blockedOptions,
-        `${correctWords[correctFirst.index]} ${donorTail}`,
-        'hybrid',
-        82
-      )
-    }
-  }
-
-  return candidates
-}
-
 function preserveCase(source: string, replacement: string) {
   if (source === source.toUpperCase()) return replacement.toUpperCase()
   if (source[0] === source[0]?.toUpperCase()) {
@@ -277,21 +201,6 @@ function buildMicroDistractors(correctTranslation: string, blockedOptions: Set<s
   return candidates
 }
 
-function buildFallbackDistractors(correctTranslation: string, blockedOptions: Set<string>) {
-  const candidates: DistractorCandidate[] = []
-  const lowerCorrect = `${correctTranslation[0]?.toLowerCase() || ''}${correctTranslation.slice(1)}`
-
-  for (const prefix of FALLBACK_TRAP_PREFIXES) {
-    addCandidate(candidates, blockedOptions, `${prefix} ${lowerCorrect}`, 'micro', 34)
-  }
-
-  for (const suffix of FALLBACK_TRAP_SUFFIXES) {
-    addCandidate(candidates, blockedOptions, `${correctTranslation} ${suffix}`, 'micro', 30)
-  }
-
-  return candidates
-}
-
 function uniqueCandidates(candidates: DistractorCandidate[]) {
   const seen = new Set<string>()
   const unique: DistractorCandidate[] = []
@@ -307,24 +216,12 @@ function uniqueCandidates(candidates: DistractorCandidate[]) {
   return unique
 }
 
-/**
- * Ordem de preferência: uma troca semântica (no máximo UMA), depois frases REAIS do deck, e só
- * então as mutações sintéticas (híbridas e prefixos), quando o deck não tem frases suficientes.
- *
- * Antes era o contrário — os dois melhores sintéticos entravam ANTES do deck em toda questão, e
- * era daí que vinham "Nós não temos problema. para isso" e "Isso não fala português". Uma frase
- * do deck é sempre português de verdade; a mutação, só às vezes. Com o deck na frente, a única
- * forma de acertar é entender o inglês.
- */
+/** Use at most one limited semantic swap, then existing deck phrases. Never pad a short deck. */
 function pickDistractors(candidates: DistractorCandidate[], count: number) {
   const byScore = (left: DistractorCandidate, right: DistractorCandidate) => right.score - left.score
   const micro = candidates.filter((candidate) => candidate.kind === 'micro' && candidate.score >= MICRO_TRAP_SCORE).sort(byScore)
   const deck = candidates.filter((candidate) => candidate.kind === 'deck').sort(byScore)
-  const synthetic = candidates
-    .filter((candidate) => candidate.kind !== 'deck' && !micro.includes(candidate))
-    .sort(byScore)
-
-  const ordered = uniqueCandidates([...micro.slice(0, 1), ...deck, ...synthetic])
+  const ordered = uniqueCandidates([...micro.slice(0, 1), ...deck])
   return ordered.slice(0, count)
 }
 
@@ -334,12 +231,12 @@ export function buildMultipleChoiceOptions(
   wrongOptionsCount = MULTIPLE_CHOICE_WRONG_OPTIONS_COUNT
 ) {
   const correctTranslation = getPortugueseTranslation(card)
+  if (!correctTranslation) return []
   const blockedOptions = new Set([
     normalizeOption(correctTranslation),
     ...(card.accepted_translations || []).map(normalizeOption),
   ])
   const otherCards = allCards.filter((item) => item.id !== card.id)
-  const donorTranslations = otherCards.map(getPortugueseTranslation).filter(Boolean)
   const candidates: DistractorCandidate[] = []
 
   for (const otherCard of otherCards) {
@@ -353,9 +250,7 @@ export function buildMultipleChoiceOptions(
   }
 
   candidates.push(
-    ...buildMicroDistractors(correctTranslation, blockedOptions),
-    ...buildHybridDistractors(correctTranslation, donorTranslations, blockedOptions),
-    ...buildFallbackDistractors(correctTranslation, blockedOptions)
+    ...buildMicroDistractors(correctTranslation, blockedOptions)
   )
 
   const wrongOptions = pickDistractors(uniqueCandidates(candidates), wrongOptionsCount).map((candidate) => candidate.text)

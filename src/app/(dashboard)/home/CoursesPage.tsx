@@ -1,3 +1,4 @@
+import PracticePathEntry from '@/features/curriculum/components/PracticePathEntry'
 import WorkspaceSections from '@/components/ui/WorkspaceSections'
 import { Card } from '@/components/shadcn/card'
 import Link from 'next/link'
@@ -640,6 +641,7 @@ export default async function HomePage({
         <DashboardOverview
           username={profile?.username ?? null}
           level={learningPath.currentLevel}
+          estimatedLevel={cefrProfile.level}
           completed={learningPath.doneCount}
           total={learningPath.totalCount}
           completionRate={completionRate}
@@ -666,6 +668,7 @@ export default async function HomePage({
             )}
           </div>
 
+          <PracticePathEntry/>
           {learningPath.totalCount > 0 ? (
             <LearningPath path={learningPath} />
           ) : isRecentSignup ? (

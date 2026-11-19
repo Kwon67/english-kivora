@@ -1,8 +1,9 @@
 'use client'
 
 import HydratedAuthForm from '@/components/auth/HydratedAuthForm'
+import ResendConfirmation from './ResendConfirmation'
 
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useRef, useState } from 'react'
 import Link from 'next/link'
 import { AlertCircle, ArrowLeft, CheckCircle2, Eye, EyeOff, Loader2, Mail } from 'lucide-react'
 import { requestSignupVerification } from '@/app/signup-actions'
@@ -25,6 +26,7 @@ const inputClass =
 const statusBaseClass = 'flex w-full items-start gap-3 rounded-container border px-4 py-3 text-sm font-medium'
 
 export default function RegisterFormClient() {
+  const submitLock = useRef(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -34,7 +36,8 @@ export default function RegisterFormClient() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (loading) return
+    if (submitLock.current) return
+    submitLock.current = true
 
     setError(null)
     setLoading(true)
@@ -61,6 +64,7 @@ export default function RegisterFormClient() {
     } catch {
       setError('Não foi possível enviar o link. Tente novamente em instantes.')
     } finally {
+      submitLock.current = false
       setLoading(false)
     }
   }
@@ -80,6 +84,7 @@ export default function RegisterFormClient() {
           </div>
         </div>
         <Link href="/login" className={submitButtonClass}>Ir para o login</Link>
+        <ResendConfirmation email={details.email} />
         <button
           type="button"
           onClick={() => setAwaitingConfirmation(false)}
@@ -233,11 +238,11 @@ export default function RegisterFormClient() {
 
       <p className="w-full text-center text-xs leading-5 text-brand-secondary">
         Ao continuar, você concorda com os{' '}
-        <Link href="/terms" className="font-semibold text-brand-dark underline underline-offset-4">
+        <Link href="/terms" prefetch={false} className="font-semibold text-brand-dark underline underline-offset-4">
           Termos de uso
         </Link>{' '}
         e a{' '}
-        <Link href="/privacy" className="font-semibold text-brand-dark underline underline-offset-4">
+        <Link href="/privacy" prefetch={false} className="font-semibold text-brand-dark underline underline-offset-4">
           Privacidade
         </Link>
         .

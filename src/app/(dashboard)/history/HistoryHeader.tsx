@@ -1,26 +1,23 @@
-import { BarChart3, BookOpen } from 'lucide-react'
+import Link from 'next/link'
 import WorkspaceHeading from '@/components/ui/WorkspaceHeading'
-import { homeSecondaryButton } from '@/lib/homeStyles'
+import styles from './History.module.css'
 
 export default function HistoryHeader({ filterDate }: { filterDate?: string }) {
   return (
     <WorkspaceHeading
       title="Seu histórico"
-      breadcrumb="Histórico"
-      description={
-        filterDate
-          ? `Sessões de ${filterDate.split('-').reverse().join('/')}`
-          : undefined
-      }
+      description={filterDate ? `Sessões de ${filterDate.split('-').reverse().join('/')}` : 'Acompanhe suas sessões, revisões e evolução.'}
       actions={
-        <>
-          <a href="#graficos" className={homeSecondaryButton}>
-            <BarChart3 size={16} /> Gráficos
-          </a>
-          <a href="#sessoes" className={homeSecondaryButton}>
-            <BookOpen size={16} /> Sessões
-          </a>
-        </>
+        <div className={styles.headerActions}>
+          <form action="/history#sessoes" className={styles.filter}>
+            <label htmlFor="history-date">Data da sessão</label>
+            <input key={filterDate ?? 'recent'} id="history-date" name="date" type="date" required defaultValue={filterDate} />
+            <button type="submit" className="btn-ghost">Filtrar</button>
+            {filterDate && <Link href="/history#sessoes" className="product-text-link">Limpar data</Link>}
+          </form>
+          <a href="#graficos" className="product-text-link">Gráficos</a>
+          <a href="#sessoes" className="product-text-link">Sessões</a>
+        </div>
       }
     />
   )

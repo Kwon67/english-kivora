@@ -8,7 +8,6 @@ import { getNextLearnerLevel } from '@/features/cefr/lib/cefrLevels'
 import { getCurriculumGate } from '@/features/learning/lib/levelGate'
 import { getRoutinePackIds } from '@/features/study/lib/routineAssignments'
 import { getAppDateString } from '@/lib/timezone'
-import SectionBadge from '@/components/ui/SectionBadge'
 import SkillTree from './SkillTree'
 import ExploreHeader from './ExploreHeader'
 import {
@@ -75,7 +74,7 @@ export default async function ExplorePage() {
 
   return (
     <div className={homeShellClass}>
-      <div className="relative z-10 mx-auto max-w-6xl space-y-4 pb-6 animate-fade-in">
+      <div className="discovery-catalog relative z-10 mx-auto max-w-4xl space-y-5 pb-6">
         <ExploreHeader featuredPack={catalogLoadFailed ? undefined : featuredPack} />
 
         {catalogLoadFailed && (
@@ -107,8 +106,7 @@ export default async function ExplorePage() {
 
         <section id="packs" className="space-y-4">
           <div>
-            <SectionBadge label="Catálogo" />
-            <h2 className={`mt-3 ${homeSectionTitleClass}`}>Sua trilha por nível</h2>
+            <h2 className={homeSectionTitleClass}>Sua trilha por nível</h2>
             <p className="mt-2 max-w-xl font-body text-sm text-brand-secondary">
               {gate.stretch
                 ? `Nível ${gate.current}, com desafios ${gate.stretch} disponíveis. Avance na trilha para desbloquear os demais.`

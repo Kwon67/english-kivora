@@ -16,8 +16,10 @@ export type WorkspaceNavigationGroup = { label: string; items: WorkspaceDestinat
 
 export const learningNavigation: WorkspaceNavigationGroup[] = [
   { label: 'Seu inglês', items: [
-    { href: '/home', label: 'Hoje', description: 'Revisões que acompanham você', icon: Home, children: ['/review'] },
+    { href: '/today', label: 'Hoje', description: 'Uma situação para usar seu inglês', icon: Home },
+    { href: '/home', label: 'Revisão', description: 'Relembre suas palavras e frases', icon: Brain, children: ['/review'] },
     { href: '/courses', label: 'Trilhas', description: 'Seu caminho do A1 ao C2', icon: BookOpen, children: ['/study', '/exam'] },
+    { href: '/practice-path', label: 'Prática por competências', description: 'Leia, converse e aplique em novos contextos', icon: BookText },
     { href: '/tutor', label: 'Conversar', description: 'Inglês em situações reais', icon: MessageSquare },
   ] },
   { label: 'Suas palavras', items: [
@@ -53,8 +55,8 @@ export function destinationIsActive(pathname: string, destination: WorkspaceDest
   return matches(destination.href) || Boolean(destination.children?.some(matches))
 }
 export const learningPrimary = [
-  { ...learningNavigation[0].items[0], label: 'Revisar' },
+  learningNavigation[0].items[0],
+  learningNavigation[0].items[1],
   { ...learningNavigation[1].items[1], label: 'Adicionar' },
-  { ...learningNavigation[1].items[2], label: 'Coleção' },
 ]
 export const adminPrimary = administrationNavigation[0].items.slice(0, 4)

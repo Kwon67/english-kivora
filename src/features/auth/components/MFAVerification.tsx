@@ -10,9 +10,10 @@ import { landingInputClass } from '@/lib/landingStyles'
 
 interface MFAVerificationProps {
   factorId: string
+  destination: string
 }
 
-export default function MFAVerification({ factorId }: MFAVerificationProps) {
+export default function MFAVerification({ factorId, destination }: MFAVerificationProps) {
   const [code, setCode] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -29,7 +30,7 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
         setError(result.error)
       } else {
         logger.info('MFA verified successfully')
-        window.location.replace('/home')
+        window.location.replace(destination)
       }
     } catch (err: unknown) {
       setError('Erro ao verificar código. Tente novamente.')
@@ -65,7 +66,7 @@ export default function MFAVerification({ factorId }: MFAVerificationProps) {
             />
           </div>
           {error && (
-            <div className="flex w-full items-start gap-3 overflow-hidden rounded-container border border-error/30 bg-error-soft px-4 py-3 text-sm font-medium text-[var(--color-error)]">
+            <div role="alert" className="flex w-full items-start gap-3 overflow-hidden rounded-container border border-error/30 bg-error-soft px-4 py-3 text-sm font-medium text-[var(--color-error)]">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
               <span>{error}</span>
             </div>

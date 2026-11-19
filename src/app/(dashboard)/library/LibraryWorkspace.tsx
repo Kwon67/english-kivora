@@ -39,13 +39,19 @@ export default function LibraryWorkspace({
   const rangeStart = (page - 1) * 50 + 1
 
   return (
-    <ProductMotion className="collection-workspace">
+    <ProductMotion className="collection-workspace" subtle>
       <header className="collection-heading">
         <h1>Minha coleção</h1>
         {!loadError && <p>{wordCount(totalCards)} em {packs.length} {packs.length === 1 ? 'grupo' : 'grupos'}</p>}
       </header>
 
       <div className="collection-toolbar">
+        <form className="collection-search" action="/library" role="search" aria-label="Buscar na coleção">
+          <Search size={19} aria-hidden="true" />
+          <label className="sr-only" htmlFor="collection-query">Buscar palavra</label>
+          <input key={query} id="collection-query" name="q" type="search" defaultValue={query} placeholder="Buscar palavra" maxLength={100} />
+          <button type="submit">Buscar</button>
+        </form>
         <div className="collection-toolbar-actions">
           <Link className="product-primary" href="/add"><Plus size={18} aria-hidden="true" />Adicionar palavra</Link>
           <button
@@ -60,12 +66,6 @@ export default function LibraryWorkspace({
             {tools ? 'Fechar ferramentas' : 'Importar e organizar'}
           </button>
         </div>
-        <form className="collection-search" action="/library" role="search" aria-label="Buscar na coleção">
-          <Search size={19} aria-hidden="true" />
-          <label className="sr-only" htmlFor="collection-query">Buscar palavra</label>
-          <input key={query} id="collection-query" name="q" type="search" defaultValue={query} placeholder="Buscar palavra" maxLength={100} />
-          <button type="submit">Buscar</button>
-        </form>
       </div>
 
       <section className="collection-tools" id="collection-tools" aria-label="Importar e organizar" hidden={!tools}>
@@ -75,6 +75,7 @@ export default function LibraryWorkspace({
       <section className="collection-results" aria-labelledby="collection-results-title">
         <div className="collection-results-heading">
           <h2 id="collection-results-title">{query ? 'Resultados da busca' : 'Grupos de palavras'}</h2>
+          {query && <Link className="product-text-link" href="/library">Limpar busca</Link>}
           {!loadError && rangeStart <= matchCount && <p className="collection-page-count">
             {rangeStart === 1 && matchCount <= 50 ? wordCount(matchCount) : `${rangeStart}–${Math.min(page * 50, matchCount)} de ${wordCount(matchCount)}`}
           </p>}
@@ -94,9 +95,11 @@ export default function LibraryWorkspace({
                   <ChevronDown className="collection-chevron" size={18} aria-hidden="true" />
                 </summary>
                 <div className="collection-words">
-                  {pack.words.map(word => (
-                    <div key={word.id} className="collection-word"><strong lang="en">{word.en}</strong><span>{word.pt}</span></div>
-                  ))}
+                  {pack.words.length > 0 && <ul>
+                    {pack.words.map(word => (
+                      <li key={word.id} className="collection-word"><strong lang="en">{word.en}</strong><span>{word.pt}</span></li>
+                    ))}
+                  </ul>}
                   {!pack.words.length && <p>Nenhuma palavra neste grupo.</p>}
                   <div className="collection-group-actions">
                     {pack.assignmentId && <Link href={`/play/${pack.assignmentId}`}>Praticar esta coleção <ArrowRight size={16} aria-hidden="true" /></Link>}
@@ -109,10 +112,10 @@ export default function LibraryWorkspace({
         ) : (
           <div className="collection-empty">
             <p>{query ? 'Nenhuma palavra encontrada.' : 'Sua primeira palavra começa aqui.'}</p>
-            {query ? <Link className="product-text-link" href="/library">Limpar busca</Link> : <Link className="product-primary" href="/add">Adicionar palavra <Plus size={18} aria-hidden="true" /></Link>}
+            {!query && <Link className="product-primary" href="/add">Adicionar palavra <Plus size={18} aria-hidden="true" /></Link>}
           </div>
         )}
-        {(page > 1 || page * 50 < matchCount) && <nav className="collection-pagination" aria-label="Páginas da coleção">
+        {(page > 1 || page * 50 < matchCount) && <nav className="workspace-pagination collection-pagination" aria-label="Páginas da coleção">
           {page > 1 && <Link href={pageLink(page - 1)}>Anterior</Link>}
           <span>Página {page}</span>
           {page * 50 < matchCount && <Link href={pageLink(page + 1)}>Próxima <ArrowRight size={16} aria-hidden="true" /></Link>}

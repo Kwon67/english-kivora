@@ -1,3 +1,4 @@
+import styles from '@/features/admin/components/AdminWorkspace.module.css'
 import { WorkspaceTableBody } from '@/components/ui/WorkspacePagination'
 import WorkspaceSections from '@/components/ui/WorkspaceSections'
 import Link from 'next/link'
@@ -25,15 +26,12 @@ import { isAssignmentCompleted } from '@/features/game/lib/assignmentStatus'
 import { isPlayableAssignmentGameMode } from '@/features/review/lib/reviewSchedules'
 import { homeIconGlyphSm } from '@/lib/homeStyles'
 import {
-  adminDashboardActionTile,
   adminDashboardIconBox,
   adminDashboardMemberAvatar,
-  adminDashboardPanel,
   adminDashboardPrimaryBtn,
   adminDashboardSectionHeader,
   adminDashboardSectionTitle,
   adminDashboardShell,
-  adminDashboardSpotlightCard,
   adminDashboardStatusPill,
   adminDashboardTelemetryBand,
 } from '@/features/admin/lib/adminDashboardUi'
@@ -52,7 +50,6 @@ import type {
   Pack,
   Profile,
 } from '@/types/database.types'
-import SectionBadge from '@/components/ui/SectionBadge'
 import { redirect } from 'next/navigation'
 
 const DASHBOARD_MEMBER_SELECT = 'id, username, role, last_seen_at' as const
@@ -113,7 +110,8 @@ export default async function AdminDashboard({
 
   if (adminProfile?.role !== 'admin') redirect('/home')
 
-  const supabase = createAdminClient() ?? sessionClient
+  const supabase = createAdminClient()
+  if (!supabase) throw new Error('A consulta administrativa está temporariamente indisponível.')
   const today = getAppDateString()
   const todayLabel = formatAppDate(new Date(), {
     day: 'numeric',
@@ -265,7 +263,7 @@ export default async function AdminDashboard({
 
 
   return (
-    <div className={adminDashboardShell}>
+    <div className={`${adminDashboardShell} ${styles.workspace}`}>
       <div className="relative z-10 mx-auto w-full min-w-0 max-w-full space-y-6 pb-8 sm:space-y-8">
 <AdminMotionSection>
           <AdminDashboardHeader todayLabel={todayLabel} />
@@ -328,11 +326,11 @@ export default async function AdminDashboard({
         </AdminMotionSection><AdminMotionSection>
             <section
               id="desempenho"
-              className={`${adminDashboardPanel} scroll-mt-4`}
+              className={`${styles.panel} scroll-mt-4`}
             >
               <div className={adminDashboardSectionHeader}>
                 <div>
-                  <SectionBadge label="Quadro operacional" animate={false} />
+
                   <h2 className={`${adminDashboardSectionTitle} mt-3`}>
                     Desempenho dos alunos
                     {activeDate ? (
@@ -367,19 +365,22 @@ export default async function AdminDashboard({
 
                 <table role="table" className="admin-responsive-table w-full text-left text-sm">
                   <thead>
-                    <tr className="home-frosted-subtle border-b border-brand-dark/15 font-heading text-2xs font-bold uppercase tracking-[0.1em] text-brand-secondary">
-                      <th className="px-4 py-3 sm:px-5">Membro</th>
-                      <th className="px-3 py-3 text-center">Ses.</th>
-                      <th className="px-3 py-3 text-center">Ac.</th>
-                      <th className="px-3 py-3 text-center">Er.</th>
-                      <th className="px-3 py-3 text-center">Taxa</th>
-                      <th className="px-3 py-3 text-center">Sequência</th>
-                      <th className="px-3 py-3 text-center">Concluído</th>
-                      <th className="px-4 py-3 sm:px-5">Status</th>
+                    <tr className="border-b border-brand-dark/15 font-heading text-2xs font-bold uppercase tracking-[0.1em] text-brand-secondary">
+                      <th scope="col" className="px-4 py-3 sm:px-5">Membro</th>
+                      <th scope="col" className="px-3 py-3 text-center">Sessões</th>
+                      <th scope="col" className="px-3 py-3 text-center">Acertos</th>
+                      <th scope="col" className="px-3 py-3 text-center">Erros</th>
+                      <th scope="col" className="px-3 py-3 text-center">Taxa</th>
+                      <th scope="col" className="px-3 py-3 text-center">Sequência</th>
+                      <th scope="col" className="px-3 py-3 text-center">Concluído</th>
+                      <th scope="col" className="px-4 py-3 sm:px-5">Status</th>
                     </tr>
                   </thead>
 
                   <WorkspaceTableBody pageSize={4} columns={8} className="divide-y divide-brand-dark/10">
+                    {memberRows.length === 0 && (
+                      <tr><td colSpan={8} className="p-4 text-brand-secondary">Nenhum membro para exibir.</td></tr>
+                    )}
                     {memberRows.map((row) => {
                       const total = row.totalCorrect + row.totalWrong
                       const pct =
@@ -403,7 +404,7 @@ export default async function AdminDashboard({
                               className="group flex items-center gap-3"
                             >
                               <div
-                                className={`${adminDashboardMemberAvatar} transition-transform group-hover:scale-105`}
+                                className={`${adminDashboardMemberAvatar} transition-transform `}
                               >
                                 <UserRound className="h-5 w-5" aria-hidden />
                               </div>
@@ -484,7 +485,7 @@ export default async function AdminDashboard({
                               </span>
                             ) : row.allCompleted ? (
                               <span
-                                className="tone-chip"
+                                className="tone-chip text-[var(--kivora-ink)]"
                                 data-tone="success"
                               >
                                 <CheckCircle2
@@ -520,13 +521,13 @@ export default async function AdminDashboard({
           >
             {spotlight.length > 0 ? (
               <AdminMotionSection>
-                <section className={adminDashboardPanel}>
+                <section className={styles.panel}>
                   <div className="mb-5 flex items-center gap-3">
                     <span className={adminDashboardIconBox}>
                       <Medal className={homeIconGlyphSm} strokeWidth={1.5} />
                     </span>
                     <div>
-                      <SectionBadge label="Destaques" animate={false} />
+
                       <h2
                         className={`${adminDashboardSectionTitle} mt-2 text-xl sm:text-2xl`}
                       >
@@ -546,7 +547,7 @@ export default async function AdminDashboard({
                       return (
                         <div
                           key={row.memberId}
-                          className={adminDashboardSpotlightCard}
+                          className={styles.insightRow}
                         >
                           <div className="flex items-center justify-between gap-2">
                             <span className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
@@ -605,7 +606,7 @@ export default async function AdminDashboard({
               <AdminMotionItem>
                 <Link
                   href="/admin/reports"
-                  className={adminDashboardActionTile}
+                  className={styles.actionRow}
                 >
                   <div className="flex min-w-0 items-center gap-3">
                     <span className={adminDashboardIconBox}>
@@ -616,14 +617,14 @@ export default async function AdminDashboard({
                     </span>
                     <span className="truncate">Relatórios completos</span>
                   </div>
-                  <ArrowRight className="h-4 w-4 shrink-0 text-brand-secondary transition-transform group-hover:translate-x-0.5 group-hover:text-white" />
+                  <ArrowRight className="h-4 w-4 shrink-0 text-brand-secondary transition-transform group-hover:translate-x-0.5 " />
                 </Link>
               </AdminMotionItem>
 
               <AdminMotionItem>
                 <Link
                   href="/admin/members"
-                  className={adminDashboardActionTile}
+                  className={styles.actionRow}
                 >
                   <div className="flex min-w-0 items-center gap-3">
                     <span className={adminDashboardIconBox}>
@@ -631,7 +632,7 @@ export default async function AdminDashboard({
                     </span>
                     <span className="truncate">Gerenciar membros</span>
                   </div>
-                  <ArrowRight className="h-4 w-4 shrink-0 text-brand-secondary transition-transform group-hover:translate-x-0.5 group-hover:text-white" />
+                  <ArrowRight className="h-4 w-4 shrink-0 text-brand-secondary transition-transform group-hover:translate-x-0.5 " />
                 </Link>
               </AdminMotionItem>
             </AdminMotionSection>

@@ -68,7 +68,7 @@ describe('buildMultipleChoiceOptions', () => {
     expect(options).toContain('Ela não está aqui amanhã.')
   })
 
-  it('só recorre a mutações sintéticas quando o deck não preenche as três opções', () => {
+  it('não inventa frases para preencher alternativas ausentes', () => {
     const cards = [
       makeCard('1', 'Morning breeze', 'Brisa da manhã'),
       makeCard('2', 'Silent library', 'Biblioteca silenciosa'),
@@ -76,8 +76,8 @@ describe('buildMultipleChoiceOptions', () => {
 
     const options = buildMultipleChoiceOptions(cards[0], cards)
 
-    expect(options).toHaveLength(4)
-    expect(new Set(options).size).toBe(4)
+    expect(options).toHaveLength(2)
+    expect(new Set(options).size).toBe(2)
     expect(options).toContain('Brisa da manhã')
     expect(options).toContain('Biblioteca silenciosa')
   })

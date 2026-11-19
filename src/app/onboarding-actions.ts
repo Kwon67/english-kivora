@@ -178,12 +178,7 @@ async function loadCatPool(): Promise<CatPoolCard[]> {
   return cachedCatPool
 }
 
-async function loadManualPublicPacks(): Promise<StarterPackRow[]> {
-  const catalog = await loadPublicPacks()
-  return catalog.filter((pack) => isManualCatPack(pack))
-}
-
-async function loadPublicPacks(): Promise<StarterPackRow[]> {
+async function loadManualPublicPacks(): Promise<StarterPackRow[] | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('packs')
@@ -194,10 +189,10 @@ async function loadPublicPacks(): Promise<StarterPackRow[]> {
 
   if (error) {
     console.error('Failed to load public packs for onboarding', error)
-    return []
+    return null
   }
 
-  return (data || []) as StarterPackRow[]
+  return ((data ?? []) as StarterPackRow[]).filter(isManualCatPack)
 }
 
 async function resolveLearnerLevel(
@@ -438,6 +433,7 @@ export async function assignOnboardingStarterPack(input: {
   }
 
   const catalog = await loadManualPublicPacks()
+  if (!catalog) return { ok: false, error: 'Não foi possível consultar os packs. Tente novamente.' }
   const level = await resolveLearnerLevel(user.id, user.user_metadata)
   const allowed = rankStarterPacks(catalog, { level, interests: [] })
     .some((pack) => pack.id === validated.data.packId)
@@ -550,9 +546,7 @@ export async function getOnboardingStarterPackOptions(input: {
   const level = await resolveLearnerLevel(user.id, user.user_metadata)
   const catalog = await loadManualPublicPacks()
 
-  if (catalog.length === 0) {
-    return { ok: false, error: 'Nenhum pack público disponível no momento.' }
-  }
+  if (!catalog) return { ok: false, error: 'Não foi possível consultar os packs. Tente novamente.' }
 
   const packs = rankStarterPacks(catalog, { level, interests }).slice(0, 3)
   const recommended = pickStarterPack(catalog, { level, interests })
@@ -613,6 +607,7 @@ export async function completeOnboardingSetup(input: {
 
   if (validated.data.packAlreadyAssigned && validated.data.packId) {
     const catalog = await loadManualPublicPacks()
+    if (!catalog) return { ok: false, error: 'Não foi possível consultar os packs. Tente novamente.' }
     const allowed = catalog.some((pack) => pack.id === validated.data.packId)
     if (!allowed) {
       return { ok: false, error: 'Pack sugerido indisponível.' }

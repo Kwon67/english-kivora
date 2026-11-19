@@ -1,11 +1,12 @@
 'use client'
 
+import styles from '@/features/admin/components/AdminWorkspace.module.css'
+
 import { WorkspaceList } from '@/components/ui/WorkspacePagination'
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { ArrowUpRight, Flame, Search, UserRound } from 'lucide-react'
 import DeleteMemberButton from '../dashboard/DeleteMemberButton'
-import SectionBadge from '@/components/ui/SectionBadge'
 import {
   adminMembersDangerAction,
   adminMembersField,
@@ -13,7 +14,6 @@ import {
   adminMembersFilterPillActive,
   adminMembersFilterPillIdle,
   adminMembersMemberAvatar,
-  adminMembersPanel,
   adminMembersRowAction,
   adminMembersSectionHeader,
   adminMembersSectionTitle,
@@ -77,15 +77,15 @@ export default function MembersTable({
   return (
     <section
       id="diretorio"
-      className={`${adminMembersPanel} member-directory scroll-mt-4`}
+      className={`${styles.flushPanel} member-directory scroll-mt-4`}
     >
       <div className={`${adminMembersSectionHeader} member-directory-heading`}>
         <div>
-          <SectionBadge label="Índice de membros" animate={false} />
+
           <h2 className={`${adminMembersSectionTitle} mt-3`}>
-            Diretório completo
+            Diretório de membros
           </h2>
-          <p className="mt-2 font-body text-sm text-brand-secondary">
+          <p className="mt-2 font-body text-sm text-brand-secondary" aria-live="polite">
             {filteredMembers.length} de {members.length} membro
             {members.length === 1 ? '' : 's'} encontrado
             {filteredMembers.length === 1 ? '' : 's'}
@@ -103,6 +103,7 @@ export default function MembersTable({
               onChange={(event) => setQuery(event.target.value)}
               aria-label="Buscar membros por nome ou email mascarado"
               placeholder="Buscar nome ou e-mail"
+              type="search"
               className={`${adminMembersField} pl-11 pr-4`}
             />
           </div>
@@ -241,7 +242,7 @@ export default function MembersTable({
           <p className="font-heading text-base font-bold text-brand-dark">
             Nenhum membro encontrado
           </p>
-          <p className="mt-2 font-body text-sm text-brand-secondary">
+          <p className="mt-2 font-body text-sm text-brand-secondary" aria-live="polite">
             Ajuste a busca ou os filtros para ver outros resultados.
           </p>
         </div>

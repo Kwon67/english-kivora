@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Eye } from 'lucide-react'
 import { m } from 'motion/react'
+import { buildMultipleChoiceOptions } from '@/features/game/lib/multipleChoiceOptions'
 import MultipleChoice from '@/features/game/components/MultipleChoice'
 import TypingMode, { type TypingDirection } from '@/features/game/components/TypingMode'
 import SpeakingMode from '@/features/game/components/SpeakingMode'
@@ -183,7 +184,9 @@ export default function ReviewModePractice({
         <ReviewFlashcardPractice card={card} direction={typingDirection} onComplete={() => advance('unscored')} />
       ) : null}
 
-      {mode === 'multiple_choice' ? (
+      {mode === 'multiple_choice' && buildMultipleChoiceOptions(card, distractorPool).length < 2 ? (
+        <div><p>Sem alternativas suficientes. Relembre a frase; esta etapa não recebe nota.</p><ReviewFlashcardPractice card={card} direction={typingDirection} onComplete={() => advance('unscored')} /></div>
+      ) : mode === 'multiple_choice' ? (
         <MultipleChoice
           key={`review-mc-${card.id}`}
           card={card}

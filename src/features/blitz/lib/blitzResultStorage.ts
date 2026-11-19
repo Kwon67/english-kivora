@@ -16,6 +16,7 @@ export type BlitzResultSnapshot = {
   source?: 'standard' | 'ai'
   aiPack?: BlitzAiPackDraft | null
   savedAt?: string
+  saveStatus?: 'pending' | 'saved' | 'failed'
   runRewards: {
     streakUpdated?: boolean
     unlockedBadges?: { name: string; icon_name: string | null }[]
@@ -23,26 +24,30 @@ export type BlitzResultSnapshot = {
   } | null
 }
 
-export function saveBlitzResultSnapshot(snapshot: BlitzResultSnapshot) {
+export function saveBlitzResultSnapshot(userId: string, snapshot: BlitzResultSnapshot) {
   if (typeof window === 'undefined') return
 
   try {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ ...snapshot, savedAt: new Date().toISOString() }))
+    sessionStorage.setItem(`${STORAGE_KEY}:${userId}`, JSON.stringify({ ...snapshot, savedAt: new Date().toISOString() }))
   } catch {
     // Ignore quota or privacy mode errors.
   }
 }
 
-export function loadBlitzResultSnapshot(): BlitzResultSnapshot | null {
+export function loadBlitzResultSnapshot(userId: string): BlitzResultSnapshot | null {
   if (typeof window === 'undefined') return null
 
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY)
+    // Older results contained no owner and cannot safely be restored to an account.
+    sessionStorage.removeItem(STORAGE_KEY)
+    const key = `${STORAGE_KEY}:${userId}`
+    const raw = sessionStorage.getItem(key)
     if (!raw) return null
 
     const parsed = JSON.parse(raw) as BlitzResultSnapshot
-    if (parsed.savedAt && Date.now() - new Date(parsed.savedAt).getTime() > STORAGE_TTL_MS) {
-      sessionStorage.removeItem(STORAGE_KEY)
+    const savedAt = Date.parse(parsed?.savedAt ?? '')
+    if (!Number.isFinite(savedAt) || Date.now() - savedAt > STORAGE_TTL_MS || !Array.isArray(parsed.misses) || !Number.isFinite(parsed.score)) {
+      sessionStorage.removeItem(key)
       return null
     }
 
@@ -52,11 +57,11 @@ export function loadBlitzResultSnapshot(): BlitzResultSnapshot | null {
   }
 }
 
-export function clearBlitzResultSnapshot() {
+export function clearBlitzResultSnapshot(userId: string) {
   if (typeof window === 'undefined') return
 
   try {
-    sessionStorage.removeItem(STORAGE_KEY)
+    sessionStorage.removeItem(`${STORAGE_KEY}:${userId}`)
   } catch {
     // Ignore storage errors.
   }

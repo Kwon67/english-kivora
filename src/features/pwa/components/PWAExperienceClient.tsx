@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Bell, Download, RefreshCw, Wifi, WifiOff, X } from 'lucide-react';
 import { syncPushSubscriptionAction } from '@/app/pwa-actions';
 import { createClient } from '@/lib/supabase/client';
+import { isPromptDismissed, rememberPromptDismissal } from '../promptStorage';
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -156,19 +157,17 @@ export default function PWAExperienceClient({ publicVapidKey, className }: PWAEx
   }, []);
 
   useEffect(() => {
-    setTimeout(() => {
+    const initTimer = window.setTimeout(() => {
       setMounted(true);
       setIsOnline(navigator.onLine);
       setIsStandalone(isStandaloneDisplay());
       setIsIOS(isIOSDevice());
-      setInstallDismissed(localStorage.getItem(INSTALL_DISMISSED_KEY) === '1');
-      setPushDismissed(localStorage.getItem(PUSH_DISMISSED_KEY) === '1');
+      setInstallDismissed(isPromptDismissed(INSTALL_DISMISSED_KEY));
+      setPushDismissed(isPromptDismissed(PUSH_DISMISSED_KEY));
       setVisitCount(registerVisit());
+      if ('Notification' in window) setNotificationPermission(Notification.permission);
     }, 0);
-
-    if ('Notification' in window) {
-      setTimeout(() => setNotificationPermission(Notification.permission), 0);
-    }
+    return () => window.clearTimeout(initTimer);
   }, []);
 
   useEffect(() => {
@@ -224,7 +223,7 @@ export default function PWAExperienceClient({ publicVapidKey, className }: PWAEx
           updateViaCache: 'none'
         });
 
-        if (cancelled) return;
+        if (cancelled || !serviceWorkerRegistration) return;
 
         setRegistration(serviceWorkerRegistration);
 
@@ -323,12 +322,12 @@ export default function PWAExperienceClient({ publicVapidKey, className }: PWAEx
   }, [notificationPermission, registration, syncExistingPushSubscription]);
 
   const dismissInstallPrompt = useCallback(() => {
-    localStorage.setItem(INSTALL_DISMISSED_KEY, '1');
+    rememberPromptDismissal(INSTALL_DISMISSED_KEY);
     setInstallDismissed(true);
   }, []);
 
   const dismissPushPrompt = useCallback(() => {
-    localStorage.setItem(PUSH_DISMISSED_KEY, '1');
+    rememberPromptDismissal(PUSH_DISMISSED_KEY);
     setPushDismissed(true);
   }, []);
 

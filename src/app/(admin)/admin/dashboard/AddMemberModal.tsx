@@ -1,5 +1,7 @@
 'use client'
 
+import styles from '@/features/admin/components/AdminWorkspace.module.css'
+
 import { useState, useRef } from 'react'
 import { Plus, X, Eye, EyeOff } from 'lucide-react'
 import { createMember } from '@/app/actions'
@@ -7,10 +9,8 @@ import ModalPortal from '@/components/ui/ModalPortal'
 import { useAnimatedDismiss } from '@/components/motion/useAnimatedDismiss'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 import {
-  AdminBadge,
   fieldClass,
   fieldLabel,
-  modalShell,
   primaryBtn,
   sectionDivider,
 } from '@/features/admin/lib/adminUi'
@@ -77,12 +77,12 @@ export default function AddMemberModal({ triggerClassName = primaryBtn }: AddMem
             role="dialog"
             aria-modal="true"
             aria-labelledby="add-member-title"
-            className={`${modalShell} max-w-sm`}
+            className={`${styles.dialog} max-w-sm`}
           >
             <div className={`flex items-center justify-between px-6 py-4 ${sectionDivider}`}>
               <div>
-                <AdminBadge label="Novo acesso" />
-                <h2 id="add-member-title" className="mt-4 font-heading text-xl font-bold text-brand-dark">
+
+                <h2 id="add-member-title" className="font-heading text-xl font-bold text-brand-dark">
                   Novo membro
                 </h2>
                 <p className="mt-1 font-body text-xs font-semibold text-brand-secondary">

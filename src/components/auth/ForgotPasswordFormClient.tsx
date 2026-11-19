@@ -2,10 +2,10 @@
 
 import HydratedAuthForm from '@/components/auth/HydratedAuthForm'
 
-import { type CSSProperties, type FormEvent, useMemo, useState } from 'react'
+import { type CSSProperties, type FormEvent, useRef, useState } from 'react'
 import Link from 'next/link'
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { requestRecovery } from '@/app/auth/recovery/actions'
 import { notify } from '@/lib/toast'
 import { authInput, authSubmitBtn } from '@/lib/brandUi'
 
@@ -14,30 +14,18 @@ type ForgotPasswordStatus =
   | { type: 'success'; message: string }
   | null
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
-  ?? 'https://english-kivora.vercel.app'
-
 function normalizeEmail(value: string) {
   return value.trim().toLowerCase()
-}
-
-function getResetErrorMessage(message?: string) {
-  const normalized = message?.toLowerCase() || ''
-
-  if (normalized.includes('email')) {
-    return 'Informe um email válido para receber o link de recuperação.'
-  }
-
-  return message || 'Não foi possível enviar o link agora. Tente novamente em alguns minutos.'
 }
 
 export default function ForgotPasswordFormClient() {
   const [status, setStatus] = useState<ForgotPasswordStatus>(null)
   const [loading, setLoading] = useState(false)
-  const supabase = useMemo(() => createClient(), [])
+  const submitting = useRef(false)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (submitting.current) return
     setStatus(null)
     setLoading(true)
 
@@ -51,15 +39,14 @@ export default function ForgotPasswordFormClient() {
       return
     }
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${siteUrl}/auth/callback`,
-    })
+    submitting.current = true
+    const sent = await requestRecovery(email).catch(() => false)
+    submitting.current = false
 
     setLoading(false)
 
-    if (error) {
-      notify.error('Verifique os campos')
-      setStatus({ type: 'error', message: getResetErrorMessage(error.message) })
+    if (!sent) {
+      setStatus({ type: 'error', message: 'Não foi possível enviar o link agora. Tente novamente em alguns minutos.' })
       return
     }
 
@@ -67,7 +54,6 @@ export default function ForgotPasswordFormClient() {
       type: 'success',
       message: 'Se este email estiver cadastrado, você receberá um link em breve.',
     })
-    notify.success('Senha atualizada com sucesso')
   }
 
   return (
@@ -99,6 +85,7 @@ export default function ForgotPasswordFormClient() {
 
       {status && (
         <div
+          role={status.type === 'error' ? 'alert' : 'status'}
           className={`flex w-full items-start gap-3 rounded-[0.75rem] border px-4 py-3 text-sm font-medium ${ status.type === 'success' ? 'border-primary/20 bg-primary-light text-primary' : 'border-error/30 bg-error-soft text-[var(--color-error)]' }`}
           data-testid={`forgot-password-${status.type}`}
         >

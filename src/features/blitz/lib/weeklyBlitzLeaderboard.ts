@@ -4,7 +4,7 @@ import type { Database } from '@/types/database.types'
 
 export type BlitzLeaderboardEntry = {
   rank: number
-  userId: string
+  userId: string | null
   username: string
   score: number
   maxCombo: number
@@ -12,7 +12,7 @@ export type BlitzLeaderboardEntry = {
 
 type BlitzLeaderboardRpcRow = {
   rank: number | string
-  user_id: string
+  user_id: string | null
   username: string | null
   score: number
   max_combo: number

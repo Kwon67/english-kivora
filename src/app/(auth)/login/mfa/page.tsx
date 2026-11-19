@@ -3,68 +3,20 @@ import { redirect } from 'next/navigation'
 import MFAVerification from '@/features/auth/components/MFAVerification'
 import AuthShell from '@/components/auth/AuthShell'
 
-type MFAFactor = {
-  id: string
-  status?: string
-}
+import { readMfaState } from '@/features/auth/lib/readMfaState'
+import { studyReturnPath } from '@/features/auth/lib/studyReturnPath'
 
-type UserResponse = {
-  data: {
-    user: unknown | null
-  }
-}
-
-type FactorsResponse = {
-  data: {
-    all: MFAFactor[]
-  } | null
-  error: unknown | null
-}
-
-async function withTimeout<T>(
-  promise: Promise<T>,
-  ms: number,
-  fallback: T,
-): Promise<T> {
-  const timeoutPromise = new Promise<T>((resolve) => {
-    const timer = setTimeout(() => resolve(fallback), ms)
-    if (timer.unref) timer.unref()
-  })
-  return Promise.race([promise, timeoutPromise])
-}
-
-export default async function MFAPage() {
+export default async function MFAPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+  const destination = studyReturnPath((await searchParams).next)
   const supabase = await createClient()
-
-  const userResponse = await withTimeout<UserResponse>(
-    supabase.auth.getUser(),
-    4000,
-    { data: { user: null } },
-  ).catch(() => ({ data: { user: null } }))
-  const user = userResponse?.data?.user
-
-  if (!user) {
-    redirect('/login')
+  const mfa = await readMfaState(() => supabase.auth.mfa.listFactors())
+  if (mfa.status === 'signed-out') redirect('/login')
+  if (mfa.status === 'unavailable') {
+    return <AuthShell eyebrow="ACESSO SEGURO" title="Verifique seu acesso" description="O serviço de autenticação está temporariamente indisponível.">
+      <a className="product-text-link" href={destination ? '/login/mfa?next=' + encodeURIComponent(destination) : '/login/mfa'}>Tentar verificar novamente</a>
+    </AuthShell>
   }
-
-  const factorsResponse = await withTimeout<FactorsResponse>(
-    supabase.auth.mfa.listFactors(),
-    3000,
-    { data: { all: [] }, error: null },
-  ).catch(() => ({ data: { all: [] }, error: null }))
-
-  const factors = factorsResponse?.data
-  const error = factorsResponse?.error
-
-  if (error || !factors || factors.all.length === 0) {
-    redirect('/home')
-  }
-
-  const factor = factors.all.find((f) => f.status === 'verified')
-
-  if (!factor) {
-    redirect('/home')
-  }
+  if (mfa.status !== 'required') redirect(destination ?? '/home')
 
   return (
     <AuthShell
@@ -74,7 +26,7 @@ export default async function MFAPage() {
 
 
     >
-      <MFAVerification factorId={factor.id} />
+      <MFAVerification factorId={mfa.factorId} destination={destination ?? '/home'} />
     </AuthShell>
   )
 }

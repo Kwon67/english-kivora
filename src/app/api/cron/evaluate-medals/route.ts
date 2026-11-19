@@ -1,3 +1,5 @@
+import { getAppDateString } from '@/lib/timezone'
+import { isAssignmentCompleted } from '@/features/game/lib/assignmentStatus'
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 
@@ -37,7 +39,7 @@ export async function GET(req: Request) {
       .select('assigned_date, pack_id, game_mode, reward_badge_id')
       .not('reward_badge_id', 'is', null)
       .eq('reward_evaluated', false)
-      .lt('assigned_date', new Date().toISOString().split('T')[0]) // Deadline passed
+      .lt('assigned_date', getAppDateString()) // Deadline passed
     
     if (compError) throw compError
     if (!competitions || competitions.length === 0) {
@@ -68,28 +70,29 @@ export async function GET(req: Request) {
         .eq('assignments.assigned_date', assigned_date)
         .eq('assignments.pack_id', pack_id)
         .eq('assignments.game_mode', game_mode)
-        .eq('assignments.status', 'completed') // Only those who actually finished
+        .eq('assignments.reward_badge_id', badgeId)
 
       if (partError) {
         console.error('Error fetching participants:', partError)
-        continue
+        throw partError
       }
 
       if (!participants || participants.length === 0) {
         // No one completed it? Just mark as evaluated and skip
-        await supabase
+        const { error: markError } = await supabase
           .from('assignments')
           .update({ reward_evaluated: true })
           .eq('assigned_date', assigned_date)
           .eq('pack_id', pack_id)
           .eq('game_mode', game_mode)
           .eq('reward_badge_id', reward_badge_id)
+        if (markError) throw markError
         continue
       }
 
       // 3. Determine the winner
       // Scoring: Accuracy primary, Max Streak secondary, Time third
-      const ranked = participants.map(p => {
+      const ranked = participants.filter(p => isAssignmentCompleted(p.assignments.status) && p.correct_answers + p.wrong_answers > 0).map(p => {
         const total = p.correct_answers + p.wrong_answers
         const accuracy = total > 0 ? p.correct_answers / total : 0
         return {
@@ -115,6 +118,7 @@ export async function GET(req: Request) {
         
         if (badgeError) {
           console.error(`Error awarding badge to ${winner.user_id}:`, badgeError)
+          throw badgeError // Leave pending and report failure so the next run can retry.
         } else {
           results.push({
             competition: comp,
@@ -125,13 +129,14 @@ export async function GET(req: Request) {
       }
 
       // 5. Mark all assignments in this competition as evaluated
-      await supabase
+      const { error: markError } = await supabase
         .from('assignments')
         .update({ reward_evaluated: true })
         .eq('assigned_date', assigned_date)
         .eq('pack_id', pack_id)
         .eq('game_mode', game_mode)
         .eq('reward_badge_id', reward_badge_id)
+      if (markError) throw markError
     }
 
     return NextResponse.json({

@@ -6,10 +6,10 @@ import { homeCardClass, homeFrostedSurface } from '@/lib/homeStyles'
 
 export default function Error({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string }
-  reset: () => void
+  retry: () => void
 }) {
   useEffect(() => {
     console.error('Application route error:', error)
@@ -29,7 +29,7 @@ export default function Error({
         </p>
         <button
           type="button"
-          onClick={reset}
+          onClick={retry}
           className="mt-8 inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
         >
           Tentar novamente

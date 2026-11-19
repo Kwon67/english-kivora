@@ -1,8 +1,11 @@
 'use client'
 
+import styles from '@/features/admin/components/AdminWorkspace.module.css'
+import DataLoadState from '@/components/ui/DataLoadState'
+
 import { WorkspaceList } from '@/components/ui/WorkspacePagination'
 import WorkspaceSections from '@/components/ui/WorkspaceSections'
-import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import {
   CheckCircle2,
@@ -49,7 +52,6 @@ import {
   adminAssignIconBox,
   adminAssignModeCardActive,
   adminAssignModeCardIdle,
-  adminAssignPanel,
   adminAssignShell,
   adminAssignTelemetryBand,
   adminAssignTicket,
@@ -173,17 +175,19 @@ function DateInput({
   )
 }
 
+function relatedOne<T>(value:T|T[]|null|undefined):T|undefined { return Array.isArray(value)?value[0]:value??undefined }
+
 export default function AssignPage() {
   type MemberOption = Pick<Profile, 'id' | 'username' | 'role'>
-  type ScheduledReviewRule = { id: string; user_id: string | null; pack_id: string | null; status: string; profiles?: { username: string }[] | null; packs?: { name: string }[] | null }
+  type ScheduledReviewRule = { id: string; user_id: string | null; pack_id: string | null; status: string; profiles?: { username: string } | { username: string }[] | null; packs?: { name: string } | { name: string }[] | null }
   type MemberGroupRecord = MemberGroup & {
     member_group_members?: {
       user_id: string
-      profiles?: Pick<Profile, 'id' | 'username'>[] | null
+      profiles?: Pick<Profile, 'id' | 'username'> | Pick<Profile, 'id' | 'username'>[] | null
     }[] | null
   }
   type AssignmentTemplateRecord = AssignmentTemplate & {
-    packs?: Pick<Pack, 'id' | 'name'>[] | null
+    packs?: Pick<Pack, 'id' | 'name'> | Pick<Pack, 'id' | 'name'>[] | null
   }
   type UserQuestRecord = {
     id: string
@@ -197,10 +201,14 @@ export default function AssignPage() {
   }
   const [members, setMembers] = useState<MemberOption[]>([])
   const [packs, setPacks] = useState<Pack[]>([])
+  const [groupSnapshot,setGroupSnapshot]=useState<{name:string;description:string|null;memberIds:string[]} | null>(null)
   const [memberGroups, setMemberGroups] = useState<MemberGroupRecord[]>([])
   const [assignmentTemplates, setAssignmentTemplates] = useState<AssignmentTemplateRecord[]>([])
   const [userQuests, setUserQuests] = useState<UserQuestRecord[]>([])
   const [packCards, setPackCards] = useState<Card[]>([])
+  const [cardsLoading, setCardsLoading] = useState(false)
+  const [cardsError, setCardsError] = useState(false)
+  const [cardsRevision, setCardsRevision] = useState(0)
   const [manualBadges, setManualBadges] = useState<{id: string, name: string, icon_name: string}[]>([])
   const [assignmentTargetId, setAssignmentTargetId] = useState('all')
   const [selectedAssignmentPackId, setSelectedAssignmentPackId] = useState('')
@@ -238,10 +246,17 @@ export default function AssignPage() {
   const [groupName, setGroupName] = useState('')
   const [groupDescription, setGroupDescription] = useState('')
   const [selectedGroupMemberIds, setSelectedGroupMemberIds] = useState<string[]>([])
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
+  const [loadingData, setLoadingData] = useState(true)
+  const [loadError, setLoadError] = useState(false)
+  const [loadRevision, setLoadRevision] = useState(0)
+  const loadGeneration = useRef(0)
 
   useEffect(() => {
+    const version = ++loadGeneration.current
     async function loadData() {
+      setLoadingData(true); setLoadError(false)
+      try {
       const [membersRes, packsRes, schedulesRes, groupsRes, templatesRes, questsRes, badgesRes] = await Promise.all([
         supabase.from('profiles').select(publicProfileColumns).order('username'),
         supabase.from('packs').select('*').order('name'),
@@ -267,10 +282,8 @@ export default function AssignPage() {
           .order('target_value', { ascending: true }),
       ])
 
-      if (membersRes.error) {
-        console.error('Assign page members query failed', membersRes.error)
-        notify.error('Erro ao carregar dados')
-      }
+      if (version !== loadGeneration.current) return
+      if ([membersRes,packsRes,schedulesRes,groupsRes,templatesRes,badgesRes].some(result => result.error) || !questsRes.success) throw new Error('Incomplete assignment data')
       if (membersRes.data) setMembers(membersRes.data as MemberOption[])
       if (packsRes.data) setPacks(packsRes.data as Pack[])
       if (schedulesRes.data) setScheduledReviews(schedulesRes.data as unknown as ScheduledReviewRule[])
@@ -278,33 +291,33 @@ export default function AssignPage() {
       if (templatesRes.data) setAssignmentTemplates(templatesRes.data as unknown as AssignmentTemplateRecord[])
       if (questsRes.success) setUserQuests(questsRes.quests as unknown as UserQuestRecord[])
       if (badgesRes.data) setManualBadges(badgesRes.data as {id: string, name: string, icon_name: string}[])
+      } catch { if (version === loadGeneration.current) setLoadError(true) }
+      finally { if (version === loadGeneration.current) setLoadingData(false) }
     }
-
-    loadData()
-  }, [supabase])
+    void loadData()
+    const requests = loadGeneration
+    return () => { requests.current++ }
+  }, [supabase, loadRevision])
 
   useEffect(() => {
+    let cancelled = false
+    setPackCards([])
+    setCardsError(false)
+    if (!editingMode) setSelectedReviewCardIds([])
+    if (!selectedReviewPackId) { setCardsLoading(false); return }
+    setCardsLoading(true)
     async function loadPackCards() {
-      if (!selectedReviewPackId) {
-        setPackCards([])
-        setSelectedReviewCardIds([])
-        return
-      }
-
-      const { data } = await supabase
-        .from('cards')
-        .select('*')
-        .eq('pack_id', selectedReviewPackId)
-        .order('created_at', { ascending: true })
-
-      setPackCards((data || []) as Card[])
-      if (!editingMode) {
-        setSelectedReviewCardIds([])
-      }
+      try {
+        const { data, error } = await supabase.from('cards').select('*')
+          .eq('pack_id', selectedReviewPackId).order('created_at', { ascending: true })
+        if (error) throw error
+        if (!cancelled) setPackCards((data || []) as Card[])
+      } catch { if (!cancelled) setCardsError(true) }
+      finally { if (!cancelled) setCardsLoading(false) }
     }
-
     void loadPackCards()
-  }, [editingMode, selectedReviewPackId, supabase])
+    return () => { cancelled = true }
+  }, [editingMode, selectedReviewPackId, supabase, cardsRevision])
 
   async function refreshGroupList() {
     const { data } = await supabase
@@ -312,6 +325,7 @@ export default function AssignPage() {
       .select('id,name,description,created_at,member_group_members(user_id,profiles(id,username))')
       .order('name')
 
+    if (!data) throw new Error('Não foi possível atualizar os grupos. Confira a lista antes de repetir a alteração.')
     if (data) setMemberGroups(data as unknown as MemberGroupRecord[])
   }
 
@@ -321,6 +335,7 @@ export default function AssignPage() {
       .select('id,name,description,pack_id,game_mode,time_limit_minutes,reward_badge_id,created_at,packs(id,name)')
       .order('created_at', { ascending: false })
 
+    if (!data) throw new Error('Não foi possível atualizar os modelos. Confira a lista antes de repetir a alteração.')
     if (data) setAssignmentTemplates(data as unknown as AssignmentTemplateRecord[])
   }
 
@@ -328,10 +343,12 @@ export default function AssignPage() {
     // Pela action, não direto do navegador: a RLS de user_quests só devolve as missões do
     // próprio usuário, e um painel de admin precisa ver as que ele criou para os outros.
     const result = await listQuestsAction()
+    if (!result.success) throw new Error('Não foi possível atualizar as missões. Confira a lista antes de repetir a alteração.')
     if (result.success) setUserQuests(result.quests as unknown as UserQuestRecord[])
   }
 
   function resetGroupForm() {
+    setGroupSnapshot(null)
     setEditingGroupId(null)
     setGroupName('')
     setGroupDescription('')
@@ -380,10 +397,25 @@ export default function AssignPage() {
     })
   }
 
+  function requireActionSuccess(result: unknown) {
+    if (!result || typeof result !== 'object' || !('success' in result) || !result.success) {
+      throw new Error(result && typeof result === 'object' && 'error' in result && typeof result.error === 'string' ? result.error : 'Não foi possível concluir a alteração. Tente novamente.')
+    }
+  }
+
+  function runAdminAction(action: () => Promise<void>) {
+    setErrorMsg(null)
+    startTransition(async () => {
+      try { await action() }
+      catch (error) { setErrorMsg(error instanceof Error ? error.message : 'Não foi possível concluir a alteração. Tente novamente.') }
+    })
+  }
+
   async function handleDeleteQuest(questId: string) {
     setPendingConfirm(null)
-    startTransition(async () => {
+    runAdminAction(async () => {
       const result = await deleteQuestAction(questId)
+      requireActionSuccess(result)
       if (result.success) {
         await refreshQuestList()
       }
@@ -404,9 +436,10 @@ export default function AssignPage() {
     setSuccess(false)
     setErrorMsg(null)
 
-    startTransition(async () => {
+    runAdminAction(async () => {
       try {
         const result = await createAssignment(formData)
+        requireActionSuccess(result)
         if (result?.success) {
           setSuccess(true)
           setShowAssignConfirm(false)
@@ -424,6 +457,7 @@ export default function AssignPage() {
   }
 
   function startEditingGroup(group: MemberGroupRecord) {
+    setGroupSnapshot({name:group.name,description:group.description,memberIds:(group.member_group_members||[]).map(member=>member.user_id)})
     setEditingGroupId(group.id)
     setGroupName(group.name)
     setGroupDescription(group.description || '')
@@ -433,34 +467,37 @@ export default function AssignPage() {
   }
 
   async function handleGroupSubmit() {
-    startTransition(async () => {
+    runAdminAction(async () => {
       try {
+        if(editingGroupId&&!groupSnapshot)throw new Error('Reabra o grupo antes de salvar.')
         const result = editingGroupId
           ? await updateMemberGroup(editingGroupId, {
               name: groupName,
               description: groupDescription,
               memberIds: selectedGroupMemberIds,
-            })
+            }, groupSnapshot!)
           : await createMemberGroup({
               name: groupName,
               description: groupDescription,
               memberIds: selectedGroupMemberIds,
             })
 
+        requireActionSuccess(result)
         if (result?.success) {
           await refreshGroupList()
           resetGroupForm()
         }
       } catch (error: unknown) {
-        console.error('Group operation failed', error)
+        setErrorMsg(error instanceof Error ? error.message : 'Não foi possível concluir a alteração. Tente novamente.')
       }
     })
   }
 
   async function handleDeleteGroup(groupId: string) {
     setPendingConfirm(null)
-    startTransition(async () => {
+    runAdminAction(async () => {
       const result = await deleteMemberGroup(groupId)
+      requireActionSuccess(result)
       if (result?.success) {
         await refreshGroupList()
         if (editingGroupId === groupId) resetGroupForm()
@@ -469,7 +506,7 @@ export default function AssignPage() {
   }
 
   async function handleSaveTemplate() {
-    startTransition(async () => {
+    runAdminAction(async () => {
       try {
         const result = await createAssignmentTemplate({
           name: templateName,
@@ -480,6 +517,7 @@ export default function AssignPage() {
           rewardBadgeId: rewardBadgeId || null,
         })
 
+        requireActionSuccess(result)
         if (result?.success) {
           await refreshTemplateList()
           setTemplateName('')
@@ -487,15 +525,16 @@ export default function AssignPage() {
           setRewardBadgeId('')
         }
       } catch (error: unknown) {
-        console.error('Template operation failed', error)
+        setErrorMsg(error instanceof Error ? error.message : 'Não foi possível concluir a alteração. Tente novamente.')
       }
     })
   }
 
   async function handleDeleteTemplate(templateId: string) {
     setPendingConfirm(null)
-    startTransition(async () => {
+    runAdminAction(async () => {
       const result = await deleteAssignmentTemplate(templateId)
+      requireActionSuccess(result)
       if (result?.success) {
         await refreshTemplateList()
       }
@@ -504,8 +543,9 @@ export default function AssignPage() {
 
   async function handleDeleteSchedule(scheduleId: string) {
     setPendingConfirm(null)
-    startTransition(async () => {
+    runAdminAction(async () => {
       const result = await deleteAssignment(scheduleId)
+      requireActionSuccess(result)
       if (result?.success) {
         setScheduledReviews((curr) => curr.filter((item) => item.id !== scheduleId))
       }
@@ -520,12 +560,14 @@ export default function AssignPage() {
   }
 
   async function handleScheduleSubmit(formData: FormData) {
-    startTransition(async () => {
+    if (cardsLoading || cardsError) return
+    runAdminAction(async () => {
       try {
         const finalResult = editingRuleId
           ? await updateScheduledReviewRule(editingRuleId, formData)
           : await createScheduledReviewRule(formData)
 
+        requireActionSuccess(finalResult)
         if (finalResult?.success) {
           setEditingMode(false)
 
@@ -535,11 +577,12 @@ export default function AssignPage() {
             .eq('game_mode', 'scheduled_review')
             .order('created_at', { ascending: false })
 
+          if (schedulesRes.error) throw new Error('Não foi possível atualizar as regras. Confira a lista antes de repetir a alteração.')
           if (schedulesRes.data) setScheduledReviews(schedulesRes.data as unknown as ScheduledReviewRule[])
           resetScheduleForm()
         }
       } catch (error: unknown) {
-        console.error('Schedule operation failed', error)
+        setErrorMsg(error instanceof Error ? error.message : 'Não foi possível concluir a alteração. Tente novamente.')
       }
     })
   }
@@ -572,18 +615,15 @@ export default function AssignPage() {
     setReviewTime(meta.time)
     setCardsPerRelease(String(Math.min(meta.cardsPerRelease, DEFAULT_REVIEW_SESSION_CARD_LIMIT)))
     setReviewExpiresOn(meta.expiresOn || '')
-    void (async () => {
-      if (!schedule.pack_id) return
-      const { data } = await supabase.from('cards').select('*').eq('pack_id', schedule.pack_id).order('created_at', { ascending: true })
-      setPackCards((data || []) as Card[])
-      setSelectedReviewCardIds(meta.cardIds)
-    })()
+    setSelectedReviewCardIds(meta.cardIds)
   }
 
   const activeQuests = userQuests.filter((quest) => quest.status !== 'completed').length
 
+  if (loadingData || loadError) return <DataLoadState title="Atribuições" loading={loadingData} onRetry={() => setLoadRevision(value => value + 1)} />
+
   return (
-    <div className={adminAssignShell}>
+    <div className={`${adminAssignShell} ${styles.workspace}`}>
       <div className="relative z-10 mx-auto w-full min-w-0 max-w-full space-y-6 pb-8 sm:space-y-8">
 <AdminMotionSection>
           <AssignHeader
@@ -615,13 +655,14 @@ export default function AssignPage() {
           </AdminMotionItem>
         </AdminMotionSection></details>
 
+        {errorMsg && <div role="alert" className={adminAssignAlertError}>{errorMsg}</div>}
+
 <WorkspaceSections label="Organização das atribuições" tabs={[{"id":"atribuir","label":"Atribuir","description":"Escolha o conteúdo, os alunos e o modo de prática.","icon":"assign","anchors":["assign-form"]},{"id":"equipes","label":"Grupos","description":"Organize alunos para atribuir atividades em conjunto.","icon":"users","anchors":["grupos"]},{"id":"missoes","label":"Missões","description":"Defina objetivos e acompanhe as missões criadas.","icon":"target","anchors":[]},{"id":"revisoes","label":"Programar","description":"Configure revisões recorrentes e gerencie suas regras.","icon":"calendar","anchors":[]}]} >
 <div className="workspace-panel-stack"><AdminMotionSection>
-      <form action={handleSubmit} className={`${adminAssignPanel} space-y-6`} id="assign-form">
-        {errorMsg && <div className={adminAssignAlertError}>{errorMsg}</div>}
+      <form action={handleSubmit} className={`${styles.flushPanel} space-y-6`} id="assign-form">
 
         {success && (
-          <div className={adminAssignAlertSuccess}>
+          <div role="status" className={adminAssignAlertSuccess}>
             <CheckCircle2 className="h-5 w-5 shrink-0" /> Tarefa enviada
           </div>
         )}
@@ -635,8 +676,8 @@ export default function AssignPage() {
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
-            <input value={templateName} onChange={(e) => setTemplateName(e.target.value)} placeholder="Nome" className={fieldClass} />
-            <input value={templateDescription} onChange={(e) => setTemplateDescription(e.target.value)} placeholder="Contexto" className={fieldClass} />
+            <input value={templateName} onChange={(e) => setTemplateName(e.target.value)} aria-label="Nome do modelo" placeholder="Nome" className={fieldClass} />
+            <input value={templateDescription} onChange={(e) => setTemplateDescription(e.target.value)} aria-label="Contexto do modelo" placeholder="Contexto" className={fieldClass} />
             <button type="button" onClick={handleSaveTemplate} disabled={isPending || !templateName || !selectedAssignmentPackId} className={`${ghostBtn} px-6`}>
               Salvar
             </button>
@@ -649,7 +690,7 @@ export default function AssignPage() {
                   <div className="min-w-0">
                     <p className="font-heading font-bold text-brand-dark">{template.name}</p>
                     <p className="font-body text-xs font-medium text-brand-secondary">
-                      {(template.packs?.[0]?.name || 'Pack')} · {gameModes.find(m => m.value === template.game_mode)?.label}
+                      {(relatedOne(template.packs)?.name || 'Pack')} · {gameModes.find(m => m.value === template.game_mode)?.label}
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -785,7 +826,7 @@ export default function AssignPage() {
       </form>
         </AdminMotionSection></div>
 <div className="workspace-panel-stack"><AdminMotionSection>
-      <section className={`${adminAssignPanel} space-y-6`} id="grupos">
+      <section className={`${styles.flushPanel} space-y-6`} id="grupos">
         <AssignSectionHeading
           badge="Grupos de membros"
           title="Segmentação de alunos"
@@ -797,8 +838,8 @@ export default function AssignPage() {
           <div className={`${innerPanelClass} space-y-4`}>
             <h3 className={fieldLabel}>{editingGroupId ? 'Editar Grupo' : 'Novo Grupo'}</h3>
             <div className="space-y-3">
-              <input value={groupName} onChange={(e) => setGroupName(e.target.value)} placeholder="Nome do grupo" className={fieldClass} />
-              <input value={groupDescription} onChange={(e) => setGroupDescription(e.target.value)} placeholder="Objetivo/Nível" className={fieldClass} />
+              <input value={groupName} onChange={(e) => setGroupName(e.target.value)} aria-label="Nome do grupo" placeholder="Nome do grupo" className={fieldClass} />
+              <input value={groupDescription} onChange={(e) => setGroupDescription(e.target.value)} aria-label="Objetivo ou nível do grupo" placeholder="Objetivo/Nível" className={fieldClass} />
               <div className={`${nestedCardClass} max-h-60 space-y-2 overflow-y-auto p-3`}>
                 {members.map(m => (
                   <label key={m.id} className={`${nestedCardClass} flex cursor-pointer items-center gap-3 p-3 transition-colors hover:bg-brand-accent/20`}>
@@ -824,7 +865,7 @@ export default function AssignPage() {
                     <div className="mt-4 flex flex-wrap gap-1.5">
                       {(g.member_group_members || []).map(m => (
                         <span key={m.user_id} className={neutralBadge}>
-                          {m.profiles?.[0]?.username || '...'}
+                          {relatedOne(m.profiles)?.username || '...'}
                         </span>
                       ))}
                     </div>
@@ -841,7 +882,7 @@ export default function AssignPage() {
       </section>
         </AdminMotionSection></div>
 <div className="workspace-panel-stack"><AdminMotionSection>
-      <section className={`${adminAssignPanel} space-y-6`}>
+      <section className={`${styles.flushPanel} space-y-6`}>
         <AssignSectionHeading
           badge="Missões e metas"
           title="Missões diárias"
@@ -946,7 +987,7 @@ export default function AssignPage() {
       </section>
         </AdminMotionSection></div>
 <div className="workspace-panel-stack"><AdminMotionSection>
-      <form action={handleScheduleSubmit} className={`${adminAssignPanel} space-y-6`}>
+      <form action={handleScheduleSubmit} className={`${styles.flushPanel} space-y-6`}>
         <AssignSectionHeading
           badge="Revisão automática"
           title="Regras recorrentes"
@@ -1013,6 +1054,8 @@ export default function AssignPage() {
               <button type="button" onClick={() => setSelectedReviewCardIds([])} className={`${ghostBtn} px-2.5 py-1.5 font-heading text-2xs uppercase tracking-widest`}>Reset</button>
             </div>
           </div>
+          {cardsLoading && <p role="status">Carregando cards…</p>}
+          {cardsError && <div role="alert">Não foi possível carregar os cards. <button type="button" onClick={() => setCardsRevision(value => value + 1)}>Tentar carregar cards novamente</button></div>}
           <div className={`${innerPanelClass} grid max-h-72 gap-2 overflow-y-auto sm:grid-cols-2`}>
             {packCards.map(c => (
               <label key={c.id} className={`${nestedCardClass} flex cursor-pointer items-center gap-3 overflow-hidden p-3 transition-all hover:bg-brand-accent/20`}>
@@ -1024,7 +1067,7 @@ export default function AssignPage() {
         </div>
 
         <div className={`flex flex-col gap-4 pt-6 sm:flex-row ${sectionDivider}`}>
-          <button type="submit" disabled={isPending} className={`${primaryBtn} flex-1 py-4`}>
+          <button type="submit" disabled={isPending || cardsLoading || cardsError} className={`${primaryBtn} flex-1 py-4`}>
             {editingRuleId ? 'Salvar Regra' : 'Ativar Ciclo de Revisão'}
           </button>
           {editingRuleId && <button type="button" onClick={resetScheduleForm} className={`${ghostBtn} px-10 py-4`}>Cancelar</button>}
@@ -1040,12 +1083,12 @@ export default function AssignPage() {
                  <article key={s.id} className={`${adminAssignTicket} ${nestedCardClass} flex flex-col justify-between gap-4 overflow-hidden p-4 md:flex-row md:items-center`}>
                     <div>
                       <div className="mb-2 flex items-center gap-3">
-                        <p className="font-heading font-bold uppercase tracking-tight text-brand-dark">{s.profiles?.[0]?.username || '...'}</p>
+                        <p className="font-heading font-bold uppercase tracking-tight text-brand-dark">{relatedOne(s.profiles)?.username || '...'}</p>
                         <span className={`${neutralBadge} ${meta.active ? 'bg-brand-accent text-brand-dark' : ''}`}>
                           {meta.active ? 'Ativa' : 'Pausada'}
                         </span>
                       </div>
-                      <p className="font-body text-sm font-bold text-brand-secondary">{s.packs?.[0]?.name}</p>
+                      <p className="font-body text-sm font-bold text-brand-secondary">{relatedOne(s.packs)?.name}</p>
                       <p className="mt-2 font-heading text-2xs font-bold uppercase text-brand-secondary">{meta.weekdays.map(d => weekdayLabelMap[Number(d)]).join(', ')} · {meta.time}</p>
                     </div>
                     <div className="flex gap-2">
@@ -1063,6 +1106,7 @@ export default function AssignPage() {
 
 {pendingConfirm && (
         <ConfirmDialog
+          surfaceClassName={styles.dialog}
           title={
             pendingConfirm.type === 'quest'
               ? 'Excluir missão'
@@ -1132,6 +1176,7 @@ function ClearAllAssignmentsButton({ isPending }: { isPending: boolean }) {
       </button>
       {confirmOpen && (
         <ConfirmDialog
+          surfaceClassName={styles.dialog}
           title="Limpar atribuições"
           description="Todas as atribuições pendentes serão removidas. As concluídas serão preservadas."
           confirmLabel="Remover"

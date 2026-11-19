@@ -6,7 +6,6 @@ import {
   type StudyExperience,
 } from '@/features/onboarding/lib/catLevels'
 import {
-  getDailyGoalLabel,
   ONBOARDING_DAILY_GOALS,
   ONBOARDING_INTEREST_OPTIONS,
   type OnboardingDailyGoalMinutes,
@@ -15,12 +14,12 @@ import {
 import {
   onboardingActionRow,
   onboardingGoalLabelClass,
-  onboardingGoalMinutesClass,
   onboardingGoalOptionClass,
   onboardingInterestChip,
   onboardingPrimaryButton,
   onboardingSecondaryButton,
 } from '@/features/onboarding/lib/onboardingUi'
+import styles from './Onboarding.module.css'
 import OnboardingShell from './OnboardingShell'
 
 type OnboardingGoalsStepProps = {
@@ -30,6 +29,7 @@ type OnboardingGoalsStepProps = {
   placementLabel?: string | null
   skippedLevelTest?: boolean
   loading: boolean
+  error?: string
   onToggleInterest: (id: OnboardingInterestId) => void
   onSelectGoal: (minutes: OnboardingDailyGoalMinutes) => void
   onSelectStudyExperience: (value: StudyExperience | null) => void
@@ -44,6 +44,7 @@ export default function OnboardingGoalsStep({
   placementLabel,
   skippedLevelTest = false,
   loading,
+  error,
   onToggleInterest,
   onSelectGoal,
   onSelectStudyExperience,
@@ -61,7 +62,7 @@ export default function OnboardingGoalsStep({
     >
       <div className="space-y-6" data-testid="onboarding-goals-step">
         {placementLabel ? (
-          <div className="rounded-[14px] border border-brand-dark/15 bg-bg-card px-4 py-3">
+          <div className={styles.note}>
             <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
               Nível estimado pelo teste
             </p>
@@ -69,7 +70,7 @@ export default function OnboardingGoalsStep({
           </div>
         ) : skippedLevelTest ? (
           <div
-            className="rounded-[14px] border border-brand-dark/15 bg-bg-card px-4 py-3"
+            className={styles.note}
             data-testid="onboarding-level-suggestion-banner"
           >
             <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
@@ -82,8 +83,8 @@ export default function OnboardingGoalsStep({
           </div>
         ) : null}
 
-        <div>
-          <p className="font-heading text-sm font-bold text-brand-dark">Interesses</p>
+        <fieldset className={styles.fields}>
+          <legend>Interesses</legend>
           <p className="mt-1 text-sm text-brand-secondary">Selecione um ou mais temas.</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {ONBOARDING_INTEREST_OPTIONS.map((option) => {
@@ -103,14 +104,14 @@ export default function OnboardingGoalsStep({
               )
             })}
           </div>
-        </div>
+        </fieldset>
 
-        <div>
-          <p className="font-heading text-sm font-bold text-brand-dark">Meta diária</p>
+        <fieldset className={styles.fields}>
+          <legend>Meta diária</legend>
           <p className="mt-1 text-sm text-brand-secondary">
             Tempo médio que você quer dedicar por dia.
           </p>
-          <div className="mt-3 space-y-2">
+          <div className={`${styles.goalOptions} mt-3`}>
             {ONBOARDING_DAILY_GOALS.map((minutes) => {
               const selected = dailyGoalMinutes === minutes
               return (
@@ -122,22 +123,17 @@ export default function OnboardingGoalsStep({
                   onClick={() => onSelectGoal(minutes)}
                   className={onboardingGoalOptionClass(selected)}
                 >
-                  <span className={onboardingGoalLabelClass}>{getDailyGoalLabel(minutes)}</span>
-                  <span className={`${onboardingGoalMinutesClass} hidden sm:inline`}>
-                    {minutes} min
-                  </span>
+                  <span className={onboardingGoalLabelClass}>{minutes} min</span>
                 </button>
               )
             })}
           </div>
-        </div>
+        </fieldset>
 
-        <div>
-          <p className="font-heading text-sm font-bold text-brand-dark">
-            Tempo de estudo (opcional)
-          </p>
+        <fieldset className={styles.fields}>
+          <legend>Experiência de estudo (opcional)</legend>
           <p className="mt-1 text-sm text-brand-secondary">
-            Só contexto para personalização — não altera o pack entregue.
+            Informe há quanto tempo estuda inglês.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {STUDY_EXPERIENCE_OPTIONS.map((option) => {
@@ -159,8 +155,9 @@ export default function OnboardingGoalsStep({
               )
             })}
           </div>
-        </div>
+        </fieldset>
 
+        {error && <p role="alert" className={styles.feedback}>{error}</p>}
         <div className={onboardingActionRow}>
           <button
             type="button"
@@ -183,7 +180,7 @@ export default function OnboardingGoalsStep({
 
         {loading ? (
           <p className="flex items-center gap-2 text-sm text-brand-secondary" aria-live="polite">
-            <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+            <Loader2 className="h-4 w-4 shrink-0 animate-spin motion-reduce:animate-none" />
             Salvando...
           </p>
         ) : null}

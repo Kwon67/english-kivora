@@ -5,6 +5,7 @@ import { enrollMFA, verifyMFA, unenrollMFA } from '@/app/actions'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { logger } from '@/lib/logger'
 import { ShieldCheck, ShieldAlert, Key } from 'lucide-react'
+import styles from '@/features/profile/components/Settings.module.css'
 import { profileField } from '@/features/profile/lib/libraryUi'
 import {
   settingsPrimaryBtn,
@@ -138,6 +139,8 @@ export default function MFAEnrollment({
             <div className="flex max-w-sm flex-col gap-2 sm:flex-row">
               <input
                 type="text"
+                inputMode="numeric"
+                aria-label="Código de verificação de seis dígitos"
                 value={code}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setCode(e.target.value.replace(/\D/g, '').slice(0, 6))
@@ -154,7 +157,6 @@ export default function MFAEnrollment({
                 Confirmar
               </button>
             </div>
-            {error ? <p className="mt-1 font-body text-xs font-semibold text-[var(--color-error)]">{error}</p> : null}
           </div>
         </div>
       )}
@@ -186,6 +188,8 @@ export default function MFAEnrollment({
             ))}
         </div>
       )}
+
+      {error && <p role="alert" className={styles.feedback} data-state="error">{error}</p>}
 
       {factorToDisable && (
         <ConfirmDialog

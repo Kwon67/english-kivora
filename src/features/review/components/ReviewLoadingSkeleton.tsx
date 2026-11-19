@@ -23,7 +23,7 @@ export default function ReviewLoadingSkeleton({
   label = 'Preparando revisão...',
 }: ReviewLoadingSkeletonProps) {
   return (
-    <div className={reviewShell}>
+    <div className={reviewShell} role="status" aria-live="polite" aria-busy="true">
       <div className={`${reviewInnerMax} animate-fade-in space-y-3 pb-6 sm:space-y-4 sm:pb-10`}>
         <div className={`${reviewHero} p-3 sm:p-4`}>
           <div className="flex items-start justify-between gap-3">

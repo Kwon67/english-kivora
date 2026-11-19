@@ -45,16 +45,16 @@ export default async function BlitzPlayPage({
             actionHref="/blitz/play"
             actionLabel="Jogar modo padrão"
             transitionTypes={navBackTransitionTypes}
-            variant="glass"
-            className="home-frosted-surface home-frosted-surface-soft w-full max-w-xl"
-            imageWrapClassName="home-frosted-subtle"
+            variant="compact"
+            className="blitz-play-empty w-full max-w-xl"
+            imageWrapClassName="blitz-ranking-empty-art"
           />
         </div>
       </BlitzShell>
     )
   }
 
-  if (!cards || cards.length < 2) {
+  if (!cards || cards.length < 2 || !result.userId) {
     return (
       <BlitzShell>
         <div className="flex min-h-[60vh] items-center justify-center">
@@ -66,9 +66,9 @@ export default async function BlitzPlayPage({
             actionHref="/explore"
             actionLabel="Explorar packs"
             transitionTypes={navBackTransitionTypes}
-            variant="glass"
-            className="home-frosted-surface home-frosted-surface-soft w-full max-w-xl"
-            imageWrapClassName="home-frosted-subtle"
+            variant="compact"
+            className="blitz-play-empty w-full max-w-xl"
+            imageWrapClassName="blitz-ranking-empty-art"
           />
         </div>
       </BlitzShell>
@@ -77,6 +77,8 @@ export default async function BlitzPlayPage({
 
   return (
     <BlitzClient
+      key={result.userId}
+      userId={result.userId}
       cards={cards}
       newCardIds={'newCardIds' in result ? result.newCardIds : undefined}
       personalBest={personalBest}

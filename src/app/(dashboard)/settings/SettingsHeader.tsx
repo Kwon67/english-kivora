@@ -1,39 +1,15 @@
-import { Bell, ShieldCheck, ShieldAlert } from 'lucide-react'
 import WorkspaceHeading from '@/components/ui/WorkspaceHeading'
-import { homeSecondaryButton } from '@/lib/homeStyles'
+import styles from '@/features/profile/components/Settings.module.css'
 
-type Props = { weeklyReportEnabled: boolean; mfaEnabled: boolean }
-
-export default function SettingsHeader({
-  weeklyReportEnabled,
-  mfaEnabled,
-}: Props) {
-  const Shield = mfaEnabled ? ShieldCheck : ShieldAlert
+export default function SettingsHeader() {
   return (
     <WorkspaceHeading
-      title="Preferências e segurança"
-      breadcrumb="Configurações"
+      title="Configurações"
+      description="Gerencie sua conta, notificações e dados."
       actions={
-        <>
-          <a href="#preferences" className={homeSecondaryButton}>
-            <Bell size={16} /> Preferências
-          </a>
-          <a href="#security" className={homeSecondaryButton}>
-            <Shield size={16} /> Segurança
-          </a>
-        </>
-      }
-      aside={
-        <div className="workspace-summary">
-          <span className="workspace-summary-icon">
-            <Shield size={22} />
-          </span>
-          <div>
-            <strong>{mfaEnabled ? '2FA ativo' : '2FA desativado'}</strong>
-            <p>
-              Relatório semanal {weeklyReportEnabled ? 'ativo' : 'desativado'}
-            </p>
-          </div>
+        <div className={styles.shortcuts}>
+          <a href="#preferences" className="product-text-link">Notificações</a>
+          <a href="#security" className="product-text-link">Segurança</a>
         </div>
       }
     />

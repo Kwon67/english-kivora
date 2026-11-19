@@ -53,3 +53,21 @@ it('keeps the example and the word translation if example translation fails', as
   expect(result.translation).toBe('você')
   expect(result.entries[0].senses[0]).toMatchObject({ example, exampleTranslation: null })
 })
+
+it('keeps an available translation when the dictionary returns a malformed success payload', async () => {
+  vi.stubGlobal('fetch', async (input: string) => new URL(input).hostname === 'freedictionaryapi.com'
+    ? Response.json({ entries: null })
+    : Response.json({ responseStatus: 200, responseData: { translatedText: 'você' } }))
+  const result = await (await lookup()).json()
+  expect(result).toMatchObject({ dictionaryAvailable: false, entries: [], translation: 'você' })
+})
+
+it('omits incomplete translations while retaining a valid definition', async () => {
+  vi.stubGlobal('fetch', async (input: string) => new URL(input).hostname === 'freedictionaryapi.com'
+    ? Response.json({ entries: [{ senses: [{ definition: 'person addressed', translations: [
+      { language: { code: 'pt' } }, { language: { code: 'pt' }, word: 'você' },
+    ] }] }] })
+    : new Response(null, { status: 503 }))
+  const result = await (await lookup()).json()
+  expect(result.entries[0].senses[0]).toMatchObject({ definition: 'person addressed', translations: ['você'] })
+})

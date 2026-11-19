@@ -6,12 +6,13 @@ import { createClient } from '@/lib/supabase/server'
 import { getClientIp, hashSecurityValue, isRateLimited, recordSecurityEvent } from '@/features/security/lib/security'
 import { SIGNUP_MIN_PASSWORD_LENGTH, SIGNUP_USERNAME_PATTERN } from '@/features/auth/lib/signupValidation'
 
+const signupEmail = z.string().trim().toLowerCase().pipe(z.email({ error: 'Informe um e-mail válido.' }).max(254))
 const SIGNUP_SCHEMA = z.object({
   username: z.string().trim().toLowerCase().refine(
     username => !username || SIGNUP_USERNAME_PATTERN.test(username),
     { error: 'Use de 3 a 24 caracteres no nome de usuário. São aceitas letras, números e underscore.' },
   ).optional(),
-  email: z.string().trim().toLowerCase().pipe(z.email({ error: 'Informe um e-mail válido.' }).max(254)),
+  email: signupEmail,
   password: z.string()
     .min(SIGNUP_MIN_PASSWORD_LENGTH, { error: `Use pelo menos ${SIGNUP_MIN_PASSWORD_LENGTH} caracteres na senha.` })
     .refine(password => new TextEncoder().encode(password).length <= 72, { error: 'A senha ultrapassa o tamanho máximo permitido.' }),
@@ -27,6 +28,31 @@ function getSignupRedirectUrl() {
   return new URL('/auth/confirm', siteUrl).href
 }
 
+async function signupLimited(ip: string, email: string) {
+  const [ipLimited, emailLimited] = await Promise.all([
+    isRateLimited('signup_request_ip', ip, 8, 15 * 60),
+    isRateLimited('signup_request_email', hashSecurityValue(email), 4, 15 * 60),
+  ])
+  return ipLimited || emailLimited
+}
+
+export async function resendSignupConfirmation(input: string): Promise<SignupResult> {
+  const parsed = signupEmail.safeParse(input)
+  if (!parsed.success) return { ok: false, error: 'Informe um e-mail válido.' }
+  if (await signupLimited(await getClientIp(), parsed.data)) {
+    return { ok: false, error: 'Aguarde alguns minutos antes de solicitar outro e-mail.' }
+  }
+  const supabase = await createClient()
+  const { error } = await supabase.auth.resend({
+    type: 'signup', email: parsed.data, options: { emailRedirectTo: getSignupRedirectUrl() },
+  })
+  if (error?.status === 429) return { ok: false, error: 'Aguarde alguns minutos antes de solicitar outro e-mail.' }
+  if (error && !['user_not_found', 'email_exists', 'user_already_exists'].includes(error.code ?? '')) {
+    return { ok: false, error: 'Não foi possível solicitar o link agora. Tente novamente em instantes.' }
+  }
+  return { ok: true }
+}
+
 export async function requestSignupVerification(input: unknown): Promise<SignupResult> {
   const parsed = SIGNUP_SCHEMA.safeParse(input)
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message }
@@ -35,11 +61,7 @@ export async function requestSignupVerification(input: unknown): Promise<SignupR
   if (website?.trim()) return { ok: true }
 
   const ip = await getClientIp()
-  const [ipLimited, emailLimited] = await Promise.all([
-    isRateLimited('signup_request_ip', ip, 8, 15 * 60),
-    isRateLimited('signup_request_email', hashSecurityValue(email), 4, 15 * 60),
-  ])
-  if (ipLimited || emailLimited) {
+  if (await signupLimited(ip, email)) {
     return { ok: false, error: 'Muitas tentativas. Aguarde alguns minutos e tente novamente.' }
   }
 
@@ -70,7 +92,7 @@ export async function requestSignupVerification(input: unknown): Promise<SignupR
   if (error.code === 'over_email_send_rate_limit' || error.code === 'over_request_rate_limit') {
     return { ok: false, error: 'Aguarde alguns minutos antes de solicitar outro e-mail.' }
   }
-  if (error.code === 'unexpected_failure' || (error.status && error.status >= 500)) {
+  if (error.code === 'unexpected_failure' || error.code === 'email_address_not_authorized' || (error.status && error.status >= 500)) {
     return { ok: false, error: 'O cadastro está temporariamente indisponível. Tente novamente mais tarde.' }
   }
   return { ok: false, error: 'Não foi possível criar sua conta. Confira os dados ou tente outro nome de usuário.' }

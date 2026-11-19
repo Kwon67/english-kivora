@@ -3,59 +3,40 @@ import { ChevronRight } from 'lucide-react'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import TutorHeader from '@/features/tutor/components/TutorHeader'
 import { TUTOR_SCENARIOS } from '@/features/tutor/lib/scenarios'
-import SectionBadge from '@/components/ui/SectionBadge'
-import {
-  homeSectionTitleClass,
-  homeShellClass,
-} from '@/lib/homeStyles'
-import { tutorCard } from '@/features/tutor/lib/tutorPageUi'
-import MotionSurface from '@/components/motion/MotionSurface'
+import { homeShellClass } from '@/lib/homeStyles'
 
 export default function TutorPage() {
   return (
     <div className={homeShellClass}>
-      <div className="relative z-10 mx-auto max-w-5xl space-y-8 pb-12">
+      <div className="tutor-catalog">
         <TutorHeader />
 
-        <section className="space-y-4">
-          <div>
-            <SectionBadge label="Cenários" />
-            <h2 className={`mt-3 ${homeSectionTitleClass}`}>Escolha uma conversa</h2>
-            <p className="mt-2 max-w-2xl font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
-              Cada cenário simula uma situação real — do café ao escritório — com dicas discretas enquanto você pratica.
-            </p>
-          </div>
-
-          <MotionSurface stagger onScroll className="learning-card-grid tutor-scenario-grid">
-            {TUTOR_SCENARIOS.map((scenario, index) => {
-              const Icon = scenario.icon
-              return (
+        <section aria-labelledby="tutor-scenarios">
+          <h2 id="tutor-scenarios">Escolha uma conversa</h2>
+          <ul className="tutor-scenarios" role="list">
+            {TUTOR_SCENARIOS.map(({ id, icon: Icon, name, description, level, duration, focus }) => (
+              <li key={id}>
                 <Link
-                  key={scenario.id}
-                  href={`/tutor/${scenario.id}`}
+                  href={`/tutor/${id}`}
                   transitionTypes={navForwardTransitionTypes}
                   prefetch={false}
-                  data-tone={(['tutor', 'review', 'listening', 'vocabulary', 'grammar'] as const)[index % 5]}
-                  className={`group block learning-module-card ${tutorCard} p-5 transition-transform hover:-translate-y-0.5 sm:p-6`}
+                  className="tutor-scenario"
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="tone-icon" aria-hidden="true">
-                      <Icon className="h-5 w-5" strokeWidth={1.5} />
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-brand-dark transition-transform group-hover:translate-x-1" />
+                  <Icon className="tutor-scenario-icon" size={20} aria-hidden="true" />
+                  <div className="tutor-scenario-copy">
+                    <h3>{name}</h3>
+                    <p>{description}</p>
+                    <p className="tutor-scenario-focus">{focus}</p>
                   </div>
-                  <span className="tone-chip mt-4">{scenario.level}</span>
-                  <h3 className="mt-3 font-heading text-xl font-bold text-brand-dark">{scenario.name}</h3>
-                  <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">{scenario.description}</p>
-                  <div className="mt-4 flex flex-wrap gap-2 font-heading text-[11px] font-bold uppercase tracking-widest text-brand-secondary">
-                    <span>{scenario.duration}</span>
-                    <span>·</span>
-                    <span>{scenario.focus}</span>
-                  </div>
+                  <span className="tutor-scenario-meta">
+                    <strong>{level}</strong>
+                    <span>{duration}</span>
+                  </span>
+                  <ChevronRight size={16} aria-hidden="true" />
                 </Link>
-              )
-            })}
-          </MotionSurface>
+              </li>
+            ))}
+          </ul>
         </section>
       </div>
     </div>

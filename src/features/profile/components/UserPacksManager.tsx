@@ -275,6 +275,7 @@ export default function UserPacksManager({ packs, creationOpen, onOpenCreate, on
 
   return (
     <section id="packs" className={`space-y-6 ${sectionScrollMt}`} aria-labelledby="saved-packs-title">
+      <button type="button" className="product-text-link" onClick={() => { setMode('manual'); setTargetPackId('new'); onOpenCreate() }}>Criar pack</button>
       <article id="pack-creation" hidden={!creationOpen} className={`${cardClass} ${libraryFrostedSurface} relative overflow-hidden p-5 sm:p-7`}>
         <div className="relative z-10 flex flex-col gap-4 border-b border-brand-dark/15 pb-5 sm:flex-row sm:items-start sm:justify-between">
           <div>

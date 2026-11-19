@@ -14,7 +14,6 @@ import { getVisibleNodes, type LearningPath as LearningPathData, type PathNode, 
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { notify } from '@/lib/toast'
 import { cn } from '@/lib/utils'
-import { homeSmallPillClass } from '@/lib/homeStyles'
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 
 function formatShortDate(isoDate: string) {
@@ -134,9 +133,9 @@ function PathNodeButton({ node }: { node: PathNode }) {
     <div className="study-lesson-copy">
       <Popover.Root open={open} onOpenChange={setOpen}>
         <Popover.Trigger asChild><button type="button" className="study-lesson-details" aria-label={`Detalhes de ${node.packName}`}><span className="study-lesson-title"><strong>{node.packName}</strong><Info size={13} aria-hidden="true" /></span><span className="study-lesson-label">{isCurrent && node.playAssignmentId ? 'Em andamento' : STATE_LABEL[node.state]}</span></button></Popover.Trigger>
-        <Popover.Portal><Popover.Content side="bottom" sideOffset={8} collisionPadding={16} className="learning-path-popover z-50 w-[min(20rem,calc(100vw-2rem))] rounded-container border border-brand-border bg-white p-5 text-brand-dark">
-          <div className="flex items-start justify-between gap-3"><span className={homeSmallPillClass}>{node.level}{node.category ? ` · ${node.category}` : ''}</span><Popover.Close aria-label="Fechar detalhes" className="inline-flex h-11 w-11 shrink-0 items-center justify-center"><X size={18} /></Popover.Close></div>
-          <h3 className="mt-3 font-heading text-lg font-semibold">{node.packName}</h3>
+        <Popover.Portal><Popover.Content side="bottom" sideOffset={8} collisionPadding={16} aria-label={`Detalhes de ${node.packName}`} className="learning-path-popover study-detail-popover z-50">
+          <div className="flex items-start justify-between gap-3"><p className="study-detail-meta">{node.level}{node.category ? ` · ${node.category}` : ''}</p><Popover.Close aria-label="Fechar detalhes" className="inline-flex h-11 w-11 shrink-0 items-center justify-center"><X size={18} /></Popover.Close></div>
+          <h3 className="font-heading text-lg font-semibold">{node.packName}</h3>
           {node.stage && <p className="mt-2 text-xs font-semibold text-text-muted">{CURRICULUM_STAGE_LABELS[node.stage]} do {node.level}</p>}
           {description && <p className="mt-2 text-sm leading-relaxed text-text-muted">{description}</p>}
           <p className="mt-3 text-xs text-text-muted">{isDone ? `Concluída ${node.timesCompleted} ${node.timesCompleted === 1 ? 'vez' : 'vezes'}${node.lastStudiedDate ? ` · última em ${formatShortDate(node.lastStudiedDate)}` : ''}` : STATE_LABEL[node.state]}</p>

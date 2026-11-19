@@ -46,6 +46,11 @@ export default async function LibraryPage({ searchParams }: { searchParams?: Pro
   if (safeQuery) wordsQuery = wordsQuery.or(`english_phrase.ilike.%${safeQuery}%,portuguese_translation.ilike.%${safeQuery}%`)
   const [{ data: userPacks, error }, wordResult] = await Promise.all([packsPromise, wordsQuery.order('created_at', { ascending: false }).order('id').range((page - 1) * pageSize, page * pageSize - 1)])
 
+  if (!wordResult.error && wordResult.count !== null) {
+    const lastPage = Math.max(1, Math.ceil(wordResult.count / pageSize))
+    if (page > lastPage) redirect(`/library?${new URLSearchParams({ q: query, page: String(lastPage) })}`)
+  }
+
   const packSummaries: UserPackSummary[] = ((userPacks || []) as unknown as UserPackRow[]).map((pack) => {
     const assignment =
       pack.assignments?.find((item) => !item.status.startsWith('completed')) ||

@@ -1,0 +1,446 @@
+[
+  {
+    "level": "A1",
+    "lesson": {
+      "id": "a1-shop-02",
+      "title": "Pedir um item",
+      "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+      "text": "You are at a small shop. The blue notebook is three pounds. The red notebook is five pounds. The shop closes at six.",
+      "question": "Qual caderno custa três libras?",
+      "choices": [
+        "O vermelho.",
+        "O azul.",
+        "Os dois."
+      ],
+      "answer": 1,
+      "explanation": "Blue notebook identifica o caderno azul; three pounds é o preço.",
+      "prompt": "Escreva um pedido em inglês: diga qual caderno quer e pergunte se pode pagar com cartão.",
+      "example": "A blue notebook, please. Can I pay by card?",
+      "criteria": [
+        "Eu atendi ao pedido da tarefa.",
+        "Eu preservei as informações relevantes.",
+        "Minha resposta está compreensível para o destinatário."
+      ],
+      "shadowing": "A blue notebook, please."
+    },
+    "turn": "We only take cash. Do you still want the notebook?",
+    "interaction": "Responda ao atendente. Aceite ou recuse e agradeça.",
+    "mediation": "Uma amiga quer o caderno mais barato. Escreva em inglês qual é e quanto custa.",
+    "checks": [
+      "Eu respondi à pergunta sobre dinheiro.",
+      "Eu preservei cor e preço."
+    ],
+    "tags": [
+      "compras",
+      "números",
+      "objetos"
+    ]
+  },
+  {
+    "level": "A1",
+    "lesson": {
+      "id": "a1-club-02",
+      "title": "Convidar para um clube",
+      "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+      "text": "The reading club meets on Tuesday at four. We meet in Room Two. Bring a short book. New members are welcome.",
+      "question": "O que é preciso levar?",
+      "choices": [
+        "Um livro curto.",
+        "Uma cadeira.",
+        "Um ingresso."
+      ],
+      "answer": 0,
+      "explanation": "Bring a short book pede um livro curto; não há ingresso no aviso.",
+      "prompt": "Convide um amigo em inglês. Diga dia, horário e sala.",
+      "example": "Come to the reading club on Tuesday at four. We meet in Room Two.",
+      "criteria": [
+        "Eu atendi ao pedido da tarefa.",
+        "Eu preservei as informações relevantes.",
+        "Minha resposta está compreensível para o destinatário."
+      ],
+      "shadowing": "Come to the reading club on Tuesday at four."
+    },
+    "turn": "I can come at five. Is that the start time?",
+    "interaction": "Corrija o horário com gentileza.",
+    "mediation": "Seu colega não viu o aviso. Passe em inglês o lugar e o que ele precisa levar.",
+    "checks": [
+      "Eu corrigi five para four.",
+      "Eu transmiti sala e item, sem inventar ingresso."
+    ],
+    "tags": [
+      "dias",
+      "horas",
+      "escola"
+    ]
+  },
+  {
+    "level": "A2",
+    "lesson": {
+      "id": "a2-repair-02",
+      "title": "Combinar um conserto",
+      "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+      "text": "Your bicycle repair is ready. You can collect it before five today or after ten tomorrow. The rear light still needs a new battery. We have not charged you for a battery.",
+      "question": "O que ainda falta?",
+      "choices": [
+        "Pagar por outra bicicleta.",
+        "Trocar a bateria da luz traseira.",
+        "Consertar os freios."
+      ],
+      "answer": 1,
+      "explanation": "Still needs indica o que ainda falta. A mensagem não diz que a bateria foi cobrada.",
+      "prompt": "Escreva à oficina dizendo quando vai buscar a bicicleta e pergunte se há bateria à venda.",
+      "example": "I will collect my bicycle tomorrow after ten. Do you sell batteries for the rear light?",
+      "criteria": [
+        "Eu atendi ao pedido da tarefa.",
+        "Eu preservei as informações relevantes.",
+        "Minha resposta está compreensível para o destinatário."
+      ],
+      "shadowing": "I will collect my bicycle tomorrow after ten."
+    },
+    "turn": "We have one battery left, but we cannot keep it without confirmation.",
+    "interaction": "Confirme se quer a bateria e faça uma pergunta sobre o preço.",
+    "mediation": "Um familiar buscará a bicicleta. Explique em inglês o horário e a pendência, sem dizer que tudo já está resolvido.",
+    "checks": [
+      "Eu respondi ao pedido de confirmação.",
+      "Eu preservei horário e pendência."
+    ],
+    "tags": [
+      "serviços",
+      "planos",
+      "compras"
+    ]
+  },
+  {
+    "level": "A2",
+    "lesson": {
+      "id": "a2-picnic-02",
+      "title": "Reorganizar uma atividade",
+      "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+      "text": "Our picnic is moving to the hall because of the rain. Please arrive at noon. There is a kitchen, but no plates or cups. Everyone should bring something to share.",
+      "question": "Por que levar pratos?",
+      "choices": [
+        "A cozinha está fechada.",
+        "O encontro foi cancelado.",
+        "O salão não tem pratos."
+      ],
+      "answer": 2,
+      "explanation": "A cozinha existe, mas não há pratos nem copos. O encontro mudou de lugar.",
+      "prompt": "Escreva ao grupo o que você vai levar e confirme onde e quando será o encontro.",
+      "example": "I can bring plates and some fruit. See you in the hall at noon.",
+      "criteria": [
+        "Eu atendi ao pedido da tarefa.",
+        "Eu preservei as informações relevantes.",
+        "Minha resposta está compreensível para o destinatário."
+      ],
+      "shadowing": "I can bring plates and some fruit."
+    },
+    "turn": "Thanks. Could you bring cups instead? Alex is bringing plates.",
+    "interaction": "Responda à mudança e confirme o que levará.",
+    "mediation": "Avise um colega em inglês sobre a mudança de local e o motivo.",
+    "checks": [
+      "Eu ajustei minha oferta à resposta do grupo.",
+      "Eu mantive lugar e motivo corretos."
+    ],
+    "tags": [
+      "convites",
+      "clima",
+      "comida"
+    ]
+  },
+  {
+    "level": "B1",
+    "lesson": {
+      "id": "b1-volunteer-02",
+      "title": "Negociar uma troca",
+      "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+      "text": "A volunteer needs to swap Saturday morning for Sunday afternoon. The organiser can allow the change if another volunteer covers Saturday. The Sunday team already has enough drivers but needs someone to welcome visitors.",
+      "question": "Qual condição permite a troca?",
+      "choices": [
+        "Outra pessoa cobrir sábado.",
+        "O voluntário dirigir domingo.",
+        "Cancelar a atividade."
+      ],
+      "answer": 0,
+      "explanation": "A cobertura de sábado é a condição. Domingo precisa de recepção, não de mais motoristas.",
+      "prompt": "Peça a troca ao organizador, explique uma razão e ofereça uma forma de conseguir cobertura.",
+      "example": "Could I move to Sunday afternoon? I have a family appointment on Saturday. I can ask Kim to cover my shift and help welcome visitors on Sunday.",
+      "criteria": [
+        "Eu atendi ao pedido da tarefa.",
+        "Eu preservei as informações relevantes.",
+        "Minha resposta está compreensível para o destinatário."
+      ],
+      "shadowing": "Could I move to Sunday afternoon? I have a family appointment on Saturday."
+    },
+    "turn": "Kim can cover only the first hour. We need cover until noon.",
+    "interaction": "Responda à cobertura parcial e proponha um próximo passo sem prometer algo ainda não confirmado.",
+    "mediation": "Resuma a situação para outro voluntário em inglês, distinguindo o que já foi combinado e o que falta.",
+    "checks": [
+      "Eu considerei a cobertura incompleta.",
+      "Eu distingui acordo de proposta."
+    ],
+    "tags": [
+      "trabalho",
+      "pedidos",
+      "planos"
+    ]
+  },
+  {
+    "level": "B1",
+    "lesson": {
+      "id": "b1-course-02",
+      "title": "Escolher uma oficina",
+      "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+      "text": "Two workshops fit your budget. The online class meets every Wednesday evening and includes recordings. The studio class meets on Saturday mornings and provides materials, but there are no recordings. You sometimes work late on Wednesdays.",
+      "question": "Qual vantagem atende a quem perde uma aula online?",
+      "choices": [
+        "Materiais no estúdio.",
+        "Gravações disponíveis.",
+        "Aulas todo dia."
+      ],
+      "answer": 1,
+      "explanation": "As gravações permitem rever a aula; não há promessa de aula diária.",
+      "prompt": "Recomende uma oficina a alguém com essa rotina. Dê duas razões e reconheça uma desvantagem.",
+      "example": "I would choose the online class because I can watch the recordings after work and avoid travelling. However, I would need to buy my own materials.",
+      "criteria": [
+        "Eu atendi ao pedido da tarefa.",
+        "Eu preservei as informações relevantes.",
+        "Minha resposta está compreensível para o destinatário."
+      ],
+      "shadowing": "I would choose the online class because I can watch the recordings after work and avoid travelling."
+    },
+    "turn": "I learn better with other people in the same room. Would that change your advice?",
+    "interaction": "Ajuste sua recomendação à preferência da pessoa.",
+    "mediation": "Explique as duas opções a um amigo em inglês sem transformar sua preferência em fato.",
+    "checks": [
+      "Eu respondi à preferência do interlocutor.",
+      "Eu separei características e recomendação."
+    ],
+    "tags": [
+      "educação",
+      "preferências",
+      "comparações"
+    ]
+  },
+  {
+    "level": "B2",
+    "lesson": {
+      "id": "b2-library-02",
+      "title": "Conciliar acesso e silêncio",
+      "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+      "text": "A library proposes opening its study room to community groups after six. Students worry about noise during exams. Group organisers say a full ban would exclude people who cannot meet earlier. A separate entrance is available, but sound insulation has not been tested.",
+      "question": "Qual informação ainda precisa ser verificada?",
+      "choices": [
+        "Se existem estudantes.",
+        "Se os grupos preferem o silêncio.",
+        "Se o isolamento evita ruído."
+      ],
+      "answer": 2,
+      "explanation": "A existência de entrada separada não demonstra isolamento acústico.",
+      "prompt": "Recomende um teste limitado, reconheça as duas necessidades e proponha uma medida de avaliação.",
+      "example": "A short trial could allow evening meetings while protecting study time. We should measure noise in the reading area and pause the trial during exams if the agreed limit is exceeded.",
+      "criteria": [
+        "Eu atendi ao pedido da tarefa.",
+        "Eu preservei as informações relevantes.",
+        "Minha resposta está compreensível para o destinatário."
+      ],
+      "shadowing": "A short trial could allow evening meetings while protecting study time."
+    },
+    "turn": "The groups cannot plan events if permission may disappear at any moment.",
+    "interaction": "Negocie um acordo com aviso e condições claras, sem apagar a preocupação dos estudantes.",
+    "mediation": "Prepare uma síntese neutra para o conselho da biblioteca em inglês.",
+    "checks": [
+      "Eu negociei previsibilidade e limite.",
+      "Eu representei as duas necessidades."
+    ],
+    "tags": [
+      "negociação",
+      "opiniões",
+      "reuniões"
+    ]
+  },
+  {
+    "level": "B2",
+    "lesson": {
+      "id": "b2-survey-02",
+      "title": "Comparar evidências",
+      "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+      "text": "A café survey found that most respondents wanted reusable cups. Only customers who used the café app saw the survey. Staff reported that washing space was limited at busy times. The owner wants to replace all disposable cups next week.",
+      "question": "Qual limitação afeta a representatividade?",
+      "choices": [
+        "Só usuários do app responderam.",
+        "A pesquisa mencionou copos.",
+        "Os funcionários trabalham no café."
+      ],
+      "answer": 0,
+      "explanation": "Quem não usa o app ficou fora. Preferência declarada também não resolve a capacidade de lavagem.",
+      "prompt": "Escreva uma recomendação com uma ressalva metodológica e uma medida prática.",
+      "example": "I support reducing waste, but the survey may not represent all customers. A smaller trial would let staff test washing capacity before a full change.",
+      "criteria": [
+        "Eu atendi ao pedido da tarefa.",
+        "Eu preservei as informações relevantes.",
+        "Minha resposta está compreensível para o destinatário."
+      ],
+      "shadowing": "I support reducing waste, but the survey may not represent all customers."
+    },
+    "turn": "A trial sounds like another excuse to delay. What would make it a real commitment?",
+    "interaction": "Proponha prazo, critério e decisão após o teste.",
+    "mediation": "Explique em inglês a diferença entre apoio ao objetivo e evidência suficiente para o plano.",
+    "checks": [
+      "Eu ofereci compromisso verificável.",
+      "Eu preservei a limitação da amostra."
+    ],
+    "tags": [
+      "pesquisa",
+      "ambiente",
+      "argumentação"
+    ]
+  },
+  {
+    "level": "C1",
+    "lesson": {
+      "id": "c1-archive-02",
+      "title": "Explicar uma ressalva",
+      "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+      "text": "A city archive has digitised its most frequently requested documents. Officials describe the portal as representative of local history. Yet requests have mainly come from established researchers; records used by smaller community groups remain largely uncatalogued. The portal improves access to a selection, not necessarily to the breadth of the archive.",
+      "question": "Qual inferência excede a evidência?",
+      "choices": [
+        "A digitalização amplia algum acesso.",
+        "O portal representa toda a história local.",
+        "A seleção reflete pedidos anteriores."
+      ],
+      "answer": 1,
+      "explanation": "A seleção por procura anterior pode reproduzir lacunas. Acessibilidade parcial não equivale a representatividade.",
+      "prompt": "Redija um parecer que reconheça o ganho sem legitimar a conclusão excessiva.",
+      "example": "The portal is a valuable access tool, but its selection reflects prior demand rather than a demonstrated cross-section of local history. A community-led cataloguing phase would make the next expansion more defensible.",
+      "criteria": [
+        "Eu atendi ao pedido da tarefa.",
+        "Eu preservei as informações relevantes.",
+        "Minha resposta está compreensível para o destinatário."
+      ],
+      "shadowing": "The portal is a valuable access tool, but its selection reflects prior demand rather than a demonstrated cross-section of local history."
+    },
+    "turn": "Calling the portal unrepresentative may undermine support for future funding.",
+    "interaction": "Reformule a crítica para preservar precisão e viabilidade do diálogo.",
+    "mediation": "Explique a uma associação comunitária, em inglês acessível, por que seleção e representatividade são diferentes.",
+    "checks": [
+      "Eu reconheci a preocupação sem retirar a ressalva.",
+      "Eu expliquei a distinção sem jargão desnecessário."
+    ],
+    "tags": [
+      "análise",
+      "apresentações",
+      "comunidade"
+    ]
+  },
+  {
+    "level": "C1",
+    "lesson": {
+      "id": "c1-handover-02",
+      "title": "Preservar uma incerteza",
+      "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+      "text": "A project handover says delivery is on track, assuming a supplier confirms the replacement part this week. The summary omits that condition. The new manager interprets the headline as a firm commitment and tells the client that no delay is expected. The team has an alternative supplier, but has not verified compatibility.",
+      "question": "O que precisa ser corrigido na comunicação?",
+      "choices": [
+        "A promessa tratada como incondicional.",
+        "A existência de uma equipe.",
+        "A data de uma entrega já concluída."
+      ],
+      "answer": 0,
+      "explanation": "O prazo depende de confirmação; a alternativa também não está validada.",
+      "prompt": "Escreva uma atualização ao cliente que corrija a expectativa sem inventar certeza nem culpar pessoas.",
+      "example": "Our current schedule remains achievable, subject to confirmation of the replacement part. We are checking an alternative, but cannot yet treat it as a confirmed fallback. We will update you after those checks.",
+      "criteria": [
+        "Eu atendi ao pedido da tarefa.",
+        "Eu preservei as informações relevantes.",
+        "Minha resposta está compreensível para o destinatário."
+      ],
+      "shadowing": "Our current schedule remains achievable, subject to confirmation of the replacement part."
+    },
+    "turn": "The client needs a date today. Can we simply use the original one?",
+    "interaction": "Responda distinguindo estimativa, condição e compromisso de atualização.",
+    "mediation": "Faça um resumo em inglês para uma equipe não técnica, preservando as duas incertezas.",
+    "checks": [
+      "Eu mantive a condição ao responder à pressão.",
+      "Eu preservei confirmação e compatibilidade como pendências."
+    ],
+    "tags": [
+      "projetos",
+      "condições",
+      "comunicação"
+    ]
+  },
+  {
+    "level": "C2",
+    "lesson": {
+      "id": "c2-award-02",
+      "title": "Interpretar uma concessão",
+      "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+      "text": "The panel called the proposal audacious, though not always in the ways its authors intended. One reviewer praised its refusal of easy answers; another wondered whether unresolved contradictions were being recast as intellectual courage. Both welcomed the questions it raised, but only the first treated that achievement as sufficient grounds for the award.",
+      "question": "O que a convergência entre avaliadores não estabelece?",
+      "choices": [
+        "Que a proposta levantou questões.",
+        "Que há divergência de julgamento.",
+        "Que ambos recomendam o prêmio."
+      ],
+      "answer": 2,
+      "explanation": "Acolher as perguntas não equivale a julgar a obra merecedora do prêmio. A concessão inicial contém distância crítica.",
+      "prompt": "Escreva um parecer que interprete o tom e explicite a diferença entre mérito e suficiência para o prêmio.",
+      "example": "The panel recognises the proposal’s capacity to unsettle familiar assumptions, but that shared judgement does not settle whether its unresolved contradictions are productive. The recommendation turns on the weight assigned to that distinction.",
+      "criteria": [
+        "Eu atendi ao pedido da tarefa.",
+        "Eu preservei as informações relevantes.",
+        "Minha resposta está compreensível para o destinatário."
+      ],
+      "shadowing": "The panel recognises the proposal’s capacity to unsettle familiar assumptions, but that shared judgement does not settle whether its unresolved contradictions are productive."
+    },
+    "turn": "Your summary sounds as if the second reviewer dislikes difficult work. Is that fair?",
+    "interaction": "Repare a interpretação sem apagar a crítica nem fabricar equivalência entre as posições.",
+    "mediation": "Prepare uma síntese em inglês para o público, sem caricaturar os avaliadores ou eliminar a ambiguidade relevante.",
+    "checks": [
+      "Eu corrigi a atribuição indevida de intenção.",
+      "Eu preservei a divergência de critérios."
+    ],
+    "tags": [
+      "nuances",
+      "crítica",
+      "debates"
+    ]
+  },
+  {
+    "level": "C2",
+    "lesson": {
+      "id": "c2-access-02",
+      "title": "Delimitar um acordo",
+      "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+      "text": "A committee agrees that a new access scheme should be reversible. For some members, reversibility means restoring the previous rules; for others, it requires repairing losses incurred while the scheme operates. The chair treats the shared word as a settled safeguard. A community representative asks whether a safeguard whose meaning remains disputed can bear the justificatory weight placed on it.",
+      "question": "Qual problema o uso compartilhado da palavra esconde?",
+      "choices": [
+        "Todos rejeitam salvaguardas.",
+        "Há concepções diferentes de reversibilidade.",
+        "As regras anteriores foram esquecidas."
+      ],
+      "answer": 1,
+      "explanation": "Acordo sobre uma palavra não garante acordo sobre seu alcance nem sobre reparação.",
+      "prompt": "Redija uma nota que distinga as duas concepções e proponha uma decisão limitada sem fingir consenso.",
+      "example": "Agreement on reversibility is provisional while its scope remains unsettled. Restoring a rule and repairing losses are distinct commitments. Any interim scheme should specify which obligation is enforceable and which question remains open.",
+      "criteria": [
+        "Eu atendi ao pedido da tarefa.",
+        "Eu preservei as informações relevantes.",
+        "Minha resposta está compreensível para o destinatário."
+      ],
+      "shadowing": "Agreement on reversibility is provisional while its scope remains unsettled."
+    },
+    "turn": "Could we leave the definition to the implementation team and approve the scheme now?",
+    "interaction": "Responda distinguindo detalhe operacional de desacordo que altera a justificativa da decisão.",
+    "mediation": "Explique a divergência em inglês a dois públicos com interesses distintos, sem reduzir um deles a resistência irracional.",
+    "checks": [
+      "Eu mostrei por que a definição muda a decisão.",
+      "Eu preservei os interesses e o desacordo sem falso consenso."
+    ],
+    "tags": [
+      "governança",
+      "mediação",
+      "precisão"
+    ]
+  }
+]

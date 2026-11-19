@@ -3,7 +3,7 @@ import { Fragment, useEffect, useRef, useState } from 'react'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import Link from 'next/link'
-import Image from 'next/image'
+import StudioHero from '@/components/learning/StudioHero'
 import { ArrowRight, Plus, RotateCcw, Sparkles, X } from 'lucide-react'
 import { submitCardReview } from '@/app/actions'
 import { scheduleReview, toSchedulingState, formatMinutesEstimate } from '../lib/learningSteps'
@@ -15,16 +15,18 @@ import AudioButton from '@/components/ui/AudioButton'
 import { buildClozeChallenge } from '../lib/clozeChallenge'
 import { isGradeAllowedAfterPractice, type PracticeOutcome } from '../lib/practiceOutcome'
 import type { Card } from '@/types/database.types'
+import { parseReviewRecovery, reconcileReviewRecovery, type PendingReview } from '../lib/reviewRecovery'
 import { nextLapseCount } from '../lib/leech'
 export type { DueCard } from './GuidedReviewClient'
-const STORAGE = 'kivora-focused-review-v1'
+const STORAGE = 'kivora-focused-review-v2'
 const grades = [{ value: REVIEW_GRADE.AGAIN, label: 'De novo' }, { value: REVIEW_GRADE.HARD, label: 'Difícil' }, { value: REVIEW_GRADE.GOOD, label: 'Lembrei' }, { value: REVIEW_GRADE.EASY, label: 'Fácil' }]
-type Props = { initialDueCards: DueCard[]; initialStats: { newCards: number; learning: number; review: number; sessionLimit: number }; packCardsByPackId: Record<string, Card[]>; sessionTitle?: string; disableStoredSessionRestore?: boolean; initialLoadStatus?: 'ok' | 'timeout' | 'error'; loadErrorMessage?: string }
-export default function ReviewClient({ initialDueCards, packCardsByPackId, initialLoadStatus = 'ok', disableStoredSessionRestore = false, sessionTitle }: Props) {
+type Props = { userId?: string; initialDueCards: DueCard[]; initialStats: { newCards: number; learning: number; review: number; sessionLimit: number }; packCardsByPackId: Record<string, Card[]>; sessionTitle?: string; disableStoredSessionRestore?: boolean; initialLoadStatus?: 'ok' | 'timeout' | 'error'; loadErrorMessage?: string }
+export default function ReviewClient({ userId, initialDueCards, initialStats, packCardsByPackId, initialLoadStatus = 'ok', disableStoredSessionRestore = false, sessionTitle }: Props) {
+  const storageKey = userId ? `${STORAGE}:${userId}` : null
   const [queue, setQueue] = useState(initialDueCards), [revealed, setRevealed] = useState(false)
   const [completed, setCompleted] = useState(0), [saving, setSaving] = useState(false), [error, setError] = useState('')
   const [ready, setReady] = useState(false)
-  const [pending, setPending] = useState<Array<{ card: DueCard; dueAt: number }>>([])
+  const [pending, setPending] = useState<PendingReview[]>([])
   const [mode, setMode] = useState<'flashcard' | 'cloze'>('flashcard')
   const [selected, setSelected] = useState<Array<string | null>>([])
   const [activeGap, setActiveGap] = useState(0)
@@ -60,15 +62,22 @@ export default function ReviewClient({ initialDueCards, packCardsByPackId, initi
   useEffect(() => {
     if (restored.current) return
     restored.current = true
-    if (!disableStoredSessionRestore) try {
-      const saved = JSON.parse(sessionStorage.getItem(STORAGE) || 'null')
-      if (saved?.ids?.length && Date.now() - saved.at < 86400000 && saved.ids.every((id: unknown) => typeof id === 'string')) {
-        const remaining = saved.ids.map((id: string) => initialDueCards.find(c => c.card_id === id)).filter(Boolean)
-        if (remaining.length) { setQueue(remaining); setCompleted(Number.isInteger(saved.completed) ? Math.max(0, saved.completed) : 0) }
+    if (!disableStoredSessionRestore && storageKey) try {
+      const saved = parseReviewRecovery(sessionStorage.getItem(storageKey))
+      if (saved) {
+        const recovered = reconcileReviewRecovery(saved, initialDueCards, Date.now(), initialStats.sessionLimit, initialLoadStatus === 'ok')
+        setQueue(recovered.queue); setPending(recovered.pending); setCompleted(recovered.completed)
       }
     } catch { /* A blocked storage area does not prevent reviewing. */ }
     setReady(true)
-  }, [disableStoredSessionRestore, initialDueCards])
+  }, [disableStoredSessionRestore, initialDueCards, initialLoadStatus, initialStats.sessionLimit, storageKey])
+  useEffect(() => {
+    if (!ready || disableStoredSessionRestore || !storageKey) return
+    try {
+      if (queue.length || pending.length) sessionStorage.setItem(storageKey, JSON.stringify({ version: 2, at: Date.now(), queue, pending, completed }))
+      else sessionStorage.removeItem(storageKey)
+    } catch { /* Server confirmation remains the source of truth. */ }
+  }, [ready, disableStoredSessionRestore, storageKey, queue, pending, completed])
   useEffect(() => {
     if (!saving) return
     const prevent = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = '' }
@@ -105,10 +114,6 @@ export default function ReviewClient({ initialDueCards, packCardsByPackId, initi
         setPending(current => [...current.filter(item => item.card.card_id !== card.card_id), { card, dueAt: nextAt }])
       }
       const next = queue.slice(1), count = completed + 1
-      if (!disableStoredSessionRestore) try {
-        if (next.length) sessionStorage.setItem(STORAGE, JSON.stringify({ ids: next.map(c => c.card_id), completed: count, at: Date.now() }))
-        else sessionStorage.removeItem(STORAGE)
-      } catch { /* Server confirmation remains the source of truth. */ }
       setQueue(next); setCompleted(count); setRevealed(false); setSelected([]); setActiveGap(0); setOutcome(null)
       if (!next.length) void fetch('/api/streak/update', { method: 'POST' }).catch(() => undefined)
       requestAnimationFrame(() => revealButton.current?.focus())
@@ -128,20 +133,25 @@ export default function ReviewClient({ initialDueCards, packCardsByPackId, initi
   })
   if (initialLoadStatus !== 'ok' && !active) return <ProductMotion className="study-desk"><div className="study-finish"><RotateCcw size={32} /><h1>Não foi possível<br />abrir a revisão.</h1><button className="product-primary" onClick={() => window.location.reload()}>Tentar novamente</button><Link href="/library">Abrir coleção</Link></div></ProductMotion>
   if (!active && pending.length) return <ProductMotion className="study-desk"><div className="study-finish" role="status"><span className="product-kicker">PAUSA PARA FIXAR</span><h1>Mais uma chance<br />em instantes.</h1><p>Próxima revisão prevista para {new Date(Math.min(...pending.map(item => item.dueAt))).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}. Ela volta automaticamente enquanto esta página estiver aberta.</p><Link className="product-text-link" href="/library">Abrir coleção <ArrowRight size={16} /></Link></div><PracticeRoutes /></ProductMotion>
-  if (!active) return <ProductMotion className="study-desk"><div className="study-finish"><Image className="study-finish-art" src="/images/workspace/review.webp" alt="" width={1536} height={1024} unoptimized /><span className="product-kicker">{completed ? 'SESSÃO CONCLUÍDA' : 'REVISÃO EM DIA'}</span><h1>{completed ? 'Bom trabalho.' : 'Tudo em dia.'}</h1>{completed > 0 && <p>{completed} {completed === 1 ? 'resposta salva' : 'respostas salvas'}.</p>}<Link className="product-primary" href="/add">Adicionar palavra <Plus size={18} /></Link><Link className="product-text-link" href="/library">Abrir coleção <ArrowRight size={16} /></Link>{completed > 0 && <button className="product-text-link" onClick={() => window.location.reload()}>Ver próximas revisões</button>}</div><PracticeRoutes /></ProductMotion>
-  return <div ref={reviewRoot} className="study-desk" data-testid="review-page">
-    <header className="study-desk-heading">
-      <div><span className="product-kicker">UM POUCO MAIS DE INGLÊS, TODOS OS DIAS</span><h1>Revisão <em>inteligente.</em></h1><p>Relembre agora. Leve com você depois.</p></div>
-      <Image src="/images/workspace/review.webp" alt="" width={1536} height={1024} className="workspace-study-art" />
-      <Link className="study-add" href="/add" aria-label="Adicionar palavra"><Plus size={20} /><span>Adicionar palavra</span></Link>
-    </header>
-    <div className="study-session-line"><span>{sessionTitle || 'Sua sessão de hoje'}</span><span aria-live="polite">{completed} / {total}</span><Link href="/library" aria-label="Pausar revisão" aria-disabled={saving} onClick={e => { if (saving) e.preventDefault() }}><X size={19} /></Link></div>
+  if (!active) return <div className="study-desk study-desk--review">
+    <StudioHero label={completed ? 'Sessão concluída' : 'Revisão em dia'} title={completed ? 'Bom trabalho.' : 'Tudo em dia.'}
+      description={completed ? `${completed} ${completed === 1 ? 'resposta salva' : 'respostas salvas'}.` : 'Sua revisão está em dia. Experimente usar o inglês em uma situação nova.'}>
+      <Link href="/today">Praticar em contexto <ArrowRight size={16} /></Link>
+      <Link href="/library">Abrir coleção</Link>
+      {completed > 0 && <button onClick={() => window.location.reload()}>Ver próximas revisões</button>}
+    </StudioHero><PracticeRoutes />
+  </div>
+  return <div ref={reviewRoot} className="study-desk study-desk--review" data-testid="review-page">
+    <StudioHero title="Revisão" compact>
+      <Link href="/add"><Plus size={16} />Adicionar palavra</Link>
+    </StudioHero>
+    <div className="study-session-line"><span>{sessionTitle || 'Sua sessão de hoje'}</span><span aria-live="polite">{completed} / {total} respostas</span><Link href="/library" aria-label="Pausar revisão" aria-disabled={saving} onClick={e => { if (saving) e.preventDefault() }}><X size={19} /></Link></div>
     <div className="study-progress" role="progressbar" aria-label="Revisão diária" aria-valuenow={completed} aria-valuemin={0} aria-valuemax={total}><span style={{ transform: `scaleX(${total ? completed / total : 0})` }} /></div>
     {challenge && <div className="review-mode-picker" role="group" aria-label="Formato da revisão">
       <button type="button" aria-pressed={!isCloze} disabled={revealed || saving} onClick={() => setMode('flashcard')}>Flashcard</button>
       <button type="button" aria-pressed={isCloze} disabled={revealed || saving || !challenge} onClick={() => setMode('cloze')}>Completar frase</button>
     </div>}
-    <ProductMotion motionKey={`${active.card_id}-${isCloze}`} className="memory-card">
+    <ProductMotion motionKey={`${active.card_id}-${isCloze}`} className="memory-card review-card" subtle>
       <div className="memory-card-top"><span className="tone-chip" data-tone={active.isNew ? 'vocabulary' : 'review'}>{active.isNew ? 'Nova descoberta' : active.selectionTag || 'Hora de relembrar'}</span>{(!isCloze || revealed) && <AudioButton url={active.cards.audio_url} fallbackText={active.cards.english_phrase} autoPlay={false} variant="game" />}</div>
       {isCloze && challenge ? <>
         <span className="product-kicker">COMPLETE A FRASE ORIGINAL</span>
@@ -167,7 +177,7 @@ export default function ReviewClient({ initialDueCards, packCardsByPackId, initi
       {error && <div className="product-error" role="alert"><p>{error}</p><button onClick={() => window.location.reload()}>Recarregar</button></div>}
     </div>
     <details className="study-insight"><summary><Sparkles size={16} aria-hidden="true" /> Por que revisar esta palavra?</summary><p>{active.selectionReason || 'Esta palavra faz parte da sua fila de hoje. A repetição espaçada combina seu histórico com a dificuldade que você informa para calcular o próximo intervalo.'}</p></details>
-    <footer className="study-footnote"><Link href="/library">Minha coleção</Link><Link href="/review?mode=guided">Prática guiada <ArrowRight size={14} /></Link></footer>
+    <footer className="study-footnote"><Link href="/today">Prática de hoje</Link><Link href="/review?mode=guided">Prática guiada <ArrowRight size={14} /></Link></footer>
     <details className="workspace-disclosure"><summary>Outras formas de praticar</summary><PracticeRoutes /></details>
   </div>
 }

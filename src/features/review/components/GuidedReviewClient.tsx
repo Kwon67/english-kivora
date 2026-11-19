@@ -1,5 +1,6 @@
 'use client'
 
+import { guidedStepLabel } from '../lib/reviewRecovery'
 import { CELEBRATION_COLORS } from '@/lib/brandColors'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
@@ -89,6 +90,7 @@ interface ReviewStats {
 type ReviewLoadStatus = 'ok' | 'timeout' | 'error'
 
 interface ReviewClientProps {
+  userId?: string
   initialDueCards: DueCard[]
   initialStats: ReviewStats
   packCardsByPackId: Record<string, Card[]>
@@ -158,13 +160,16 @@ type StoredReviewSession = {
   practiceMode?: GameMode | null
 }
 
-function readStoredReviewSession() {
+function readStoredReviewSession(key: string) {
   try {
-    const raw = localStorage.getItem(REVIEW_SESSION_STORAGE_KEY)
+    const raw = localStorage.getItem(key)
     if (!raw) return null
 
     const parsed = JSON.parse(raw) as Partial<StoredReviewSession> & { currentIndex?: number }
-    if (!parsed.packId || !parsed.startedAt) return null
+    if (typeof parsed.packId !== 'string' || !parsed.packId || typeof parsed.startedAt !== 'string') return null
+    if (!parsed.answers || typeof parsed.answers !== 'object' || Array.isArray(parsed.answers) || Object.values(parsed.answers).some(value => typeof value !== 'boolean')) return null
+    if (parsed.practiceOutcome != null && !['correct', 'partial', 'wrong', 'unscored'].includes(parsed.practiceOutcome)) return null
+    if (parsed.practiceMode != null && !['multiple_choice', 'typing', 'flashcard', 'matching', 'listening', 'speaking'].includes(parsed.practiceMode)) return null
 
     const remainingCardIds = Array.isArray(parsed.remainingCardIds)
       ? parsed.remainingCardIds.filter((id): id is string => typeof id === 'string' && id.length > 0)
@@ -173,8 +178,8 @@ function readStoredReviewSession() {
     if (remainingCardIds.length === 0) {
       return null
     }
-    if (Date.now() - new Date(parsed.startedAt).getTime() > REVIEW_SESSION_TTL_MS) {
-      localStorage.removeItem(REVIEW_SESSION_STORAGE_KEY)
+    if (!Number.isFinite(new Date(parsed.startedAt).getTime()) || Date.now() < new Date(parsed.startedAt).getTime() || Date.now() - new Date(parsed.startedAt).getTime() > REVIEW_SESSION_TTL_MS) {
+      try { localStorage.removeItem(key) } catch { /* Storage is optional. */ }
       return null
     }
 
@@ -185,23 +190,23 @@ function readStoredReviewSession() {
       remainingCardIds,
       answers: parsed.answers ?? {},
       startedAt: parsed.startedAt,
-      currentModeIndex: typeof parsed.currentModeIndex === 'number' ? parsed.currentModeIndex : 0,
+      currentModeIndex: typeof parsed.currentModeIndex === 'number' && Number.isInteger(parsed.currentModeIndex) && parsed.currentModeIndex >= 0 ? parsed.currentModeIndex : 0,
       reviewPhase,
       practiceOutcome: parsed.practiceOutcome ?? null,
       practiceMode: parsed.practiceMode ?? null,
     }
   } catch {
-    localStorage.removeItem(REVIEW_SESSION_STORAGE_KEY)
+    try { localStorage.removeItem(key) } catch { /* Storage is optional. */ }
     return null
   }
 }
 
-function writeStoredReviewSession(session: StoredReviewSession) {
-  localStorage.setItem(REVIEW_SESSION_STORAGE_KEY, JSON.stringify(session))
+function persistReviewSession(key: string, session: StoredReviewSession) {
+  try { localStorage.setItem(key, JSON.stringify(session)) } catch { /* Storage is optional. */ }
 }
 
-function clearStoredReviewSession() {
-  localStorage.removeItem(REVIEW_SESSION_STORAGE_KEY)
+function removeReviewSession(key: string) {
+  try { localStorage.removeItem(key) } catch { /* Storage is optional. */ }
 }
 
 function getCardKey(card: DueCard) {
@@ -261,6 +266,7 @@ function buildReviewStats(cards: DueCard[], sessionLimit: number): ReviewStats {
 }
 
 export default function ReviewClient({
+  userId,
   initialDueCards,
   initialStats,
   packCardsByPackId: initialPackCardsByPackId,
@@ -269,6 +275,9 @@ export default function ReviewClient({
   initialLoadStatus = 'ok',
   loadErrorMessage,
 }: ReviewClientProps) {
+  const storageKey = userId && !disableStoredSessionRestore ? `${REVIEW_SESSION_STORAGE_KEY}:${userId}` : null
+  const writeStoredReviewSession = useCallback((session: StoredReviewSession) => { if (storageKey) persistReviewSession(storageKey, session) }, [storageKey])
+  const clearStoredReviewSession = useCallback(() => { if (storageKey) removeReviewSession(storageKey) }, [storageKey])
   const router = useRouter()
   const [dueCards, setDueCards] = useState<DueCard[]>(initialDueCards)
 
@@ -299,7 +308,7 @@ export default function ReviewClient({
   const [comboCount, setComboCount] = useState(0)
   const [maxCombo, setMaxCombo] = useState(0)
   const [stats, setStats] = useState<ReviewStats>(initialStats)
-  const [swipeOffset, setSwipeOffset] = useState(0)
+  const [reviewSwipeVisual, setReviewSwipeVisual] = useState<ReturnType<typeof getReviewSwipeVisual>>('neutral')
   const [answers, setAnswers] = useState<Record<string, boolean>>({})
   const [sessionStartedAt, setSessionStartedAt] = useState(() => new Date().toISOString())
   const [pendingStoredSession, setPendingStoredSession] = useState<StoredReviewSession | null>(null)
@@ -347,8 +356,7 @@ export default function ReviewClient({
   const currentStepLabel =
     reviewPhase === 'rate'
       ? 'Avaliar retenção'
-      : `${getReviewModeLabel(activeReviewMode)} · ${currentModeIndex + 1}/${activeReviewModes.length}`
-  const reviewSwipeVisual = getReviewSwipeVisual(swipeOffset)
+      : guidedStepLabel(getReviewModeLabel(activeReviewMode), currentModeIndex, activeReviewModes.length)
   const activePackCards = activeCard
     ? packCardsByPackId[activeCard.pack_id] || [activeCard.cards]
     : []
@@ -385,6 +393,7 @@ export default function ReviewClient({
     setShowExitConfirm(true)
   }, [
     answers,
+    writeStoredReviewSession,
     currentModeIndex,
     dueCards,
     exitToHome,
@@ -442,18 +451,18 @@ export default function ReviewClient({
 
 	    if (hasCheckedStoredSessionRef.current || !sessionPackId || dueCards.length === 0) return
 
-	    hasCheckedStoredSessionRef.current = true
-	    const storedSession = readStoredReviewSession()
-	    if (!storedSession) return
+	    const storedSession = storageKey ? readStoredReviewSession(storageKey) : null
+	    if (!storedSession) { hasCheckedStoredSessionRef.current = true; return }
 
 	    const restoredQueue = restoreQueueFromStoredSession(dueCards, storedSession)
-	    if (storedSession.packId === sessionPackId && restoredQueue.length > 0 && restoredQueue.length < dueCards.length) {
-	      const restorePromptTimer = window.setTimeout(() => setPendingStoredSession(storedSession), 0)
+	    if (restoredQueue.length > 0) {
+	      const restorePromptTimer = window.setTimeout(() => { hasCheckedStoredSessionRef.current = true; setPendingStoredSession(storedSession) }, 0)
 	      return () => window.clearTimeout(restorePromptTimer)
 	    }
 
+	    hasCheckedStoredSessionRef.current = true
 	    clearStoredReviewSession()
-	  }, [disableStoredSessionRestore, dueCards, dueCards.length, sessionPackId])
+	  }, [clearStoredReviewSession, storageKey, disableStoredSessionRestore, dueCards, dueCards.length, sessionPackId])
 
 	  function continueStoredSession() {
 	    if (!pendingStoredSession) return
@@ -473,8 +482,8 @@ export default function ReviewClient({
 	    )
 	    setReviewPhase(restoredPhase)
 	    setShowAnswer(restoredPhase === 'rate')
-	    setPracticeOutcome(restoredPhase === 'rate' ? pendingStoredSession.practiceOutcome ?? null : null)
-	    setPracticeMode(restoredPhase === 'rate' ? pendingStoredSession.practiceMode ?? null : null)
+	    setPracticeOutcome(pendingStoredSession.practiceOutcome ?? null)
+	    setPracticeMode(pendingStoredSession.practiceMode ?? null)
 	    setPendingStoredSession(null)
 	  }
 
@@ -522,7 +531,13 @@ export default function ReviewClient({
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [clearStoredReviewSession])
+
+  useEffect(() => {
+    if (!hasCheckedStoredSessionRef.current || pendingStoredSession || !hasSessionProgress || !sessionPackId || !dueCards.length) return
+    writeStoredReviewSession({ packId: sessionPackId, remainingCardIds: dueCards.map(getCardKey), answers,
+      startedAt: sessionStartedAt, currentModeIndex, reviewPhase, practiceOutcome, practiceMode })
+  }, [pendingStoredSession, hasSessionProgress, sessionPackId, dueCards, answers, sessionStartedAt, currentModeIndex, reviewPhase, practiceOutcome, practiceMode, writeStoredReviewSession])
 
   const handleModeComplete = useCallback((outcome: PracticeOutcome, playedMode: GameMode) => {
     // Com mais de um modo por card, vale o pior: um erro na escuta não é apagado por acertar a
@@ -662,7 +677,7 @@ export default function ReviewClient({
         setIsLoading(false)
       }
     },
-		    [activeCard, answers, completedCount, dueCards, router, comboCount, maxCombo, practiceMode, practiceOutcome, sessionPackId, sessionStartedAt, sessionTitle]
+		    [clearStoredReviewSession, writeStoredReviewSession, activeCard, answers, completedCount, dueCards, router, comboCount, maxCombo, practiceMode, practiceOutcome, sessionPackId, sessionStartedAt, sessionTitle]
 		  )
 
   const handleQualityClick = useCallback(
@@ -698,7 +713,7 @@ export default function ReviewClient({
           swipeStartedOnSelectableRef.current = false
           swipePeakXRef.current = 0
         }
-        setSwipeOffset(0)
+        setReviewSwipeVisual('neutral')
         return
       }
 
@@ -706,8 +721,9 @@ export default function ReviewClient({
         swipePeakXRef.current = movementX
       }
 
-      const limitedOffset = Math.max(-120, Math.min(120, movementX))
-      setSwipeOffset(down ? limitedOffset : 0)
+      // Only the zone changes the rendered highlight. The exact offset is
+      // already stored in a ref for grading when the gesture ends.
+      setReviewSwipeVisual(down ? getReviewSwipeVisual(movementX) : 'neutral')
 
       if (!last) return
 
@@ -719,7 +735,7 @@ export default function ReviewClient({
 
       const quality = resolveReviewSwipeQuality(swipePeakXRef.current)
       swipePeakXRef.current = 0
-      setSwipeOffset(0)
+      setReviewSwipeVisual('neutral')
 
       if (quality === null) return
 
@@ -939,11 +955,11 @@ export default function ReviewClient({
         <AnimatePresence mode="wait">
 		          <m.section
 		            key={`${getCardKey(activeCard)}-${reviewPhase}-${currentModeIndex}`}
-	            initial={{ opacity: 0, y: 20, scale: 0.98 }}
-	            animate={{ opacity: 1, y: 0, scale: 1 }}
-	            exit={{ opacity: 0, y: -20, scale: 0.98 }}
-	            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-		            className={`${reviewPracticePanel} ${comboCount >= 3 ? 'animate-ai-glow' : ''}`}
+	            initial={{ opacity: 0, y: 5 }}
+	            animate={{ opacity: 1, y: 0 }}
+	            exit={{ opacity: 0 }}
+	            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+		            className={`${reviewPracticePanel} guided-review-prompt`}
 	          >
 	            <div
 	              className={`pointer-events-none absolute inset-0 transition-colors duration-150 ${
@@ -1004,7 +1020,7 @@ export default function ReviewClient({
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     data-review-selectable
-                    className={`${reviewMeaningCard} mt-4`}
+                    className={`${reviewMeaningCard} guided-review-answer mt-4`}
                   >
                     <p className="font-heading text-[11px] font-bold uppercase tracking-widest text-brand-secondary">
                       {promptsPortuguese ? 'Em inglês' : 'Significado'}

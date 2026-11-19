@@ -1,7 +1,10 @@
 'use client'
 
+import styles from '@/features/admin/components/AdminWorkspace.module.css'
+import DataLoadState from '@/components/ui/DataLoadState'
+
 import WorkspaceSections from '@/components/ui/WorkspaceSections'
-import { useState, useEffect, useTransition, useRef, useCallback, useMemo } from 'react'
+import { useState, useEffect, useTransition, useRef, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { 
   createPack, 
@@ -17,7 +20,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import ModalPortal from '@/components/ui/ModalPortal'
 import { useAnimatedDismiss } from '@/components/motion/useAnimatedDismiss'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
-import { parseBulkImport, parseJsonImport, parseApkg } from '@/features/cards/lib/apkgParser'
+import { parseBulkImport, parseJsonImport } from '@/features/cards/lib/textImportParser'
 import { formatAcceptedTranslations } from '@/features/cards/lib/cardTranslations'
 import PackCardsOrganizer from './PackCardsOrganizer'
 import PackLibraryOrganizer from './PackLibraryOrganizer'
@@ -34,10 +37,8 @@ import {
   fieldClass,
   fieldLabel,
   ghostBtn,
-  glassTile,
   iconClass,
   innerPanelClass,
-  modalShell,
   nestedCardClass,
   neutralBadge,
   primaryBtn,
@@ -46,7 +47,6 @@ import {
   adminPacksChoiceCardActive,
   adminPacksChoiceCardIdle,
   adminPacksImportDropzone,
-  adminPacksPanel,
   adminPacksShell,
   adminPacksTelemetryBand,
 } from '@/features/admin/lib/adminPacksUi'
@@ -70,10 +70,15 @@ type PendingDeleteAction =
   | { type: 'card'; id: string; name: string }
 
 export default function PacksPage() {
+  const [loadingPacks, setLoadingPacks] = useState(true)
+  const [packsLoadError, setPacksLoadError] = useState(false)
+  const loadVersion = useRef(0)
+  const importVersion = useRef(0)
   const [packs, setPacks] = useState<(Pack & { cards: Card[] })[]>([])
   const [selectedPack, setSelectedPack] = useState<string | null>(null)
   const [contentView, setContentView] = useState("biblioteca")
   function changeContentView(view: string) {
+    if (view !== "importar") cancelFileImport()
     setShowImport(view === "importar")
     setShowNewPack(view === "novo")
     setContentView(view === "audio" ? "audio" : "biblioteca")
@@ -187,21 +192,25 @@ export default function PacksPage() {
   }, [importMode, importPreview, selectedImportPack])
 
   async function loadPacks() {
-    const supabase = createClient()
-    const { data, error } = await supabase
-      .from('packs')
-      .select('*, cards(*)')
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      notify.error('Erro ao carregar dados')
-      return
-    }
-    if (data) setPacks(data as (Pack & { cards: Card[] })[])
+    const version = ++loadVersion.current
+    setLoadingPacks(true); setPacksLoadError(false)
+    try {
+      const supabase = createClient()
+      const {data,error} = await supabase.from('packs').select('*, cards(*)').order('created_at',{ascending:false})
+      if (version !== loadVersion.current) return
+      if (error) throw error
+      setPacks((data || []) as (Pack & {cards:Card[]})[])
+    } catch { if (version === loadVersion.current) setPacksLoadError(true) }
+    finally { if (version === loadVersion.current) setLoadingPacks(false) }
   }
-
   useEffect(() => {
-    setTimeout(() => loadPacks(), 0)
+    void loadPacks()
+    const requests = loadVersion
+    const imports = importVersion
+    return () => {
+      requests.current++
+      imports.current++
+    }
   }, [])
 
   useEffect(() => {
@@ -373,12 +382,16 @@ export default function PacksPage() {
     }
   }
 
-  async function handleCreatePack(formData: FormData) {
+  function handleCreatePack(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const form = event.currentTarget
+    const formData = new FormData(form)
     startTransition(async () => {
       setActionError(null)
       try {
 	        const result = await createPack(formData)
 	        if (result?.success) {
+	          form.reset()
 	          setShowNewPack(false)
 	          loadPacks()
 	          notify.success('Pack adicionado com sucesso')
@@ -503,7 +516,8 @@ export default function PacksPage() {
     })
   }
 
-  const handleFileImport = useCallback(async (file: File) => {
+  async function handleFileImport(file: File) {
+    const version = ++importVersion.current
     setImportLoading(true)
     setImportError(null)
     setImportPreview(null)
@@ -511,7 +525,10 @@ export default function PacksPage() {
     try {
       const ext = file.name.toLowerCase()
       if (ext.endsWith('.apkg')) {
+        const { parseApkg } = await import('@/features/cards/lib/apkgParser')
+        if (version !== importVersion.current) return
         const result = await parseApkg(file)
+        if (version !== importVersion.current) return
         const cards = result.cards.map((c: { front: string; back: string }) => ({ en: c.front, pt: c.back }))
         setImportPreview({
           name: result.deckName,
@@ -523,6 +540,7 @@ export default function PacksPage() {
         })
       } else if (ext.endsWith('.json')) {
         const text = await file.text()
+        if (version !== importVersion.current) return
         const result = parseJsonImport(text)
         if (result) {
           const cards = result.cards.map((c: { front: string; back: string; en?: string; pt?: string }) => ({ 
@@ -541,6 +559,7 @@ export default function PacksPage() {
         }
       } else if (ext.endsWith('.csv') || ext.endsWith('.txt')) {
         const text = await file.text()
+        if (version !== importVersion.current) return
         const cards = parseBulkImport(text)
         const normalizedCards = cards.map((c: { en?: string; pt?: string; front?: string; back?: string }) => ({ 
           en: c.en || c.front || '', 
@@ -557,13 +576,15 @@ export default function PacksPage() {
         setImportError('Formato não suportado')
       }
     } catch (error) {
-      setImportError('Erro ao processar: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
+      if (version === importVersion.current) {
+        setImportError('Erro ao processar: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
+      }
     } finally {
-      setImportLoading(false)
+      if (version === importVersion.current) setImportLoading(false)
     }
-  }, [])
+  }
 
-  const handleTextImport = useCallback(() => {
+  function handleTextImport() {
     const text = textareaRef.current?.value || ''
     if (!text.trim()) {
       setImportError('Cole o texto para importar')
@@ -582,7 +603,12 @@ export default function PacksPage() {
       source: 'text'
     })
     setImportError(null)
-  }, [])
+  }
+
+  function cancelFileImport() {
+    importVersion.current++
+    setImportLoading(false)
+  }
 
   function handleToggleImportPanel() {
     const next = !showImport
@@ -596,7 +622,7 @@ export default function PacksPage() {
 
     setImportPreview(null)
     setImportError(null)
-    setImportLoading(false)
+    cancelFileImport()
     setImportMode('new')
     setImportPackVisibility('public')
     setSelectedPackForImport('')
@@ -606,6 +632,7 @@ export default function PacksPage() {
   }
 
   function clearImportPreview() {
+    cancelFileImport()
     setImportPreview(null)
     setImportError(null)
 
@@ -613,12 +640,12 @@ export default function PacksPage() {
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
-  async function handleImportFileSelection(event: React.ChangeEvent<HTMLInputElement>) {
+  function handleImportFileSelection(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (!file) return
 
-    await handleFileImport(file)
     event.target.value = ''
+    void handleFileImport(file)
   }
 
   async function confirmImport() {
@@ -697,8 +724,10 @@ export default function PacksPage() {
     { tone: 'listening', label: 'Áudio OK', value: `${audioHealth}%`, icon: Mic },
   ] as const
 
+  if (loadingPacks || packsLoadError) return <DataLoadState title="Conteúdo" loading={loadingPacks} onRetry={() => void loadPacks()} />
+
   return (
-    <div className={adminPacksShell}>
+    <div className={`${adminPacksShell} ${styles.workspace}`}>
       <div className="relative z-10 mx-auto w-full min-w-0 max-w-full space-y-6 pb-8 sm:space-y-8">
 <AdminMotionSection>
           <PacksHeader
@@ -710,7 +739,7 @@ export default function PacksPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setShowImport(false); setShowNewPack(!showNewPack) }}
+                  onClick={() => { cancelFileImport(); setShowImport(false); setShowNewPack(!showNewPack) }}
                   data-testid="open-new-pack"
                   className={primaryBtn}
                 >
@@ -731,7 +760,7 @@ export default function PacksPage() {
 
 {actionError && (
           <AdminMotionSection>
-            <div className="flex items-center gap-3 rounded-control border border-brand-dark bg-bg-primary px-4 py-3 font-body text-sm font-bold text-brand-dark">
+            <div role="alert" className="flex items-center gap-3 rounded-control border border-brand-dark bg-bg-primary px-4 py-3 font-body text-sm font-bold text-brand-dark">
               <AlertCircle className="h-5 w-5 shrink-0" />
               {actionError}
             </div>
@@ -749,7 +778,7 @@ export default function PacksPage() {
         </AdminMotionSection></div>{activePack && (
           <AdminMotionSection><button type="button" className="workspace-back-button" onClick={() => setSelectedPack(null)}>← Voltar à biblioteca</button>
             <div ref={selectedPackDetailRef}>
-            <div className={`${adminPacksPanel} space-y-6 p-4 sm:p-5 lg:p-6`}>
+            <div className={`${styles.flushPanel} space-y-6 p-4 sm:p-5 lg:p-6`}>
           <div className={`flex flex-col items-start justify-between gap-5 pb-5 sm:flex-row sm:items-center ${sectionDivider}`}>
             <div className="flex flex-1 items-center gap-4">
               <div className={iconClass}>
@@ -761,7 +790,7 @@ export default function PacksPage() {
                     value={packEditForm.name}
                     onChange={(e) => setPackEditForm({ ...packEditForm, name: e.target.value })}
                     className={fieldClass}
-                    placeholder="Nome do pack"
+                    aria-label="Nome do pack" placeholder="Nome do pack"
                   />
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <input
@@ -899,13 +928,12 @@ export default function PacksPage() {
           </AdminMotionSection>
         )}</div>
 <div className="workspace-panel-stack"><AdminMotionSection>
-            <form action={handleCreatePack} className={`${glassTile} space-y-5 p-4 sm:p-5`}>
+            <form onSubmit={handleCreatePack} className={`${styles.flushPanel} space-y-5`}>
           <div>
-            <AdminBadge label="Novo conteúdo" />
-            <h3 className="mt-4 font-heading text-2xl font-bold text-brand-dark">Novo pack</h3>
+            <h3 className="font-heading text-2xl font-bold text-brand-dark">Novo pack</h3>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <input name="name" placeholder="Nome do pack" required className={fieldClass} />
+            <input name="name" aria-label="Nome do pack" placeholder="Nome do pack" required className={fieldClass} />
             <select aria-label="Nível CEFR do pack" name="difficulty" className={`${fieldClass} cursor-pointer appearance-none`}>
               <option value="">Nível CEFR</option>
               <option value="A1">A1 — Iniciante</option>
@@ -964,7 +992,7 @@ export default function PacksPage() {
             </form>
           </AdminMotionSection></div>
 <div className="workspace-panel-stack"><AdminMotionSection>
-            <div className={`${adminPacksPanel} space-y-5 p-4 sm:p-5`}>
+            <div className={`${styles.flushPanel} space-y-5 p-4 sm:p-5`}>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <AdminBadge label="Importação" />
@@ -1266,7 +1294,7 @@ export default function PacksPage() {
             </div>
           </AdminMotionSection></div>
 <div className="workspace-panel-stack"><AdminMotionSection>
-          <div className={`${adminPacksPanel} p-4 sm:p-5`}>
+          <div className={`${styles.flushPanel} p-4 sm:p-5`}>
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h3 className="font-heading text-lg font-bold text-brand-dark">Voz Padrão (TTS)</h3>
@@ -1340,7 +1368,7 @@ export default function PacksPage() {
             closeOnBackdrop={false}
             className="fixed inset-0 z-[99999] flex min-h-[100dvh] items-center justify-center overflow-y-auto overscroll-contain bg-brand-dark/15 p-4 backdrop-blur-2xl"
           >
-            <div className={`${modalShell} mx-4 flex w-full max-w-sm flex-col items-center p-6 text-center`}>
+            <div className={`${styles.dialog} mx-4 flex w-full max-w-sm flex-col items-center p-6 text-center`}>
               <Loader2 className="mb-4 h-6 w-6 animate-spin text-brand-dark" strokeWidth={2} />
               <h3 className="mb-2 font-heading text-lg font-bold text-brand-dark">Processando áudio</h3>
               <p className="mb-6 font-body text-sm text-brand-secondary">
@@ -1377,7 +1405,7 @@ export default function PacksPage() {
               role="dialog"
               aria-modal="true"
               aria-labelledby="regenerate-tts-title"
-              className={`${modalShell} max-w-md p-6`}
+              className={`${styles.dialog} max-w-md p-6`}
             >
               <AdminBadge label="TTS" />
               <h3 id="regenerate-tts-title" className="mt-4 font-heading text-lg font-bold text-brand-dark">
@@ -1442,6 +1470,7 @@ export default function PacksPage() {
 
 {pendingDeleteAction && (
           <ConfirmDialog
+          surfaceClassName={styles.dialog}
           title={pendingDeleteAction.type === 'pack' ? 'Excluir pack' : 'Excluir card'}
           description={
             pendingDeleteAction.type === 'pack'

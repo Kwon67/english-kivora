@@ -139,7 +139,7 @@ export async function GET(request: Request) {
           continue
         }
 
-        console.error('Erro ao enviar push notification', { userId, endpoint: row.endpoint, sendError })
+        console.error('Erro ao enviar push notification', { subscriptionId: row.id, statusCode })
       }
     }
   }

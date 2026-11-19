@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useMemo, useState, useTransition } from 'react'
+import { useEffect, useId, useMemo, useState, useTransition } from 'react'
 import { BellRing } from 'lucide-react'
 import {
   disablePushSubscriptionAction,
   syncPushSubscriptionAction,
 } from '@/app/pwa-actions'
-import { notify } from '@/lib/toast'
+import styles from './Settings.module.css'
 import SettingsSwitch from '@/features/profile/components/SettingsSwitch'
 import { settingsNoteBox, settingsRow, settingsRowIcon } from '@/features/profile/lib/settingsPageUi'
 
@@ -74,6 +74,9 @@ function serializePushSubscription(subscription: PushSubscription): SerializedPu
 export default function PushNotificationPreference({
   publicVapidKey,
 }: PushNotificationPreferenceProps) {
+  const feedbackId = useId()
+  const availabilityId = useId()
+  const [feedback, setFeedback] = useState<{ state: 'success' | 'error'; text: string } | null>(null)
   const [mounted, setMounted] = useState(false)
   const [enabled, setEnabled] = useState(false)
   const [permission, setPermission] = useState<NotificationPermission>('default')
@@ -116,7 +119,7 @@ export default function PushNotificationPreference({
 
   function enablePush() {
     if (!publicVapidKey || !canUsePush) {
-      notify.error('Lembretes não estão disponíveis neste navegador.')
+      setFeedback({ state: 'error', text: 'Lembretes não estão disponíveis neste navegador.' })
       return
     }
 
@@ -127,7 +130,7 @@ export default function PushNotificationPreference({
 
         if (nextPermission !== 'granted') {
           setEnabled(false)
-          notify.error('Permissão de notificações não foi concedida.')
+          setFeedback({ state: 'error', text: 'Permissão de notificações não foi concedida.' })
           return
         }
 
@@ -144,23 +147,23 @@ export default function PushNotificationPreference({
         const serialized = serializePushSubscription(nextSubscription)
         if (!serialized) {
           setEnabled(false)
-          notify.error('Não foi possível preparar os lembretes.')
+          setFeedback({ state: 'error', text: 'Não foi possível preparar os lembretes.' })
           return
         }
 
         const result = await syncPushSubscriptionAction(serialized)
         if (!result.success) {
           setEnabled(false)
-          notify.error(result.error || 'Não foi possível ativar os lembretes.')
+          setFeedback({ state: 'error', text: result.error || 'Não foi possível ativar os lembretes.' })
           return
         }
 
         setSubscription(nextSubscription)
         setEnabled(true)
-        notify.success('Lembretes de revisão ativados.')
+        setFeedback({ state: 'success', text: 'Lembretes de revisão ativados.' })
       } catch {
         setEnabled(false)
-        notify.error('Não foi possível ativar os lembretes agora.')
+        setFeedback({ state: 'error', text: 'Não foi possível ativar os lembretes agora.' })
       }
     })
   }
@@ -179,7 +182,7 @@ export default function PushNotificationPreference({
 
       if (!result.success) {
         setEnabled(true)
-        notify.error(result.error || 'Não foi possível desativar os lembretes.')
+        setFeedback({ state: 'error', text: result.error || 'Não foi possível desativar os lembretes.' })
         return
       }
 
@@ -190,11 +193,12 @@ export default function PushNotificationPreference({
       }
 
       setSubscription(null)
-      notify.success('Lembretes de revisão desativados.')
+      setFeedback({ state: 'success', text: 'Lembretes de revisão desativados.' })
     })
   }
 
   function handleToggle() {
+    setFeedback(null)
     if (enabled) {
       disablePush()
       return
@@ -225,11 +229,12 @@ export default function PushNotificationPreference({
           pending={isPending}
           disabled={unavailable || blocked}
           aria-label="Receber lembretes de revisão"
+          aria-describedby={feedback ? feedbackId : unavailable || blocked ? availabilityId : undefined}
         />
       </div>
 
       {unavailable || blocked ? (
-        <div className={`${settingsNoteBox} mx-4 mb-4 sm:mx-5`}>
+        <div id={availabilityId} className={settingsNoteBox}>
           <p className="font-body text-xs leading-relaxed text-brand-secondary">
             {blocked
               ? 'As notificações estão bloqueadas no navegador. Libere a permissão nas configurações do site para ativar.'
@@ -237,6 +242,7 @@ export default function PushNotificationPreference({
           </p>
         </div>
       ) : null}
+      {feedback && <p id={feedbackId} className={styles.feedback} role={feedback.state === 'error' ? 'alert' : 'status'} data-state={feedback.state}>{feedback.text}</p>}
     </div>
   )
 }

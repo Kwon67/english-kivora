@@ -5,13 +5,13 @@ import { CEFR_LEVEL_LABELS, normalizePackLevel } from '@/features/cefr/lib/cefrL
 import type { RankedStarterPack } from '@/features/onboarding/lib/suggestStarterPack'
 import {
   onboardingActionRow,
-  onboardingPackCardClass,
   onboardingPackMetaPill,
   onboardingPackSkeletonBlock,
   onboardingPackSuggestOption,
   onboardingPrimaryButton,
   onboardingSecondaryButton,
 } from '@/features/onboarding/lib/onboardingUi'
+import styles from './Onboarding.module.css'
 import OnboardingShell from './OnboardingShell'
 
 type OnboardingStarterPackStepProps = {
@@ -19,6 +19,7 @@ type OnboardingStarterPackStepProps = {
   recommended: RankedStarterPack | null
   selectedPackId: string | null
   loading: boolean
+  error?: string
   isLoadingPacks: boolean
   preAssigned?: boolean
   showStarterSuggestion?: boolean
@@ -30,8 +31,8 @@ type OnboardingStarterPackStepProps = {
 
 function PackCardSkeleton() {
   return (
-    <article className={onboardingPackCardClass} aria-hidden="true">
-      <div className="space-y-3 p-5 sm:p-6">
+    <article className={styles.pack} aria-hidden="true">
+      <div className="space-y-2">
         <div className="flex flex-wrap gap-2">
           <div className={`h-7 w-28 ${onboardingPackSkeletonBlock}`} />
           <div className={`h-7 w-36 ${onboardingPackSkeletonBlock}`} />
@@ -49,6 +50,7 @@ export default function OnboardingStarterPackStep({
   recommended,
   selectedPackId,
   loading,
+  error,
   isLoadingPacks,
   preAssigned = false,
   showStarterSuggestion = false,
@@ -73,7 +75,7 @@ export default function OnboardingStarterPackStep({
       <div className="space-y-4" data-testid="onboarding-starter-pack-step">
         {showStarterSuggestion && !preAssigned ? (
           <p
-            className="rounded-[14px] border border-brand-dark/15 bg-bg-card px-4 py-3 text-sm leading-relaxed text-brand-secondary"
+            className={styles.note}
             data-testid="onboarding-starter-pack-suggestion"
           >
             Nível ainda não avaliado — esta é uma{' '}
@@ -85,8 +87,8 @@ export default function OnboardingStarterPackStep({
         {isLoadingPacks ? (
           <PackCardSkeleton />
         ) : activePack ? (
-          <article className={onboardingPackCardClass}>
-            <div className="space-y-3 p-5 sm:p-6">
+          <article className={styles.pack}>
+            <div className="space-y-2">
               <div className="flex min-w-0 flex-wrap gap-2">
                 <span className={`${onboardingPackMetaPill} inline-flex max-w-full items-center`}>
                   {normalizePackLevel(activePack.level)}
@@ -110,13 +112,13 @@ export default function OnboardingStarterPackStep({
               ) : null}
             </div>
           </article>
-        ) : (
+        ) : !error && (
           <p className="text-sm leading-relaxed text-brand-secondary">
             Não encontramos packs públicos agora. Você pode explorar o catálogo depois.
           </p>
         )}
 
-        {!isLoadingPacks && packs.length > 1 ? (
+        {!isLoadingPacks && !preAssigned && packs.length > 1 ? (
           <div className="space-y-2">
             <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">
               Outras sugestões
@@ -132,7 +134,7 @@ export default function OnboardingStarterPackStep({
                   onClick={() => onSelectPack(pack.id)}
                   className={onboardingPackSuggestOption(selected)}
                 >
-                  <span className="min-w-0 flex-1 truncate font-heading text-sm font-bold">
+                  <span className="min-w-0 flex-1 break-words font-heading text-sm font-semibold">
                     {pack.name}
                   </span>
                   <BookOpen className="h-4 w-4 shrink-0" />
@@ -142,6 +144,7 @@ export default function OnboardingStarterPackStep({
           </div>
         ) : null}
 
+        {error && <p role="alert" className={styles.feedback}>{error}</p>}
         <div className={onboardingActionRow}>
           <button
             type="button"
@@ -176,7 +179,7 @@ export default function OnboardingStarterPackStep({
 
         {loading ? (
           <p className="flex items-center gap-2 text-sm text-brand-secondary" aria-live="polite">
-            <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+            <Loader2 className="h-4 w-4 shrink-0 animate-spin motion-reduce:animate-none" />
             {isLoadingPacks ? 'Carregando sugestões...' : 'Finalizando...'}
           </p>
         ) : null}

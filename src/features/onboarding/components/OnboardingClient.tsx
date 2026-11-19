@@ -5,11 +5,8 @@ import { useRouter } from 'next/navigation'
 import {
   ArrowRight,
   ClipboardList,
-  Clock3,
-  Layers3,
   Loader2,
   Sparkles,
-  Target,
 } from 'lucide-react'
 import { ANALYTICS_EVENT, trackEvent } from '@/lib/analytics'
 import {
@@ -36,10 +33,12 @@ import {
   onboardingSecondaryButton,
 } from '@/features/onboarding/lib/onboardingUi'
 import { notify } from '@/lib/toast'
+import styles from './Onboarding.module.css'
 import OnboardingGoalsStep from './OnboardingGoalsStep'
 import OnboardingPlacementStep from './OnboardingPlacementStep'
 import OnboardingShell from './OnboardingShell'
 import OnboardingStarterPackStep from './OnboardingStarterPackStep'
+import { onboardingConnectionError } from '../lib/onboardingConnectionError'
 
 const TOTAL_STEPS = 5
 
@@ -59,6 +58,7 @@ export default function OnboardingClient({
   const router = useRouter()
   const [step, setStep] = useState<OnboardingWizardStep>(initialStep)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const [selectedInterests, setSelectedInterests] = useState<OnboardingInterestId[]>(initialInterests)
   const [dailyGoalMinutes, setDailyGoalMinutes] =
     useState<OnboardingDailyGoalMinutes>(initialDailyGoalMinutes)
@@ -76,17 +76,18 @@ export default function OnboardingClient({
     notify.success('Configuração concluída', {
       description: 'Sua jornada no Kivora começa agora.',
     })
-    router.replace('/home')
+    router.replace('/today')
     router.refresh()
   }, [router])
 
   const loadStarterPacks = useCallback(async (interests: OnboardingInterestId[]) => {
+    setError('')
     setLoading(true)
-    const result = await getOnboardingStarterPackOptions({ interests })
+    const result = await getOnboardingStarterPackOptions({ interests }).catch(onboardingConnectionError)
     setLoading(false)
 
     if (!result.ok) {
-      notify.error(result.error)
+      setError(result.error)
       return null
     }
 
@@ -94,7 +95,7 @@ export default function OnboardingClient({
     setPackOptions(result.packs)
     setRecommendedPack(result.recommended)
     setSelectedPackId(recommendedId)
-    return recommendedId
+    return { recommendedId }
   }, [])
 
   useEffect(() => {
@@ -106,12 +107,13 @@ export default function OnboardingClient({
   }, [initialStep, loadStarterPacks, selectedInterests])
 
   async function handleSkipLevel() {
+    setError('')
     setLoading(true)
-    const result = await saveOnboardingSkipLevel()
+    const result = await saveOnboardingSkipLevel().catch(onboardingConnectionError)
     setLoading(false)
 
     if (!result.ok) {
-      notify.error(result.error)
+      setError(result.error)
       return
     }
 
@@ -146,38 +148,39 @@ export default function OnboardingClient({
 
   async function handleGoalsContinue() {
     if (selectedInterests.length === 0) {
-      notify.error('Escolha pelo menos um interesse.')
+      setError('Escolha pelo menos um interesse.')
       return
     }
 
     if (!ONBOARDING_DAILY_GOALS.includes(dailyGoalMinutes)) {
-      notify.error('Meta diária inválida.')
+      setError('Meta diária inválida.')
       return
     }
 
+    setError('')
     setLoading(true)
     const saveResult = await saveOnboardingPreferences({
       interests: selectedInterests,
       dailyGoalMinutes,
       studyExperience,
-    })
+    }).catch(onboardingConnectionError)
     setLoading(false)
 
     if (!saveResult.ok) {
-      notify.error(saveResult.error)
+      setError(saveResult.error)
       return
     }
 
-    const recommendedPackId = await loadStarterPacks(selectedInterests)
-    if (!recommendedPackId) return
+    const options = await loadStarterPacks(selectedInterests)
+    if (!options) return
 
-    if (placementLabel) {
+    if (placementLabel && options.recommendedId) {
       setLoading(true)
-      const assignResult = await assignOnboardingStarterPack({ packId: recommendedPackId })
+      const assignResult = await assignOnboardingStarterPack({ packId: options.recommendedId }).catch(onboardingConnectionError)
       setLoading(false)
 
       if (!assignResult.ok) {
-        notify.error(assignResult.error)
+        setError(assignResult.error)
         return
       }
 
@@ -191,6 +194,7 @@ export default function OnboardingClient({
   }
 
   async function handleComplete(assignPack: boolean) {
+    setError('')
     setLoading(true)
     const result = await completeOnboardingSetup({
       assignPack: assignPack && !starterPackPreAssigned,
@@ -199,11 +203,11 @@ export default function OnboardingClient({
       interests: selectedInterests,
       dailyGoalMinutes,
       studyExperience,
-    })
+    }).catch(onboardingConnectionError)
     setLoading(false)
 
     if (!result.ok) {
-      notify.error(result.error)
+      setError(result.error)
       return
     }
 
@@ -222,52 +226,13 @@ export default function OnboardingClient({
         step={1}
         totalSteps={TOTAL_STEPS}
         title="Bem-vindo ao Kivora English"
-        subtitle="Em poucos minutos, vamos encontrar o melhor ponto de partida para a sua rotina."
+        subtitle="Encontre seu ponto de partida e configure uma rotina de estudo em cerca de quatro minutos."
       >
         <div className="space-y-5" data-testid="onboarding-welcome-step">
-          <div className="grid gap-3 sm:grid-cols-3">
-            {[
-              {
-                icon: Clock3,
-                tone: 'streak',
-                label: 'Rápido',
-                description: 'Leva cerca de 4 minutos',
-              },
-              {
-                icon: Target,
-                tone: 'tutor',
-                label: 'Adaptativo',
-                description: 'A dificuldade muda com você',
-              },
-              {
-                icon: Layers3,
-                tone: 'vocabulary',
-                label: 'Prático',
-                description: 'Termina com um pack sugerido',
-              },
-            ].map(({ icon: Icon, tone, label, description }) => (
-              <div
-                key={label}
-                data-tone={tone}
-                className="learning-module-card flex min-w-0 items-center gap-3 rounded-control border p-3 sm:flex-col sm:items-start sm:p-4"
-              >
-                <span className="tone-icon">
-                  <Icon className="h-4 w-4" />
-                </span>
-                <span className="min-w-0">
-                  <span className="block font-heading text-sm font-bold text-brand-dark">{label}</span>
-                  <span className="mt-0.5 block text-xs leading-relaxed text-brand-secondary">
-                    {description}
-                  </span>
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <p className="text-sm leading-relaxed text-brand-secondary sm:text-base">
-            Usamos frases reais dos packs, compreensão nos dois sentidos e suas preferências para
-            estimar o nível entre A1 e B2. Você pode pular o teste e ajustar tudo depois.
-          </p>
+          <ul className={styles.welcome}>
+            <li>Estime seu nível entre A1 e B2 com frases reais, ou faça o teste depois.</li>
+            <li>Escolha seus temas e uma meta diária para receber um pack inicial.</li>
+          </ul>
           <button
             type="button"
             onClick={() => setStep('method')}
@@ -288,7 +253,7 @@ export default function OnboardingClient({
         step={2}
         totalSteps={TOTAL_STEPS}
         title="Como quer começar?"
-        subtitle="Recomendamos o teste adaptativo para calibrar seu pack inicial com precisão."
+        subtitle="Escolha se quer estimar seu nível agora."
       >
         <div className="space-y-3" data-testid="onboarding-method-step">
           <button
@@ -298,7 +263,7 @@ export default function OnboardingClient({
             className={onboardingMethodOptionClass}
             data-testid="onboarding-method-placement"
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control border border-brand-dark bg-brand-accent text-brand-dark">
+            <span className="grid size-8 shrink-0 place-items-center rounded-control bg-brand-accent text-brand-dark">
               <ClipboardList className="h-5 w-5 shrink-0" />
             </span>
             <span className="min-w-0 flex-1">
@@ -318,7 +283,7 @@ export default function OnboardingClient({
             className={onboardingMethodOptionClass}
             data-testid="onboarding-method-skip"
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control border border-brand-dark bg-bg-card text-brand-dark">
+            <span className="grid size-8 shrink-0 place-items-center text-brand-dark">
               <Sparkles className="h-5 w-5 shrink-0" />
             </span>
             <span className="min-w-0 flex-1">
@@ -340,9 +305,10 @@ export default function OnboardingClient({
             Voltar
           </button>
 
+          {error && <p role="alert" className={styles.feedback}>{error}</p>}
           {loading ? (
             <p className="flex items-center gap-2 text-sm text-brand-secondary" aria-live="polite">
-              <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+              <Loader2 className="h-4 w-4 shrink-0 animate-spin motion-reduce:animate-none" />
               Salvando...
             </p>
           ) : null}
@@ -367,13 +333,14 @@ export default function OnboardingClient({
         selectedInterests={selectedInterests}
         dailyGoalMinutes={dailyGoalMinutes}
         studyExperience={studyExperience}
+        error={error}
         placementLabel={placementLabel}
         skippedLevelTest={skippedLevelTest}
         loading={loading}
         onToggleInterest={toggleInterest}
         onSelectGoal={setDailyGoalMinutes}
         onSelectStudyExperience={setStudyExperience}
-        onBack={() => setStep('method')}
+        onBack={() => { setError(''); setStep('method') }}
         onContinue={handleGoalsContinue}
       />
     )
@@ -381,6 +348,7 @@ export default function OnboardingClient({
 
   return (
     <OnboardingStarterPackStep
+      error={error}
       packs={packOptions}
       recommended={recommendedPack}
       selectedPackId={selectedPackId}
@@ -389,7 +357,7 @@ export default function OnboardingClient({
       preAssigned={starterPackPreAssigned}
       showStarterSuggestion={skippedLevelTest}
       onSelectPack={setSelectedPackId}
-      onBack={() => setStep('goals')}
+      onBack={() => { setError(''); setStep('goals') }}
       onAssign={() => handleComplete(true)}
       onSkip={() => handleComplete(false)}
     />

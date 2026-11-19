@@ -1,3 +1,4 @@
+import styles from '@/features/admin/components/AdminWorkspace.module.css'
 import WorkspaceSections from '@/components/ui/WorkspaceSections'
 import { ShieldCheck, UserRound, UserCheck, Users } from 'lucide-react'
 import AddMemberModal from '../dashboard/AddMemberModal'
@@ -11,13 +12,11 @@ import {
   adminMembersSpotlightCard,
   adminMembersMemberAvatar,
   adminMembersTelemetryBand,
-  adminMembersPanel,
 } from '@/features/admin/lib/adminMembersUi'
 import { adminDashboardIconBox } from '@/features/admin/lib/adminDashboardUi'
 import { homeIconGlyphSm } from '@/lib/homeStyles'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { getAppDateString, shiftAppDate } from '@/lib/timezone'
-import SectionBadge from '@/components/ui/SectionBadge'
 import Link from 'next/link'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { redirect } from 'next/navigation'
@@ -114,7 +113,7 @@ export default async function MembersPage() {
     .slice(0, 3)
 
   return (
-    <div className={adminMembersShell}>
+    <div className={`${adminMembersShell} ${styles.workspace}`}>
       <div className="relative z-10 mx-auto w-full min-w-0 max-w-full space-y-6 pb-8 sm:space-y-8">
 <AdminMotionSection>
           <MembersHeader
@@ -153,13 +152,13 @@ export default async function MembersPage() {
           </AdminMotionItem>
         </AdminMotionSection>{newestMembers.length > 0 ? (
           <AdminMotionSection>
-            <section className={adminMembersPanel}>
+            <section className={styles.flushPanel}>
               <div className="mb-5 flex items-center gap-3">
                 <span className={adminDashboardIconBox}>
                   <UserRound className={homeIconGlyphSm} strokeWidth={1.5} />
                 </span>
                 <div>
-                  <SectionBadge label="Entradas recentes" animate={false} />
+
                   <h2 className="mt-2 font-heading text-xl font-bold text-brand-dark sm:text-2xl">Últimos cadastros</h2>
                 </div>
               </div>

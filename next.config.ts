@@ -1,9 +1,13 @@
 import type { NextConfig } from "next";
 
 import { getLandingRiveAssets } from './src/components/landing/landingRiveAssets';
+import { resolveAnalyticsEndpoint } from './src/lib/analyticsEndpoint';
 
 function buildContentSecurityPolicy(enableRive = false) {
   const isProd = process.env.NODE_ENV === 'production'
+  const analyticsOrigin = process.env.NEXT_PUBLIC_POSTHOG_KEY
+    ? resolveAnalyticsEndpoint(process.env.NEXT_PUBLIC_POSTHOG_HOST)?.origin
+    : null
 
   return [
     "default-src 'self'",
@@ -15,7 +19,7 @@ function buildContentSecurityPolicy(enableRive = false) {
     "img-src 'self' data: blob: https:",
     "media-src 'self' data: blob: https://*.supabase.co",
     "font-src 'self' data:",
-    "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+    `connect-src 'self' https://*.supabase.co wss://*.supabase.co${analyticsOrigin ? ` ${analyticsOrigin}` : ''}`,
     "worker-src 'self'",
     "object-src 'none'",
     "base-uri 'self'",
@@ -158,6 +162,13 @@ const nextConfig: NextConfig = {
       {
         source: '/(.*)',
         headers: [...baseSecurityHeaders, permissionsPolicy],
+      },
+      {
+        source: '/auth/:path*',
+        headers: [
+          { key: 'Referrer-Policy', value: 'no-referrer' },
+          { key: 'Cache-Control', value: 'private, no-store' },
+        ],
       },
       ...(Object.keys(getLandingRiveAssets()).length ? [{
         source: '/',

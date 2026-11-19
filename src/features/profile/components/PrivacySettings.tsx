@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Download, Loader2, ShieldAlert, Trash2 } from 'lucide-react'
 import { deleteAccountAction, exportUserDataAction } from '@/app/privacy-actions'
 import { notify } from '@/lib/toast'
-import { landingRadius } from '@/lib/landingStyles'
+import styles from './Settings.module.css'
 import {
   settingsCard,
   settingsSoftBtn,
@@ -24,14 +24,28 @@ export default function PrivacySettings() {
   const [isDeleting, startDelete] = useTransition()
   const [confirmation, setConfirmation] = useState('')
   const [showDelete, setShowDelete] = useState(false)
+  const [exportFeedback, setExportFeedback] = useState<{ state: 'error' | 'success'; text: string } | null>(null)
+  const [deleteError, setDeleteError] = useState('')
+  const deleteInput = useRef<HTMLInputElement>(null)
+  const deleteTrigger = useRef<HTMLButtonElement>(null)
+  const restoreFocus = useRef(false)
+
+  useEffect(() => {
+    if (showDelete) deleteInput.current?.focus()
+    else if (restoreFocus.current) {
+      restoreFocus.current = false
+      deleteTrigger.current?.focus()
+    }
+  }, [showDelete])
 
   const canDelete = confirmation.trim().toUpperCase() === CONFIRM_WORD
 
   function handleExport() {
+    setExportFeedback(null)
     startExport(async () => {
       const result = await exportUserDataAction()
       if (!result.success) {
-        notify.error(result.error)
+        setExportFeedback({ state: 'error', text: result.error })
         return
       }
 
@@ -48,21 +62,20 @@ export default function PrivacySettings() {
       URL.revokeObjectURL(url)
 
       if (result.export.incomplete.length > 0) {
-        notify.error('Exportação parcial', {
-          description: `Não foi possível ler: ${result.export.incomplete.join(', ')}. Fale com o suporte.`,
-        })
+        setExportFeedback({ state: 'error', text: `Exportação parcial. Dados indisponíveis: ${result.export.incomplete.join(', ')}.` })
         return
       }
 
-      notify.success('Exportação concluída', { description: 'O arquivo foi baixado.' })
+      setExportFeedback({ state: 'success', text: 'Exportação concluída. O arquivo foi baixado.' })
     })
   }
 
   function handleDelete() {
+    setDeleteError('')
     startDelete(async () => {
       const result = await deleteAccountAction(confirmation)
       if (!result.success) {
-        notify.error(result.error)
+        setDeleteError(result.error)
         return
       }
 
@@ -72,12 +85,12 @@ export default function PrivacySettings() {
   }
 
   return (
-    <section className={`${settingsCard} p-5 sm:p-6`} aria-labelledby="privacy-settings-title">
+    <section className={settingsCard} aria-labelledby="privacy-settings-title">
       <h2 id="privacy-settings-title" className="font-heading text-lg font-bold text-brand-dark">
         Seus dados
       </h2>
       <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
-        Você pode levar seus dados embora ou apagar sua conta quando quiser.
+        Baixe uma cópia dos seus dados ou solicite a exclusão da conta.
       </p>
 
       <div className={`${settingsTile} mt-5`}>
@@ -94,10 +107,11 @@ export default function PrivacySettings() {
             disabled={isExporting}
             className={`${settingsSoftBtn} w-full shrink-0 disabled:opacity-60 sm:w-auto`}
           >
-            {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            {isExporting ? <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" /> : <Download className="h-4 w-4" />}
             {isExporting ? 'Preparando' : 'Exportar'}
           </button>
         </div>
+        {exportFeedback && <p className={`${styles.feedback} mt-3`} role={exportFeedback.state === 'error' ? 'alert' : 'status'} data-state={exportFeedback.state}>{exportFeedback.text}</p>}
       </div>
 
       <div className={`${settingsTile} mt-3 border-[var(--color-error)]/30`}>
@@ -119,11 +133,12 @@ export default function PrivacySettings() {
                 </label>
                 <input
                   id="delete-confirmation"
+                  ref={deleteInput}
                   type="text"
                   value={confirmation}
                   onChange={(event) => setConfirmation(event.target.value)}
                   autoComplete="off"
-                  className={`mt-2 min-h-11 w-full ${landingRadius} border border-brand-dark bg-bg-primary px-4 font-body text-sm text-brand-dark outline-none focus:bg-white`}
+                  className={`mt-2 min-h-11 w-full rounded-control border border-brand-dark/30 bg-bg-card px-3 font-body text-sm text-brand-dark`}
                 />
 
                 <div className="mt-3 flex flex-col gap-2 sm:flex-row">
@@ -133,12 +148,14 @@ export default function PrivacySettings() {
                     disabled={!canDelete || isDeleting}
                     className={`${settingsSoftBtn} w-full border-[var(--color-error)]/40 text-[var(--color-error)] hover:bg-error-soft disabled:opacity-50 sm:w-auto`}
                   >
-                    {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                    {isDeleting ? <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" /> : <Trash2 className="h-4 w-4" />}
                     Excluir permanentemente
                   </button>
                   <button
                     type="button"
                     onClick={() => {
+                      restoreFocus.current = true
+                      setDeleteError('')
                       setShowDelete(false)
                       setConfirmation('')
                     }}
@@ -148,10 +165,12 @@ export default function PrivacySettings() {
                     Cancelar
                   </button>
                 </div>
+                {deleteError && <p className={`${styles.feedback} mt-3`} role="alert" data-state="error">{deleteError}</p>}
               </div>
             ) : (
               <button
                 type="button"
+                ref={deleteTrigger}
                 onClick={() => setShowDelete(true)}
                 className={`${settingsSoftBtn} mt-4 w-full border-[var(--color-error)]/40 text-[var(--color-error)] hover:bg-error-soft sm:w-auto`}
               >

@@ -21,7 +21,7 @@ interface MultipleChoiceProps {
   allCards: Card[]
   onCorrect: (latencyMs?: number) => void
   onWrong: (latencyMs?: number) => void
-  variant?: 'practice' | 'blitz'
+  variant?: 'practice' | 'blitz' | 'assignment'
 }
 
 export default function MultipleChoice({
@@ -32,6 +32,7 @@ export default function MultipleChoice({
   variant = 'practice',
 }: MultipleChoiceProps) {
   const isBlitzVariant = variant === 'blitz'
+  const isAssignment = variant === 'assignment'
   const [selected, setSelected] = useState<string | null>(null)
   const [isValidated, setIsValidated] = useState(false)
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
@@ -42,7 +43,7 @@ export default function MultipleChoice({
   useGSAP(() => {
     const media = gsap.matchMedia()
     media.add('(prefers-reduced-motion: no-preference)', () => {
-      if (!root.current) return
+      if (!root.current || isAssignment || isBlitzVariant) return
       if (!isValidated) {
         gsap.from(root.current.querySelectorAll('[data-choice-enter]'), { y: 12, stagger: .06, duration: .45, ease: 'power3.out', clearProps: 'transform' })
       } else {
@@ -50,7 +51,7 @@ export default function MultipleChoice({
       }
     })
     return () => media.revert()
-  }, { scope: root, dependencies: [card.id, isValidated], revertOnUpdate: true })
+  }, { scope: root, dependencies: [card.id, isAssignment, isBlitzVariant, isValidated], revertOnUpdate: true })
 
   const options = useMemo(() => {
     return buildMultipleChoiceOptions(card, allCards)
@@ -100,17 +101,18 @@ export default function MultipleChoice({
     )
 
     if (isCorrect) {
-      triggerConfetti()
+      if (!isAssignment && !isBlitzVariant) triggerConfetti()
       onCorrect(latencyMs)
     } else {
       onWrong(latencyMs)
     }
   }, [
     selected,
-    isValidated,
     onCorrect,
     onWrong,
     triggerConfetti,
+    isAssignment,
+    isBlitzVariant,
     card,
     startTime,
   ])
@@ -163,14 +165,28 @@ export default function MultipleChoice({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [options, selected, isValidated, handleSelect, handleCheck])
 
-  const acceptedAnswers = getCardTypingTranslations(card).map(answer => answer.trim().toLowerCase())
+  useEffect(() => {
+    if (isAssignment || isBlitzVariant) root.current?.querySelector('h2')?.focus()
+  }, [card.id, isAssignment, isBlitzVariant])
+
+  const translations = getCardTypingTranslations(card)
+  const acceptedAnswers = translations.map(answer => answer.toLowerCase())
+  const selectedIsCorrect = selected !== null && acceptedAnswers.includes(selected.trim().toLowerCase())
+
+  if (options.length < 2) return <div ref={root} className={styles.exercise}>
+    <p className={styles.instruction}>Esta frase ainda não tem alternativas suficientes para um quiz.</p>
+    <h2 className={styles.question} lang="en">{card.english_phrase || card.en}</h2>
+    <p>{card.portuguese_translation || card.pt}</p>
+    <p>Leitura de apoio, sem nota. Continue pela revisão.</p>
+    <a className="product-text-link" href="/review">Abrir revisão</a>
+  </div>
 
   return (
     <div ref={root} className={`${styles.exercise} ${isBlitzVariant ? styles.compact : ''}`}>
       <div data-choice-enter>
         <p className={styles.instruction}>Escolha a tradução correta.</p>
         <div className={styles.prompt}>
-          <h2 data-testid="multiple-choice-question" className={styles.question} lang="en">
+          <h2 data-testid="multiple-choice-question" tabIndex={isAssignment || isBlitzVariant ? -1 : undefined} className={styles.question} lang="en">
             {card.english_phrase || card.en}
           </h2>
           <AudioButton url={card.audio_url} fallbackText={card.english_phrase || card.en} autoPlay={true} variant="game" />
@@ -202,6 +218,13 @@ export default function MultipleChoice({
       <button type="button" onClick={handleCheck} disabled={!selected || isValidated} className={styles.confirm}>
         {isValidated ? 'Resposta confirmada' : 'Confirmar'} <ArrowRight size={20} aria-hidden="true" />
       </button>
+      {isAssignment && (
+        <div role="status" className={isValidated ? styles.feedback : 'sr-only'} data-correct={selectedIsCorrect}>
+          {isValidated && (selectedIsCorrect
+            ? 'Resposta correta.'
+            : `Resposta incorreta. Resposta esperada: ${translations[0]}`)}
+        </div>
+      )}
     </div>
   )
 }

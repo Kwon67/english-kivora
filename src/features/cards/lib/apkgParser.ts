@@ -25,10 +25,13 @@ export interface ParsedApkg {
   }[]
 }
 
-let s: Promise<SqlJsStatic> | null = null
-function g() {
-  if (!s) s = initSqlJs()
-  return s
+let sqlRuntime: Promise<SqlJsStatic> | undefined
+
+function getSqlRuntime() {
+  return sqlRuntime ??= initSqlJs().catch(error => {
+    sqlRuntime = undefined
+    throw error
+  })
 }
 
 export async function parseApkg(file: File): Promise<ParsedApkg> {
@@ -43,16 +46,15 @@ export async function parseApkg(file: File): Promise<ParsedApkg> {
   if (!header.valid) {
     throw new Error('Invalid SQLite database format')
   }
-  const SQL = await g()
+  const SQL = await getSqlRuntime()
   const db = new SQL.Database(dbBuffer)
-  const cards = getCards(db)
-  const deckName = getDeckName(db) || file.name.replace(/\.apkg$/i, '')
-  const description = getDeckDescription(db, deckName) || `Imported from ${file.name}`
-  db.close()
-  return {
-    deckName,
-    description,
-    cards
+  try {
+    const cards = getCards(db)
+    const deckName = getDeckName(db) || file.name.replace(/\.apkg$/i, '')
+    const description = getDeckDescription(db, deckName) || `Imported from ${file.name}`
+    return { deckName, description, cards }
+  } finally {
+    db.close()
   }
 }
 
@@ -128,64 +130,4 @@ function getDeckDescription(db: DB, n: string) {
   const v = Object.values(m).find(x => typeof x === 'object' && x && String((x as Record<string, unknown>).name || '') === n) as Record<string, unknown> | undefined
   const d = String(v?.desc || '').trim()
   return d ? h(d) : ''
-}
-
-// Parse text/csv format for bulk import
-export function parseBulkImport(text: string): { front: string; back: string }[] {
-  const cards: { front: string; back: string }[] = []
-  
-  const lines = text.split('\n').filter(line => line.trim())
-  
-  for (const line of lines) {
-    // Try different separators: tab, pipe, comma
-    const separators = ['\t', '|', ',']
-    let parts: string[] = []
-    
-    for (const sep of separators) {
-      parts = line.split(sep).map(p => p.trim())
-      if (parts.length >= 2) break
-    }
-    
-    if (parts.length >= 2) {
-      cards.push({
-        front: parts[0],
-        back: parts[1]
-      })
-    }
-  }
-  
-  return cards
-}
-
-// Parse JSON format
-export function parseJsonImport(json: string): { name: string; cards: { front: string; back: string }[] } | null {
-  try {
-    const data = JSON.parse(json) as unknown
-    
-    if (Array.isArray(data)) {
-      // Array of cards
-      return {
-        name: 'Imported Deck',
-        cards: data.map((item: Record<string, unknown>) => ({
-          front: String(item.en || item.front || item.question || ''),
-          back: String(item.pt || item.back || item.answer || '')
-        }))
-      }
-    }
-    
-    if (typeof data === 'object' && data !== null && 'cards' in data && Array.isArray((data as Record<string, unknown>).cards)) {
-      const d = data as Record<string, unknown>
-      return {
-        name: String(d.name || d.title || 'Imported Deck'),
-        cards: (d.cards as Record<string, unknown>[]).map((item) => ({
-          front: String(item.en || item.front || item.question || ''),
-          back: String(item.pt || item.back || item.answer || '')
-        }))
-      }
-    }
-    
-    return null
-  } catch {
-    return null
-  }
 }

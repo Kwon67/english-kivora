@@ -7,5 +7,5 @@ export default async function AddPage() {
   const { data: { user } } = await db.auth.getUser()
   if (!user) redirect('/login')
   const { data, error } = await db.from('packs').select('id,name').eq('owner_id', user.id).eq('is_public', false).order('created_at', { ascending: false })
-  return <QuickAdd packs={data || []} loadError={Boolean(error)} />
+  return <QuickAdd key={user.id} userId={user.id} packs={data || []} loadError={Boolean(error)} />
 }

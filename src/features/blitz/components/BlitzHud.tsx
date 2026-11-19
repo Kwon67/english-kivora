@@ -1,17 +1,32 @@
 'use client'
 
-import { m } from 'motion/react'
-import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
-import { Flame, Heart, Zap } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Clock3, Flame, Heart } from 'lucide-react'
 import {
   getBlitzSessionPhase,
   getBlitzSessionProgress,
   getComboMultiplier,
 } from '@/features/blitz/lib/blitzScoring'
 import type { BlitzGameMode } from '@/features/blitz/lib/blitzModes'
-import { getBlitzModeShortLabel } from '@/features/blitz/lib/blitzModes'
+import { getBlitzModeLabel } from '@/features/blitz/lib/blitzModes'
+
+function BlitzElapsed({ startedAt }: { startedAt: number }) {
+  const [now, setNow] = useState(0)
+
+  useEffect(() => {
+    if (!startedAt) return
+    const timer = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(timer)
+  }, [startedAt])
+
+  const seconds = startedAt ? Math.max(0, Math.floor((now - startedAt) / 1000)) : 0
+  const label = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
+
+  return <div><dt><Clock3 size={15} aria-hidden="true" /><span className="sr-only">Tempo decorrido</span></dt><dd>{label}</dd></div>
+}
 
 interface BlitzHudProps {
+  startedAt: number
   lives: number
   score: number
   combo: number
@@ -23,6 +38,7 @@ interface BlitzHudProps {
 }
 
 export default function BlitzHud({
+  startedAt,
   lives,
   score,
   combo,
@@ -35,38 +51,32 @@ export default function BlitzHud({
   const progress = getBlitzSessionProgress(cardsAnswered, totalCards, lives)
   const phase = getBlitzSessionPhase(progress)
 
-  const reduceMotion = useHydratedReducedMotion()
-
   return (
     <section className="blitz-hud" aria-label="Placar da partida">
       <div className="blitz-hud-row">
-        <div className="blitz-hud-lives" aria-label={`${lives} de 3 vidas`}>
+        <div className="blitz-hud-lives" role="img" aria-label={`${lives} de 3 vidas`}>
           {Array.from({ length: 3 }, (_, index) => (
-            <m.span key={index} aria-hidden="true"
-              animate={index < lives || reduceMotion ? { scale: 1 } : { scale: [1, 1.25, 1] }}
-              transition={{ duration: reduceMotion ? 0 : .3 }}>
-              <Heart size={18} className={index < lives ? 'blitz-heart' : 'blitz-heart-empty'} />
-            </m.span>
+            <Heart key={index} aria-hidden="true" size={17} className={index < lives ? 'blitz-heart' : 'blitz-heart-empty'} />
           ))}
         </div>
         <dl className="blitz-hud-stats">
           <div><dt>Pontos</dt><dd>{score}</dd></div>
-          <div>
-            <dt className="sr-only">Combo</dt>
-            <m.dd key={combo} initial={combo > 0 && !reduceMotion ? { scale: 1.22 } : false}
-              animate={{ scale: 1 }} transition={{ duration: reduceMotion ? 0 : .2 }}>
-              <Flame size={16} aria-hidden="true" />{combo}{combo >= 3 && <small>×{multiplier}</small>}
-            </m.dd>
+          <div data-combo={combo >= 3}>
+            <dt><Flame size={16} aria-hidden="true" /><span className="sr-only">Combo</span></dt>
+            <dd>{combo}{combo >= 3 && <small>×{multiplier}</small>}</dd>
           </div>
+          <BlitzElapsed startedAt={startedAt} />
         </dl>
-        <span className="blitz-hud-mode"><Zap size={14} aria-hidden="true" />{getBlitzModeShortLabel(mode)}</span>
       </div>
       <div className="blitz-hud-progress" role="progressbar" aria-valuenow={progress} aria-valuemin={0}
         aria-valuemax={100} aria-valuetext={`${phase} da partida`} aria-label="Progresso da partida de Blitz"
         data-testid="blitz-session-progress">
         <span style={{ width: `${progress}%` }} />
       </div>
-      <div aria-live="polite" className="blitz-adaptation">{adaptationLabel}</div>
+      <div className="blitz-hud-context">
+        <span>{getBlitzModeLabel(mode)}</span>
+        <span role="status">{adaptationLabel}</span>
+      </div>
     </section>
   )
 }

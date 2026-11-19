@@ -19,14 +19,16 @@ async function lookupEntries(term: string, signal: AbortSignal) {
   if (response.status === 404) return []
   if (!response.ok) throw new Error('dictionary unavailable')
   const data = await response.json()
-  const entries: DictionaryEntry[] = Array.isArray(data.entries) ? data.entries : []
+  if (!Array.isArray(data?.entries)) throw new Error('invalid dictionary response')
+  const entries: DictionaryEntry[] = data.entries
   return entries.slice(0, 6).map(entry => ({
     partOfSpeech: entry.partOfSpeech,
     pronunciation: entry.pronunciations?.find(p => p.type === 'ipa')?.text,
     senses: entry.senses?.slice(0, 4).map(sense => ({
       definition: sense.definition,
       example: sense.examples?.find(example => typeof example === 'string' && example.trim())?.trim(),
-      translations: sense.translations?.filter(t => t.language?.code === 'pt').slice(0, 4).map(t => t.word),
+      translations: sense.translations?.filter(t => t?.language?.code === 'pt').map(t => t.word)
+        .filter((word): word is string => typeof word === 'string' && word.trim().length > 0).slice(0, 4),
     })),
   }))
 }

@@ -95,7 +95,7 @@ Construído com **Next.js**, **React**, **TypeScript**, **Tailwind CSS**, **Supa
 
 ## Desenvolvimento local
 
-Use **Node.js 22.12+** (validado em 26.8.2) e **pnpm 12.18.0**, fixado em `packageManager`.
+Use **Node.js 22.12+** (validado em 26.8.2) e **pnpm 12.21.0**, fixado em `packageManager`.
 Ative essa versão pelo Corepack, quando disponível (`corepack enable`), ou pelo instalador oficial do pnpm.
 
 ```sh

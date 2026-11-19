@@ -92,7 +92,6 @@ export default function TypingMode({
 
       if (isBlitzVariant) {
         if (result === 'exact') {
-          triggerConfetti()
           feedback.success()
           onCorrect(latencyMs, 'move')
         } else {
@@ -162,7 +161,7 @@ export default function TypingMode({
     >
       <div>
         <p className="section-kicker">
-          {isProduction ? 'Escreva em inglês' : 'Escreva a tradução'}
+          {isProduction ? 'Reconstrua a frase estudada' : 'Escreva a tradução'}
         </p>
         {/* Stacked on phones: sitting inline, the audio button stole enough width that a long
             prompt wrapped to one word per line. Side by side again from `sm` where there's room. */}
@@ -271,7 +270,7 @@ export default function TypingMode({
           {answerResult === 'wrong' ? (
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-subtle">
-                Resposta correta
+                {isProduction ? 'Frase de referência' : 'Tradução de referência'}
               </p>
               <p className="mt-3 text-2xl font-semibold text-[var(--color-error)]">
                 &quot;{referenceAnswer}&quot;

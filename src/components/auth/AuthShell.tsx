@@ -40,8 +40,8 @@ export default function AuthShell({
       <footer className="premium-auth-footer">
         <span>Kivora Inglês</span>
         <div>
-          <Link href="/privacy">Privacidade</Link>
-          <Link href="/terms">Termos de uso</Link>
+          <Link href="/privacy" prefetch={false}>Privacidade</Link>
+          <Link href="/terms" prefetch={false}>Termos de uso</Link>
         </div>
       </footer>
     </main>

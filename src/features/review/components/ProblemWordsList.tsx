@@ -9,10 +9,8 @@ import {
   getProblemWordSeverity,
   getProblemWordSeverityPillClass,
   getProblemWordSeverityRailClass,
-  problemWordsCard,
   problemWordsPrimaryBtn,
   problemWordsSearchInput,
-  problemWordsWordCard,
 } from '@/features/review/lib/problemWordsUi'
 
 export type ProblemWord = {
@@ -42,7 +40,7 @@ function BrandEmpty({
   imageClassName?: string
 }) {
   return (
-    <div className={`${problemWordsCard} p-6 text-center sm:p-8`}>
+    <div className="px-4 py-6 text-center sm:py-8">
       <Image
         src={imageSrc}
         alt={imageAlt}
@@ -68,7 +66,7 @@ function ErrorTally({ count }: { count: number }) {
   const slots = Math.min(count, 5)
 
   return (
-    <div className="flex items-center gap-1" aria-label={`${count} erros registrados`}>
+    <div className="flex items-center gap-1" aria-label={`${count} ${count === 1 ? 'erro registrado' : 'erros registrados'}`}>
       {Array.from({ length: slots }).map((_, index) => (
         <span
           key={index}
@@ -141,19 +139,19 @@ export default function ProblemWordsList({ words }: ProblemWordsListProps) {
           imageClassName="max-w-24"
         />
       ) : (
-        <div className="space-y-3">
+        <ul className="problem-words-rows" role="list">
           {filteredWords.map((word) => {
             const severity = getProblemWordSeverity(word.count)
 
             return (
-              <article
+              <li
                 key={word.id}
-                className={`${problemWordsWordCard} ${getProblemWordSeverityRailClass(severity)} scroll-reveal`}
+                className={`problem-word-card ${getProblemWordSeverityRailClass(severity)}`}
               >
-                <div className="flex flex-col gap-4 pl-2 sm:flex-row sm:items-center sm:justify-between sm:pl-3">
-                  <div className="min-w-0">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-0 flex-1 basis-52">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="font-heading text-lg font-bold text-brand-dark sm:text-xl">{word.en}</h2>
+                      <h3 lang="en" className="font-heading text-lg font-semibold text-brand-dark sm:text-xl">{word.en}</h3>
                       <span
                         className={`inline-flex rounded-full border border-brand-dark px-2.5 py-1 font-heading text-2xs font-bold uppercase tracking-widest ${getProblemWordSeverityPillClass(severity)}`}
                       >
@@ -171,20 +169,20 @@ export default function ProblemWordsList({ words }: ProblemWordsListProps) {
                   <Link
                     href={`/review?source=problem&cards=${word.id}`}
                     transitionTypes={navForwardTransitionTypes}
-                    className={`${problemWordsPrimaryBtn} w-full shrink-0 sm:w-auto`}
+                    className={`${problemWordsPrimaryBtn} shrink-0`}
                   >
                     <Play className="h-3.5 w-3.5 shrink-0" />
                     Praticar agora
                   </Link>
                 </div>
-              </article>
+              </li>
             )
           })}
-        </div>
+        </ul>
       )}
 
-      <p className="text-center font-body text-xs text-brand-secondary">
-        Mostrando até 8 termos com mais erros nos últimos 30 dias.
+      <p role="status" className="font-body text-sm text-brand-secondary">
+        {filteredWords.length} de {words.length} {words.length === 1 ? 'termo' : 'termos'} dos últimos 30 dias.
       </p>
     </div>
   )

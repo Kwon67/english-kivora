@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ArrowRight, Languages, Loader2, ScanSearch, TimerReset } from 'lucide-react'
+import { ArrowRight, Languages, Loader2 } from 'lucide-react'
 import {
   finalizeCatSession,
   getCatQuestion,
@@ -25,7 +25,9 @@ import {
   onboardingSecondaryButton,
 } from '@/features/onboarding/lib/onboardingUi'
 import { notify } from '@/lib/toast'
+import styles from './Onboarding.module.css'
 import OnboardingShell from './OnboardingShell'
+import { onboardingConnectionError } from '../lib/onboardingConnectionError'
 
 const ANSWER_FEEDBACK_MS = 320
 
@@ -40,6 +42,8 @@ export default function OnboardingPlacementStep({
   onBack,
   onComplete,
 }: OnboardingPlacementStepProps) {
+  const [error, setError] = useState('')
+  const prompt = useRef<HTMLHeadingElement>(null)
   const [phase, setPhase] = useState<'intro' | 'test'>('intro')
   const [studyExperience, setStudyExperience] = useState<StudyExperience | null>(null)
   const [session, setSession] = useState<CatSessionState | null>(null)
@@ -47,6 +51,7 @@ export default function OnboardingPlacementStep({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [isLoadingQuestion, setIsLoadingQuestion] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [unsavedEstimate, setUnsavedEstimate] = useState<{ estimate: CatEstimate; abandoned: boolean } | null>(null)
   const questionStartedAtRef = useRef<number>(0)
 
   const questionNumber = session ? session.answers.length + 1 : 1
@@ -55,12 +60,13 @@ export default function OnboardingPlacementStep({
   const isAdvancing = selectedIndex !== null
 
   const loadFirstQuestion = useCallback(async (experience: StudyExperience | null) => {
+    setError('')
     setIsLoadingQuestion(true)
-    const result = await getCatQuestion({ studyExperience: experience })
+    const result = await getCatQuestion({ studyExperience: experience }).catch(onboardingConnectionError)
     setIsLoadingQuestion(false)
 
     if (!result.ok) {
-      notify.error(result.error)
+      setError(result.error)
       return false
     }
 
@@ -71,25 +77,31 @@ export default function OnboardingPlacementStep({
   }, [])
 
   useEffect(() => {
-    if (phase !== 'test' || session || isLoadingQuestion) return
+    if (phase !== 'test' || session || isLoadingQuestion || error) return
     void loadFirstQuestion(studyExperience)
-  }, [phase, session, isLoadingQuestion, loadFirstQuestion, studyExperience])
+  }, [phase, session, isLoadingQuestion, loadFirstQuestion, studyExperience, error])
+
+  useEffect(() => {
+    if (displayItem) prompt.current?.focus()
+  }, [displayItem])
 
   async function startTest() {
     setPhase('test')
   }
 
   async function finalizePlacement(estimate: CatEstimate, abandoned = false) {
+    setError('')
     setIsSubmitting(true)
     const saveResult = await saveOnboardingPlacementResult({
       level: estimate.level,
       confidence: estimate.confidence,
       atCeiling: estimate.atCeiling,
-    })
+    }).catch(onboardingConnectionError)
     setIsSubmitting(false)
 
     if (!saveResult.ok) {
-      notify.error(saveResult.error)
+      setUnsavedEstimate({ estimate, abandoned })
+      setError(saveResult.error)
       return
     }
 
@@ -110,6 +122,7 @@ export default function OnboardingPlacementStep({
   async function handleSelectOption(index: number) {
     if (!displayItem || !session || loading || isAdvancing || isSubmitting) return
 
+    setError('')
     setSelectedIndex(index)
     const responseTimeMs = Math.max(0, Math.round(window.performance.now() - questionStartedAtRef.current))
 
@@ -120,12 +133,12 @@ export default function OnboardingPlacementStep({
         selectedOption,
         responseTimeMs,
         session,
-      })
+      }).catch(onboardingConnectionError)
 
       setSelectedIndex(null)
 
       if (!result.ok) {
-        notify.error(result.error)
+        setError(result.error)
         return
       }
 
@@ -142,7 +155,7 @@ export default function OnboardingPlacementStep({
         return
       }
 
-      notify.error('Não foi possível carregar a próxima pergunta.')
+      setError('Não foi possível carregar a próxima pergunta.')
     }, ANSWER_FEEDBACK_MS)
   }
 
@@ -152,12 +165,13 @@ export default function OnboardingPlacementStep({
       return
     }
 
+    setError('')
     setIsSubmitting(true)
-    const result = await finalizeCatSession({ session, abandoned: true })
+    const result = await finalizeCatSession({ session, abandoned: true }).catch(onboardingConnectionError)
     setIsSubmitting(false)
 
     if (!result.ok) {
-      notify.error(result.error)
+      setError(result.error)
       return
     }
 
@@ -174,26 +188,9 @@ export default function OnboardingPlacementStep({
       >
         <div className="space-y-5" data-testid="onboarding-placement-intro">
           <p className="text-sm leading-relaxed text-brand-secondary">
-            São de {CAT_MIN_QUESTIONS} a {CAT_MAX_QUESTIONS} perguntas. A dificuldade muda conforme
-            suas respostas, e o teste alterna compreensão em inglês e português para reduzir
-            acertos por familiaridade.
+            De {CAT_MIN_QUESTIONS} a {CAT_MAX_QUESTIONS} traduções nos dois sentidos. A dificuldade se
+            adapta às respostas. Se sair após responder, você pode salvar uma estimativa parcial.
           </p>
-
-          <div className="grid gap-2 sm:grid-cols-3">
-            {[
-              { icon: ScanSearch, text: 'Dificuldade adaptativa' },
-              { icon: Languages, text: 'Tradução nos dois sentidos' },
-              { icon: TimerReset, text: 'Estimativa parcial se sair' },
-            ].map(({ icon: Icon, text }) => (
-              <div
-                key={text}
-                className="flex items-center gap-2 rounded-control border border-brand-dark/30 bg-brand-accent/25 px-3 py-2.5 text-xs font-semibold text-brand-dark"
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-                <span>{text}</span>
-              </div>
-            ))}
-          </div>
 
           <div>
             <p className="font-heading text-sm font-bold text-brand-dark">
@@ -249,7 +246,6 @@ export default function OnboardingPlacementStep({
       step={3}
       totalSteps={5}
       title="Teste adaptativo"
-      subtitle="Responda com calma: a próxima frase é escolhida a partir do seu desempenho."
     >
       <div className="space-y-4" data-testid="onboarding-placement-step">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -258,9 +254,9 @@ export default function OnboardingPlacementStep({
           </p>
           <button
             type="button"
-            disabled={loading || isSubmitting || isAdvancing}
+            disabled={loading || isSubmitting || isAdvancing || !!unsavedEstimate}
             onClick={() => void handleAbandonTest()}
-            className="text-xs font-semibold text-brand-secondary underline-offset-2 hover:underline"
+            className="product-text-link min-h-11 text-sm"
             data-testid="onboarding-placement-abandon"
           >
             Sair do teste
@@ -283,9 +279,14 @@ export default function OnboardingPlacementStep({
 
         {isLoadingQuestion ? (
           <p className="flex items-center gap-2 text-sm text-brand-secondary" aria-live="polite">
-            <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+            <Loader2 className="h-4 w-4 shrink-0 animate-spin motion-reduce:animate-none" />
             Carregando frases do teste...
           </p>
+        ) : unsavedEstimate ? (
+          <button type="button" disabled={isSubmitting} className={onboardingPrimaryButton}
+            onClick={() => void finalizePlacement(unsavedEstimate.estimate, unsavedEstimate.abandoned)}>
+            Tentar salvar o resultado novamente
+          </button>
         ) : displayItem ? (
           <>
             <div className="min-w-0 space-y-2">
@@ -293,7 +294,7 @@ export default function OnboardingPlacementStep({
                 <Languages className="h-4 w-4 shrink-0" />
                 {displayItem.instruction}
               </p>
-              <p className={onboardingPlacementPromptClass}>{displayItem.prompt}</p>
+              <h2 ref={prompt} tabIndex={-1} data-onboarding-question className={onboardingPlacementPromptClass}>{displayItem.prompt}</h2>
             </div>
 
             <div
@@ -319,8 +320,15 @@ export default function OnboardingPlacementStep({
               })}
             </div>
           </>
-        ) : (
-          <p className="text-sm text-brand-secondary">Preparando próxima pergunta...</p>
+        ) : !error ? (
+          <p role="status" className="text-sm text-brand-secondary">Preparando próxima pergunta…</p>
+        ) : null}
+
+        {error && (
+          <div>
+            <p role="alert" className={styles.feedback}>{error}</p>
+            {!session && <button type="button" onClick={() => void loadFirstQuestion(studyExperience)} className={onboardingPrimaryButton}>Tentar novamente</button>}
+          </div>
         )}
 
         {selectedIndex !== null ? (
@@ -329,7 +337,7 @@ export default function OnboardingPlacementStep({
             session &&
             displayItem.options[selectedIndex] ? (
               <>
-                <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin motion-reduce:animate-none" />
                 Registrando resposta...
               </>
             ) : null}
@@ -347,7 +355,7 @@ export default function OnboardingPlacementStep({
 
         {isSubmitting ? (
           <p className="flex items-center gap-2 text-sm text-brand-secondary" aria-live="polite">
-            <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+            <Loader2 className="h-4 w-4 shrink-0 animate-spin motion-reduce:animate-none" />
             Salvando resultado e preparando sua rotina...
           </p>
         ) : null}

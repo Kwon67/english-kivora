@@ -1,36 +1,28 @@
-import { Card } from '@/components/shadcn/card'
 import Link from 'next/link'
 import { ArrowLeft, CloudOff } from 'lucide-react'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
 import RetryOfflineButton from '@/features/pwa/components/RetryOfflineButton'
-import { homeCardClass, homeFrostedSurface } from '@/lib/homeStyles'
 
 export const dynamic = 'force-static'
 
 export default function OfflinePage() {
   return (
-    <div className="flex min-h-screen min-h-[100svh] items-center justify-center px-4 py-10 sm:px-6">
-      <Card asChild unstyled><div className={`${homeCardClass} ${homeFrostedSurface} w-full max-w-2xl p-8 text-center sm:p-10`}>
-        <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-[28px] bg-[rgba(17,32,51,0.08)] text-text">
-          <CloudOff className="h-9 w-9" strokeWidth={1.8} />
-        </div>
-
-        <p className="section-kicker mt-6">Modo offline</p>
-        <h1 className="mt-4 text-responsive-lg font-semibold text-text">
-          A conexão caiu, mas o app continua de pé.
-        </h1>
+    <main data-kivora-workspace="offline" className="grid min-h-[100svh] place-items-center px-4 sm:px-6">
+      <section aria-labelledby="offline-title" className="workspace-feedback workspace-feedback--centered">
+        <CloudOff className="mx-auto mb-5 size-8 text-text" aria-hidden="true" strokeWidth={1.8} />
+        <h1 id="offline-title" className="font-heading font-medium text-text">Você está offline</h1>
         <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-text-muted">
-          Quando a internet voltar, atualize a página para recuperar os dados em tempo real. Enquanto isso, o Kivora mantém a estrutura principal disponível.
+          Quando a conexão voltar, tente carregar a página novamente. Você também pode voltar ao início.
         </p>
 
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+        <div className="workspace-feedback-actions">
           <RetryOfflineButton />
           <Link href="/home" transitionTypes={navBackTransitionTypes} className="btn-ghost">
-            <ArrowLeft className="h-4 w-4" strokeWidth={2} />
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" strokeWidth={2} />
             Voltar para o início
           </Link>
         </div>
-      </div></Card>
-    </div>
+      </section>
+    </main>
   )
 }

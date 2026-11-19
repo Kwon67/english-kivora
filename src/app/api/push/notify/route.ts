@@ -90,7 +90,7 @@ export async function POST(request: Request) {
         continue
       }
 
-      console.error('Erro ao enviar push notification', { userId: row.user_id, endpoint: row.endpoint, sendError })
+      console.error('Erro ao enviar push notification', { subscriptionId: row.id, statusCode })
     }
   }
 

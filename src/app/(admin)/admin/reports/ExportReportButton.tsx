@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { FileDown, Loader2 } from 'lucide-react'
 import type jsPDF from 'jspdf'
 import { adminReportsPrimaryBtn } from '@/features/admin/lib/adminReportsUi'
+import { BRAND_PRIMARY, BRAND_PRIMARY_LIGHT, BRAND_PRIMARY_CONTAINER } from '@/lib/brandColors'
 
 interface MemberRow {
   id: string
@@ -25,11 +26,11 @@ interface ExportReportButtonProps {
   totalGoodReviews: number
 }
 
-const BRAND_DARK = '#5945D3'
-const BRAND_ACCENT_LIGHT = '#EFECFC'
-const TEXT_DARK = '#232333'
-const TEXT_MUTED = '#707080'
-const BORDER_COLOR = '#E7E7EF'
+const BRAND_DARK = BRAND_PRIMARY
+const BRAND_ACCENT_LIGHT = BRAND_PRIMARY_LIGHT
+const TEXT_DARK = BRAND_PRIMARY
+const TEXT_MUTED = '#62665C'
+const BORDER_COLOR = '#D8D8D0'
 
 export default function ExportReportButton({
   memberRows,
@@ -73,7 +74,7 @@ export default function ExportReportButton({
       // Subtitle
       doc.setFontSize(9)
       doc.setFont('helvetica', 'normal')
-      doc.setTextColor('#fdfdf8cc')
+      doc.setTextColor(BRAND_PRIMARY_LIGHT)
       doc.text('Daily Fluency Lab', margin, 23)
 
       // Report title on the right
@@ -85,7 +86,7 @@ export default function ExportReportButton({
       // Date
       doc.setFontSize(8)
       doc.setFont('helvetica', 'normal')
-      doc.setTextColor('#fdfdf8bb')
+      doc.setTextColor(BRAND_PRIMARY_LIGHT)
       const now = new Date()
       const dateStr = now.toLocaleDateString('pt-BR', {
         day: '2-digit',
@@ -96,9 +97,9 @@ export default function ExportReportButton({
       doc.text(`Gerado em ${dateStr} às ${timeStr}`, pageWidth - margin, 23, { align: 'right' })
 
       // Period badge
-      doc.setFillColor('#fdfdf830')
+      doc.setFillColor(BRAND_PRIMARY_CONTAINER)
       doc.roundedRect(pageWidth - margin - 52, 27, 52, 7, 2, 2, 'F')
-      doc.setTextColor('#ffffff')
+      doc.setTextColor(BRAND_PRIMARY)
       doc.setFontSize(7)
       doc.setFont('helvetica', 'bold')
       doc.text('ÚLTIMOS 30 DIAS', pageWidth - margin - 26, 31.5, { align: 'center' })
@@ -121,8 +122,8 @@ export default function ExportReportButton({
       // Metric cards
       const metrics = [
         { label: 'EQUIPE ATIVA', value: String(totalMembers), sub: 'Membros monitorados' },
-        { label: 'REVISÕES HOJE', value: String(todayReviews), sub: 'Registradas no dia' },
-        { label: 'QUALIDADE MÉDIA', value: `${averageQuality.toFixed(1)}/5`, sub: `${successRate}% boas` },
+        { label: 'CARDS REVISTOS HOJE', value: String(todayReviews), sub: 'Último estado por pessoa' },
+        { label: 'NOTA MÉDIA SRS', value: totalReviews ? `${averageQuality.toFixed(1)}/5` : '-', sub: totalReviews ? `${successRate}% com nota 3 ou mais` : 'Sem dados' },
         { label: 'MAIOR REPETIÇÃO', value: String(bestRepetition), sub: 'Ciclo máximo' },
       ]
 
@@ -157,9 +158,9 @@ export default function ExportReportButton({
 
       // ── Additional stats row ──
       const statItems = [
-        { label: 'Total de revisões', value: totalReviews.toLocaleString('pt-BR') },
-        { label: 'Revisões boas (≥3)', value: totalGoodReviews.toLocaleString('pt-BR') },
-        { label: 'Taxa de sucesso', value: `${successRate}%` },
+        { label: 'Cards acompanhados', value: totalReviews.toLocaleString('pt-BR') },
+        { label: 'Cards com nota 3 ou mais', value: totalGoodReviews.toLocaleString('pt-BR') },
+        { label: 'Notas SRS 3 ou mais', value: totalReviews ? `${successRate}%` : '-' },
       ]
 
       doc.setFillColor('#f9fafb')
@@ -199,12 +200,12 @@ export default function ExportReportButton({
       doc.line(margin, y, margin + contentWidth, y)
       y += 3
 
-      const tableHead = [['Membro', 'Revisões', 'Qualidade Média', 'Taxa Boa', 'Maior Repetição']]
+      const tableHead = [['Membro', 'Cards', 'Nota Média SRS', 'Notas 3 ou mais', 'Maior Repetição']]
       const tableBody = memberRows.map((row) => [
         row.username,
         String(row.reviews),
-        `${row.averageQuality.toFixed(1)} / 5`,
-        `${row.goodRate}%`,
+        row.reviews ? `${row.averageQuality.toFixed(1)} / 5` : '-',
+        row.reviews ? `${row.goodRate}%` : '-',
         String(row.bestRepetition),
       ])
 
@@ -275,8 +276,8 @@ export default function ExportReportButton({
         doc.setFontSize(6.5)
         doc.setFont('helvetica', 'normal')
         const noteLines = [
-          'Qualidade média: nota SM-2 (0–5) por revisão. Taxa boa: percentual de revisões com qualidade ≥ 3.',
-          'Maior repetição: número máximo de revisões bem-sucedidas consecutivas para um card.',
+          'Último estado SRS por card e pessoa no período; não soma todas as tentativas. Sem dados: traço.',
+          'Nota SRS de 0 a 5: sinal de revisão, não medida de proficiência ou certificação CEFR.',
           'Período: dados consolidados dos últimos 30 dias a partir da data de geração.',
         ]
         noteLines.forEach((line, i) => {

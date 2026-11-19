@@ -36,3 +36,28 @@
 @media(max-width:420px) { .exercise { gap:20px; } .option { padding:12px 10px; border-radius:20px; min-height:64px; font-size:15px; } .shortOptions .option { gap:6px; } .selection { width:20px; height:20px; } .instruction { font-size:16px; margin-bottom:20px; } .art { width:170px; } }
 @media(max-height:600px) and (orientation:landscape) { .art { display:none; } .exercise { gap:14px; } }
 @media(prefers-reduced-motion:reduce) { .option,.confirm,.progress > span { transition:none; } .option:hover:not(:disabled),.confirm:active:not(:disabled) { transform:none; } }
+
+:global(.assignment-activity) .exercise { gap: 16px; }
+:global(.assignment-activity) .instruction { margin-bottom: 8px; color: var(--kivora-muted); }
+:global(.assignment-activity) .options { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+:global(.assignment-activity) .option {
+  justify-content: space-between;
+  min-height: 50px;
+  padding: 10px 14px;
+  border-radius: var(--workspace-inset-radius);
+  box-shadow: none;
+  text-align: start;
+  font-size: 16px;
+  transition: background-color .18s, border-color .18s;
+}
+:global(.assignment-activity) .option:hover:not(:disabled) { transform: none; }
+:global(.assignment-activity) .confirm { border-radius: var(--workspace-inset-radius); min-height: 48px; }
+:global(.assignment-activity) .art { order: 3; width: clamp(100px, 18vw, 158px); margin-top: 8px; }
+
+@media (min-width: 620px) {
+  :global(.assignment-activity) .options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+:global(.blitz-round) .compact .option { box-shadow: none; text-align: start; justify-content: space-between; }
+:global(.blitz-round) .compact .option:hover:not(:disabled), :global(.blitz-round) .compact .confirm:active:not(:disabled) { transform: none; }
+:global(.blitz-round) .compact .option { transition: background-color .15s, border-color .15s; }

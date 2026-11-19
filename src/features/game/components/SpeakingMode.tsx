@@ -464,15 +464,17 @@ export default function SpeakingMode({
     setPronunciationRejection(veredito.pronunciationRejection)
 
     if (isCorrect) {
-      import('canvas-confetti').then(({ default: confetti }) => {
-        confetti({
-          disableForReducedMotion: true,
-          particleCount: 80,
-          spread: 60,
-          origin: { y: 0.7 },
-          colors: CELEBRATION_COLORS,
+      if (!isBlitzVariant) {
+        import('canvas-confetti').then(({ default: confetti }) => {
+          confetti({
+            disableForReducedMotion: true,
+            particleCount: 80,
+            spread: 60,
+            origin: { y: 0.7 },
+            colors: CELEBRATION_COLORS,
+          })
         })
-      })
+      }
       feedback.success()
       onCorrectRef.current(undefined, 'report')
     } else {
@@ -915,6 +917,8 @@ export default function SpeakingMode({
           )}
           <button
             onClick={toggleRecording}
+            aria-label={isBlitzVariant ? (isRecording ? 'Parar gravação' : 'Gravar resposta') : undefined}
+            data-blitz-mic={isBlitzVariant || undefined}
             disabled={isSpeechBlocked || submitted || isAssessingPronunciation}
             className={`group relative flex h-20 w-20 items-center justify-center rounded-full transition-all duration-300 sm:h-24 sm:w-24 ${
               isListeningActive
@@ -928,7 +932,7 @@ export default function SpeakingMode({
           >
             {isRecording ? (
               <>
-                <span className={`absolute inset-0 rounded-full bg-primary ${isListeningActive ? 'animate-ping opacity-20' : 'animate-pulse opacity-15'}`}></span>
+                <span className={`absolute inset-0 rounded-full bg-primary ${isBlitzVariant ? 'opacity-15' : isListeningActive ? 'animate-ping opacity-20' : 'animate-pulse opacity-15'}`}></span>
                 <MicOff className="h-9 w-9 sm:h-10 sm:w-10" />
               </>
             ) : (

@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { isCefrLevel, type CefrLevel, type GeneratedCard } from '@/features/ai/lib/deckGeneration'
 import { generateFreshCards } from '@/features/ai/lib/generateFreshCards'
@@ -142,6 +142,7 @@ export async function saveDeckAction(
   if (isActionFailure(admin)) return admin
 
   const { supabase, userId } = admin
+  const audioStorage = (createAdminClient() ?? supabase).storage
 
   // Última barreira contra duplicata: a prévia já filtrou, mas os cards chegam do cliente e
   // podem ter sido editados ou vir de uma prévia antiga.
@@ -206,7 +207,7 @@ export async function saveDeckAction(
       const tempFileId = `${cardId}/${randomUUID()}.mp3`
       const audioBuffer = await synthesizeSpeechToBuffer(card.en, selectedVoice, 'kivora-ai-tts')
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadError } = await audioStorage
         .from('card_audios')
         .upload(tempFileId, audioBuffer, {
           contentType: 'audio/mpeg',

@@ -21,6 +21,9 @@ interface ListeningModeProps {
 export default function ListeningMode({ card, onCorrect, onWrong, onWrongAnswer, variant = 'practice' }: ListeningModeProps) {
   const isBlitzVariant = variant === 'blitz'
   const answerId = useId()
+  const [audioUnavailable, setAudioUnavailable] = useState(false)
+  const onAudioError = useCallback(() => setAudioUnavailable(true), [])
+  const onAudioStarted = useCallback(() => setAudioUnavailable(false), [])
   const [input, setInput] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [isExactAnswer, setIsExactAnswer] = useState(false)
@@ -45,7 +48,7 @@ export default function ListeningMode({ card, onCorrect, onWrong, onWrongAnswer,
 
   const handleSubmit = useCallback((event?: React.FormEvent) => {
     event?.preventDefault()
-    if (submitted || !input.trim()) return
+    if (audioUnavailable || submitted || !input.trim()) return
 
     const exact = isPerfectSpeakingPhrase(input, englishPhrase)
     const accepted = exact || evaluateSpeakingAnswer({ expectedPhrase: englishPhrase, transcript: input })
@@ -63,7 +66,7 @@ export default function ListeningMode({ card, onCorrect, onWrong, onWrongAnswer,
     setSubmitted(true)
 
     if (accepted) {
-      triggerConfetti()
+      if (!isBlitzVariant) triggerConfetti()
       feedback.success()
       onCorrect(undefined, 'report')
     } else {
@@ -71,7 +74,7 @@ export default function ListeningMode({ card, onCorrect, onWrong, onWrongAnswer,
       onWrongAnswer?.(input)
       onWrong(undefined, 'report')
     }
-  }, [submitted, input, englishPhrase, triggerConfetti, onCorrect, onWrong, onWrongAnswer])
+  }, [audioUnavailable, submitted, input, englishPhrase, isBlitzVariant, triggerConfetti, onCorrect, onWrong, onWrongAnswer])
 
   const handleNext = useCallback(() => {
     if (!submitted) return
@@ -105,20 +108,21 @@ export default function ListeningMode({ card, onCorrect, onWrong, onWrongAnswer,
           </div>
           <div className="blitz-listening-audio">
             <p>Ouça a frase em inglês.</p>
-            <AudioButton url={audioUrl} autoPlay variant="game" />
+            <AudioButton onPlaybackError={onAudioError} onPlaybackStarted={onAudioStarted} url={audioUrl} autoPlay variant="game" />
           </div>
         </>
       ) : <div className="text-center">
         <p className="section-kicker">Ouça e digite</p>
         <div className="mt-8 flex flex-col items-center justify-center gap-4">
-          <AudioButton url={audioUrl} autoPlay={true} variant="game" />
+          <AudioButton onPlaybackError={onAudioError} onPlaybackStarted={onAudioStarted} url={audioUrl} autoPlay={true} variant="game" />
           <p className="text-sm font-semibold text-text-muted">
             Aperte para ouvir novamente
           </p>
         </div>
       </div>}
 
-      <form onSubmit={handleSubmit} className={isBlitzVariant ? 'mt-5' : 'mt-8'}>
+      {audioUnavailable && <div role="status" className="product-error"><p>O áudio não está disponível. Tente novamente no botão de áudio ou volte à revisão. Nenhuma resposta foi avaliada.</p><a href="/review" className="product-text-link">Voltar à revisão</a></div>}
+      <form hidden={audioUnavailable} onSubmit={handleSubmit} className={isBlitzVariant ? 'mt-5' : 'mt-8'}>
         {isBlitzVariant && !submitted && <label className="blitz-answer-label" htmlFor={answerId}>Sua resposta em inglês</label>}
         <div className="relative">
           <input

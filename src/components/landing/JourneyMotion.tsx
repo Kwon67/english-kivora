@@ -43,8 +43,8 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
       const select = gsap.utils.selector(container)
       const loops = new Map<Element, { animation: gsap.core.Animation; visible: boolean }>()
       const sync = () => loops.forEach(({ animation, visible }) => {
-        if (visible && !document.hidden) animation.play()
-        else animation.pause()
+        const paused = !visible || document.hidden
+        if (animation.paused() !== paused) animation.paused(paused)
       })
       const observer = new IntersectionObserver(entries => {
         entries.forEach(entry => { const loop = loops.get(entry.target); if (loop) loop.visible = entry.isIntersecting })

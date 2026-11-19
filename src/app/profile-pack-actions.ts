@@ -488,10 +488,12 @@ export async function appendCardsToUserPackAction(
     return { success: false, error: 'Só é possível adicionar cards a packs privados próprios.' }
   }
 
-  const { data: existingCards } = await access.adminSupabase
+  const { data: existingCards, error: existingCardsError } = await access.adminSupabase
     .from('cards')
     .select('english_phrase,portuguese_translation')
     .eq('pack_id', validated.data.packId)
+
+  if (existingCardsError) return { success: false, error: 'Não foi possível conferir os cards existentes. Tente novamente antes de importar.' }
 
   const existingCardInputs = (existingCards || []).map((card) => ({
     en: card.english_phrase,

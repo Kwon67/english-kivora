@@ -13,6 +13,7 @@ import {
   normalizeSecurityIdentifier,
   recordSecurityEvent,
 } from '@/features/security/lib/security'
+import { readMfaState } from '@/features/auth/lib/readMfaState'
 import { awaitWithGraceTimeout } from '@/features/auth/lib/awaitWithGraceTimeout'
 import { resolveLoginEmail } from '@/features/auth/lib/resolveLoginEmail'
 import { shouldRequireOnboarding } from '@/features/onboarding/lib/onboardingStatus'
@@ -38,15 +39,6 @@ type ProfileRoleResult = {
 
 type OnboardingStatusResult = {
   data: { onboarding_completed_at: string | null } | null
-  error: { message?: string } | null
-}
-
-type MfaFactor = {
-  status?: string
-}
-
-type MfaFactorsResult = {
-  data: { all: MfaFactor[] } | null
   error: { message?: string } | null
 }
 
@@ -291,16 +283,8 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  const factorsResult = await withTimeout<MfaFactorsResult>(
-    Promise.resolve(supabase.auth.mfa.listFactors()),
-    3000,
-    { data: { all: [] }, error: null }
-  )
-
-  const factors = factorsResult.data
-  const factorsError = factorsResult.error
-
-  if (factorsError) {
+  const mfa = await readMfaState(() => supabase.auth.mfa.listFactors())
+  if (mfa.status === 'unavailable') {
     recordSecurityEvent({
       eventType: 'login_mfa_factor_lookup_failed',
       severity: 'medium',
@@ -309,14 +293,13 @@ export async function POST(request: NextRequest) {
       ipAddress,
       userAgent,
       route,
-      metadata: { code: factorsError.message || 'unknown' },
     }).catch(() => null)
   }
-
-  const hasMFA = factors?.all.some((factor) => factor.status === 'verified') ?? false
+  const hasMFA = mfa.status === 'required'
+  const checkMFA = mfa.status !== 'clear'
 
   let needsOnboarding = false
-  if (!hasMFA) {
+  if (!checkMFA) {
     const onboardingResult = await withTimeout<OnboardingStatusResult>(
       Promise.resolve(
         supabase
@@ -361,7 +344,7 @@ export async function POST(request: NextRequest) {
 
   const response = NextResponse.json({
     success: true,
-    redirectUrl: hasMFA
+    redirectUrl: checkMFA
       ? '/login/mfa'
       : profile?.role === 'admin' && !needsOnboarding
         ? '/admin/dashboard'

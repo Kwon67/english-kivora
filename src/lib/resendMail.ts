@@ -5,6 +5,7 @@ type ResendSendInput = {
   to: string | string[]
   subject: string
   react: ReactElement
+  idempotencyKey?: string
 }
 
 type ResendSendResult = {
@@ -99,7 +100,7 @@ export async function sendResendEmail(input: ResendSendInput): Promise<ResendSen
     to: delivery.to,
     subject: input.subject,
     react: input.react,
-  })
+  }, input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : undefined)
 
   if (result.error) {
     throw new Error(result.error.message)

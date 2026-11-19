@@ -45,6 +45,7 @@ import {
 } from '@/features/security/lib/security'
 import { isBlitzTableMissingError } from '@/features/blitz/lib/blitzTable'
 import { getTutorScenario } from '@/features/tutor/lib/scenarios'
+import { parseTutorReply } from '@/features/tutor/lib/tutorReply'
 import {
   getUserCefrProfile,
   recordCefrInteraction,
@@ -208,17 +209,18 @@ const ScheduledReviewSchema = z.object({
   user_id: z.union([z.string().min(1, 'Membro é obrigatório'), z.literal('all')]),
   pack_id: z.string().min(1, 'Pack é obrigatório'),
   weekdays: z.array(z.number().int().min(0).max(6)).min(1, 'Selecione pelo menos um dia'),
-  time: z.string().regex(/^\d{2}:\d{2}$/, 'Horário inválido'),
+  time: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, 'Horário inválido'),
   card_ids: z.array(z.string().min(1)).min(1, 'Selecione pelo menos um card'),
   cards_per_release: z
     .number()
     .int()
     .positive()
     .max(DEFAULT_REVIEW_SESSION_CARD_LIMIT, `Use no máximo ${DEFAULT_REVIEW_SESSION_CARD_LIMIT} cards por sessão`),
-  expires_on: z.string().optional(),
+  expires_on: z.string().refine(value => !value || (/^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0,10) === value), 'Data de expiração inválida').optional(),
 })
 
 const GameResultSchema = z.object({
+  clientSessionId: z.string().uuid().optional(),
   packId: z.string().uuid('Pack inválido'),
   assignmentId: z.string().uuid('Tarefa inválida'),
   correct: z.number().int().min(0).max(500),
@@ -372,6 +374,7 @@ export async function logoutAction() {
 }
 
 export async function submitGameResult(data: {
+  clientSessionId?: string
   packId: string
   assignmentId: string
   correct: number
@@ -437,19 +440,16 @@ export async function submitGameResult(data: {
       ? new Date().getTime() <= new Date(deadline).getTime()
       : null
 
-  // Save game session
-  const { data: sessionData, error: sessionError } = await supabase.from('game_sessions').insert({
-    user_id: user.id,
-    assignment_id: result.assignmentId,
-    correct_answers: correct,
-    wrong_answers: wrong,
-    max_streak: streakMax,
-  }).select('id').single()
-
-  if (sessionError) throw new Error(sessionError.message)
+  const { saveGameSessionRecord } = await import('@/features/game/lib/saveGameSession')
+  const savedSession = await saveGameSessionRecord(supabase, {
+    ...(result.clientSessionId ? { id: result.clientSessionId } : {}),
+    user_id: user.id, assignment_id: result.assignmentId, correct_answers: correct,
+    wrong_answers: wrong, max_streak: streakMax,
+  })
+  const sessionData = { id: savedSession.id }
 
   // Insert fine-grained error logs
-  if (errorLog.length > 0 && sessionData?.id) {
+  if (!savedSession.existing && errorLog.length > 0 && sessionData?.id) {
     const errorInserts = errorLog.map(err => ({
       session_id: sessionData.id,
       user_id: user.id,
@@ -465,7 +465,7 @@ export async function submitGameResult(data: {
   // --- SRS: erros e acertos da partida passam pelo MESMO agendador da revisão ---
   // Erro → escada de reaprendizagem (lapso conta, metade do intervalo sobrevive). Acerto → só
   // credita card que já estava vencido. Ver gameSrsSync.ts para o porquê de cada regra.
-  {
+  if (!savedSession.existing) {
     const { syncGameAnswersToSrs } = await import('@/features/review/lib/gameSrsSync')
     const missedCardIds = [...new Set(errorLog.map((entry) => entry.cardId))]
     const correctCardIds = (result.correctCardIds ?? []).filter((cardId) => packCardIds.has(cardId))
@@ -506,7 +506,7 @@ export async function submitGameResult(data: {
     assignment.game_mode === 'speaking' && result.playedMode === 'listening' ? 'listening' : assignment.game_mode
 
   // Evaluate Gamification
-  evaluateGamification(user.id, {
+  if (!savedSession.existing) evaluateGamification(user.id, {
     type: 'game',
     gameMode: playedMode,
     accuracy: correct + wrong > 0 ? (correct / (correct + wrong)) * 100 : 0,
@@ -675,7 +675,7 @@ export async function deleteCard(id: string) {
 }
 
 export async function createAssignment(formData: FormData) {
-  const { supabase } = await requireAdmin()
+  const { supabase, adminSupabase } = await requireAdmin()
 
   const timed = formData.get('timed') === 'on'
   const rawTimeLimit = Number.parseInt((formData.get('time_limit_minutes') as string) || '', 10)
@@ -744,7 +744,7 @@ export async function createAssignment(formData: FormData) {
     assigned_by: 'admin' as const,
   }))
 
-  let { error } = await supabase.from('assignments').upsert(assignments, { onConflict: 'user_id,assigned_date,pack_id,game_mode' })
+  let { error } = await adminSupabase.from('assignments').upsert(assignments, { onConflict: 'user_id,assigned_date,pack_id,game_mode' })
 
   if (error && isAssignmentsStatusCheckError(error) && initialStatus.includes('|')) {
     const fallbackAssignments = targetUserIds.map((targetUserId) => ({
@@ -756,7 +756,7 @@ export async function createAssignment(formData: FormData) {
       reward_badge_id: reward_badge_id || null,
       assigned_by: 'admin' as const,
     }))
-      ; ({ error } = await supabase.from('assignments').upsert(fallbackAssignments, { onConflict: 'user_id,assigned_date,pack_id,game_mode' }))
+      ; ({ error } = await adminSupabase.from('assignments').upsert(fallbackAssignments, { onConflict: 'user_id,assigned_date,pack_id,game_mode' }))
   }
 
   if (error) return { error: error.message }
@@ -776,7 +776,7 @@ export async function createMemberGroup(data: {
   const validated = MemberGroupSchema.safeParse({
     name: data.name,
     description: data.description || '',
-    member_ids: data.memberIds,
+    member_ids: [...new Set(data.memberIds)],
   })
 
   if (!validated.success) {
@@ -806,7 +806,8 @@ export async function createMemberGroup(data: {
     .insert(memberships)
 
   if (membershipError) {
-    return { error: membershipError.message }
+    const { error: cleanupError } = await supabase.from('member_groups').delete().eq('id', group.id)
+    return { error: membershipError.message + (cleanupError ? ' O grupo foi criado sem participantes; recarregue para corrigi-lo.' : '') }
   }
 
   revalidatePath('/admin/assign')
@@ -816,51 +817,33 @@ export async function createMemberGroup(data: {
 
 export async function updateMemberGroup(
   groupId: string,
-  data: { name: string; description?: string; memberIds: string[] }
+  data: { name: string; description?: string; memberIds: string[] },
+  expected: { name: string; description: string | null; memberIds: string[] }
 ) {
   const { supabase } = await requireAdmin()
-
-  const validated = MemberGroupSchema.safeParse({
-    name: data.name,
-    description: data.description || '',
-    member_ids: data.memberIds,
+  const validated = z.object({
+    groupId:z.string().uuid(),
+    desired:MemberGroupSchema,
+    expected:z.object({name:z.string(),description:z.string().nullable(),memberIds:z.array(z.string().uuid())}),
+  }).safeParse({groupId,desired:{name:data.name.trim(),description:data.description||'',member_ids:[...new Set(data.memberIds)]},expected})
+  if (!validated.success) return {error:'Dados do grupo inválidos. Reabra o grupo para editar.'}
+  const input=validated.data
+  const {data:savedId,error}=await supabase.rpc('update_member_group_atomic',{
+    p_group_id:input.groupId,
+    p_expected:{...input.expected,memberIds:[...new Set(input.expected.memberIds)].sort()},
+    p_name:input.desired.name,
+    p_description:input.desired.description||null,
+    p_member_ids:input.desired.member_ids,
   })
-
-  if (!validated.success) {
-    return { error: validated.error.issues[0].message }
+  if (error) {
+    if (error.code==='40001') return {error:'Este grupo mudou enquanto você editava. Suas alterações não foram aplicadas. Recarregue a lista e reabra o grupo.'}
+    if (error.code==='PGRST202'||error.code==='42883') return {error:'A edição segura de grupos ainda não está disponível neste ambiente. Nenhuma alteração foi aplicada.'}
+    return {error:'Não foi possível salvar o grupo inteiro. Nenhuma alteração desta edição foi aplicada.'}
   }
-
-  const { error: groupError } = await supabase
-    .from('member_groups')
-    .update({
-      name: validated.data.name,
-      description: validated.data.description || null,
-    })
-    .eq('id', groupId)
-
-  if (groupError) return { error: groupError.message }
-
-  const { error: deleteError } = await supabase
-    .from('member_group_members')
-    .delete()
-    .eq('group_id', groupId)
-
-  if (deleteError) return { error: deleteError.message }
-
-  const memberships = validated.data.member_ids.map((memberId) => ({
-    group_id: groupId,
-    user_id: memberId,
-  }))
-
-  const { error: insertError } = await supabase
-    .from('member_group_members')
-    .insert(memberships)
-
-  if (insertError) return { error: insertError.message }
-
+  if (savedId!==groupId) return {error:'Não foi possível confirmar a edição. Recarregue a lista antes de tentar novamente.'}
   revalidatePath('/admin/assign')
   revalidatePath('/admin/dashboard')
-  return { success: true }
+  return {success:true}
 }
 
 export async function deleteMemberGroup(groupId: string) {
@@ -1058,7 +1041,7 @@ export async function materializeScheduledReviewReleasesForUser(userId: string) 
 }
 
 export async function createScheduledReviewRule(formData: FormData) {
-  const { supabase } = await requireAdmin()
+  const { supabase, adminSupabase } = await requireAdmin()
 
   const weekdays = formData
     .getAll('review_weekdays')
@@ -1087,6 +1070,9 @@ export async function createScheduledReviewRule(formData: FormData) {
   }
 
   const { user_id, pack_id, weekdays: validatedWeekdays, time, card_ids, cards_per_release, expires_on } = validated.data
+  const { data: selectedCards, error: selectedCardsError } = await supabase.from('cards').select('id').eq('pack_id', pack_id).in('id', card_ids)
+  if (selectedCardsError || new Set((selectedCards || []).map(card => card.id)).size !== new Set(card_ids).size) return { error: 'Os cartões selecionados não pertencem à coleção ou não puderam ser conferidos.' }
+
   const expiresOn = expires_on?.trim() || null
   const status = buildScheduledReviewStatus({
     weekdays: validatedWeekdays,
@@ -1124,7 +1110,7 @@ export async function createScheduledReviewRule(formData: FormData) {
     status,
   }))
 
-  const { error } = await supabase.from('assignments').insert(payload)
+  const { error } = await adminSupabase.from('assignments').insert(payload)
 
   if (error) return { error: error.message }
 
@@ -1137,7 +1123,7 @@ export async function createScheduledReviewRule(formData: FormData) {
 }
 
 export async function updateScheduledReviewRule(ruleId: string, formData: FormData) {
-  const { supabase } = await requireAdmin()
+  const { supabase, adminSupabase } = await requireAdmin()
 
   const weekdays = formData
     .getAll('review_weekdays')
@@ -1165,7 +1151,7 @@ export async function updateScheduledReviewRule(ruleId: string, formData: FormDa
     return { error: validated.error.issues[0].message }
   }
 
-  const { data: existing, error: existingError } = await supabase
+  const { data: existing, error: existingError } = await adminSupabase
     .from('assignments')
     .select('status')
     .eq('id', ruleId)
@@ -1178,12 +1164,15 @@ export async function updateScheduledReviewRule(ruleId: string, formData: FormDa
 
   const previousMeta = parseScheduledReviewStatus(existing.status)
   const { user_id, pack_id, weekdays: validatedWeekdays, time, card_ids, cards_per_release, expires_on } = validated.data
+  const { data: selectedCards, error: selectedCardsError } = await supabase.from('cards').select('id').eq('pack_id', pack_id).in('id', card_ids)
+  if (selectedCardsError || new Set((selectedCards || []).map(card => card.id)).size !== new Set(card_ids).size) return { error: 'Os cartões selecionados não pertencem à coleção ou não puderam ser conferidos.' }
+
 
   if (user_id === 'all') {
     return { error: 'Use um membro específico para editar uma regra existente.' }
   }
 
-  const { error } = await supabase
+  const { error } = await adminSupabase
     .from('assignments')
     .update({
       user_id,
@@ -1211,9 +1200,9 @@ export async function updateScheduledReviewRule(ruleId: string, formData: FormDa
 }
 
 export async function toggleScheduledReviewRule(ruleId: string) {
-  const { supabase } = await requireAdmin()
+  const { adminSupabase } = await requireAdmin()
 
-  const { data: existing, error: existingError } = await supabase
+  const { data: existing, error: existingError } = await adminSupabase
     .from('assignments')
     .select('status')
     .eq('id', ruleId)
@@ -1227,7 +1216,7 @@ export async function toggleScheduledReviewRule(ruleId: string) {
   const meta = parseScheduledReviewStatus(existing.status)
   if (!meta) return { error: 'Regra inválida' }
 
-  const { error } = await supabase
+  const { error } = await adminSupabase
     .from('assignments')
     .update({
       status: buildScheduledReviewStatus({
@@ -1249,9 +1238,9 @@ export async function toggleScheduledReviewRule(ruleId: string) {
 }
 
 export async function duplicateScheduledReviewRule(ruleId: string) {
-  const { supabase } = await requireAdmin()
+  const { adminSupabase } = await requireAdmin()
 
-  const { data: existing, error: existingError } = await supabase
+  const { data: existing, error: existingError } = await adminSupabase
     .from('assignments')
     .select('user_id,pack_id,status')
     .eq('id', ruleId)
@@ -1267,7 +1256,7 @@ export async function duplicateScheduledReviewRule(ruleId: string) {
     return { error: 'Regra inválida' }
   }
 
-  const { error } = await supabase.from('assignments').insert({
+  const { error } = await adminSupabase.from('assignments').insert({
     user_id: existing.user_id,
     pack_id: existing.pack_id,
     game_mode: 'scheduled_review',
@@ -1347,9 +1336,9 @@ export async function startAssignmentTimer(assignmentId: string) {
 }
 
 export async function deleteAssignment(id: string) {
-  const { supabase } = await requireAdmin()
+  const { adminSupabase } = await requireAdmin()
 
-  const { error } = await supabase.from('assignments').delete().eq('id', id)
+  const { error } = await adminSupabase.from('assignments').delete().eq('id', id)
 
   if (error) return { error: error.message }
 
@@ -1363,11 +1352,11 @@ export async function deleteAssignment(id: string) {
 }
 
 export async function deleteAllAssignments(): Promise<ActionResult> {
-  const { supabase } = await requireAdmin()
+  const { adminSupabase } = await requireAdmin()
 
   // Status uses pipe-separated format (e.g. 'pending|tl=15', 'scheduled_review|...')
   // so we delete everything that does NOT start with 'completed'
-  const { error } = await supabase
+  const { error } = await adminSupabase
     .from('assignments')
     .delete()
     .not('status', 'like', 'completed%')
@@ -1895,6 +1884,7 @@ export async function evaluateGamification(
 
   if (quests && quests.length > 0) {
     for (const quest of quests) {
+      if (quest.expires_at && new Date(quest.expires_at).getTime() <= Date.now()) continue
       let progressIncrement = 0
       if (quest.quest_type === 'any_session') progressIncrement = 1
       if (quest.quest_type === 'listening_game' && stats.gameMode === 'listening') progressIncrement = 1
@@ -1906,19 +1896,19 @@ export async function evaluateGamification(
         stats.type === 'blitz' &&
         (stats.maxCombo || 0) >= quest.target
       ) {
-        progressIncrement = 1
+        progressIncrement = quest.target - quest.progress
       }
 
       if (progressIncrement > 0) {
-        const newProgress = quest.progress + progressIncrement
+        const newProgress = Math.min(quest.target, quest.progress + progressIncrement)
         const newStatus = newProgress >= quest.target ? 'completed' : 'active'
 
-        await supabase
+        const { data: savedQuest, error: saveError } = await supabase
           .from('user_quests')
           .update({ progress: newProgress, status: newStatus })
-          .eq('id', quest.id)
+          .eq('id', quest.id).eq('progress', quest.progress).eq('status', 'active').select('id').maybeSingle()
 
-        if (newStatus === 'completed') {
+        if (!saveError && savedQuest && newStatus === 'completed') {
           questsCompleted.push(quest.quest_type)
         }
       }
@@ -1965,9 +1955,10 @@ export async function evaluateGamification(
       }
 
       if (shouldUnlock) {
-        await supabase
+        const { error: badgeError } = await supabase
           .from('user_badges')
           .insert({ user_id: userId, badge_id: badge.id })
+        if (badgeError) continue
 
         unlockedBadgeResults.push({
           name: badge.name,
@@ -1982,6 +1973,10 @@ export async function evaluateGamification(
 
 // ===== QUEST ACTIONS =====
 
+const QuestTypeSchema = z.enum(['any_session','listening_game','speaking_game','perfect_accuracy','blitz_session','blitz_combo'])
+const QuestDateSchema = z.string().refine(value => Number.isFinite(Date.parse(value)), 'Data inválida').nullable().optional()
+const QuestTargetSchema = z.number().int().min(1).max(1_000_000)
+
 export async function createQuestAction(data: {
   userId: string | 'all',
   questType: string,
@@ -1990,9 +1985,16 @@ export async function createQuestAction(data: {
 }) {
   const { adminSupabase } = await requireAdmin()
 
-  const userIds = data.userId === 'all'
-    ? (await adminSupabase.from('profiles').select('id')).data?.map((u: { id: string }) => u.id) || []
-    : [data.userId]
+  const parsed = z.object({userId:z.union([z.literal('all'),z.string().uuid()]),questType:QuestTypeSchema,target:QuestTargetSchema,expiresAt:QuestDateSchema}).safeParse(data)
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message || 'Missão inválida.' }
+  data = parsed.data
+  let userIds: string[] = [data.userId]
+  if (data.userId === 'all') {
+    const members = await adminSupabase.from('profiles').select('id').eq('role','member')
+    if (members.error) return { success: false, error: 'Não foi possível carregar os destinatários. Tente novamente.' }
+    userIds = (members.data || []).map((user: {id:string}) => user.id)
+  }
+  if (!userIds.length) return { success: false, error: 'Nenhum membro elegível para esta missão.' }
 
   const inserts = userIds.map((uid: string) => ({
     user_id: uid,
@@ -2040,6 +2042,10 @@ export async function updateQuestAction(questId: string, data: {
   expires_at?: string | null
 }) {
   const { adminSupabase } = await requireAdmin()
+  const parsed = z.object({quest_type:QuestTypeSchema.optional(),progress:z.number().int().min(0).max(1_000_000).optional(),target:QuestTargetSchema.optional(),status:z.enum(['active','completed']).optional(),expires_at:QuestDateSchema}).safeParse(data)
+  if (!z.string().uuid().safeParse(questId).success || !parsed.success || !Object.keys(parsed.data).length) return { success:false, error:'Dados da missão inválidos.' }
+  data = parsed.data
+
 
   const { error } = await adminSupabase
     .from('user_quests')
@@ -2054,6 +2060,8 @@ export async function updateQuestAction(questId: string, data: {
 
 export async function deleteQuestAction(questId: string) {
   const { adminSupabase } = await requireAdmin()
+  if (!z.string().uuid().safeParse(questId).success) return {success:false,error:'Missão inválida.'}
+
 
   const { error } = await adminSupabase
     .from('user_quests')
@@ -2067,6 +2075,7 @@ export async function deleteQuestAction(questId: string) {
 }
 
 export async function updateWeeklyReportPreferenceAction(enabled: boolean) {
+  if (typeof enabled !== 'boolean') return { success: false, error: 'Preferência inválida.' }
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, error: 'Não autenticado' }
@@ -2146,12 +2155,7 @@ export async function generateTutorResponse(
       maxTokens: 300,
     })
 
-    // Extract tip if exists
-    const tipMatch = content.match(/\[TIP\](.*)/)
-    const tip = tipMatch ? tipMatch[1].trim() : null
-    const cleanContent = content.replace(/\[TIP\].*/, '').trim()
-
-    return { content: cleanContent, tip }
+    return parseTutorReply(content)
   } catch (error) {
     console.error('Error in generateTutorResponse:', error)
     return { error: 'Erro ao processar resposta do tutor.' }
@@ -2170,7 +2174,7 @@ type BlitzQueueItem = {
   packs?: { level?: string | null } | null
 }
 
-export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; newCardIds: string[]; error: string | null }> {
+export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; newCardIds: string[]; userId?: string; error: string | null }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { cards: [], newCardIds: [], error: 'Não autenticado' }
@@ -2286,7 +2290,7 @@ export async function getBlitzCards(limit = 40): Promise<{ cards: Card[]; newCar
   const rankedCards = ranked
     .map(item => byId.get(item.signal.cardId))
     .filter((card): card is Card => Boolean(card))
-  return { ...buildBalancedBlitzDeck(rankedCards, signals, targetLevel, limit), error: null }
+  return { ...buildBalancedBlitzDeck(rankedCards, signals, targetLevel, limit), userId: user.id, error: null }
 }
 
 function toBlitzTempCards(cards: Array<{ en: string; pt: string }>): Card[] {
@@ -2353,6 +2357,7 @@ export async function getBlitzAiRateStatus(): Promise<{
 
 export async function generateBlitzAiPack(limit = 32): Promise<{
   cards: Card[]
+  userId?: string
   pack: BlitzAiPackDraft | null
   error: string | null
 }> {
@@ -2419,6 +2424,7 @@ export async function generateBlitzAiPack(limit = 32): Promise<{
 
     return {
       cards: toBlitzTempCards(validCards),
+      userId: user.id,
       pack,
       error: null,
     }

@@ -18,9 +18,9 @@ export default function ExploreHeader({
 }) {
   return (
     <WorkspaceHeading
-      title="Sua trilha de inglês"
+      title="Catálogo de lições"
       breadcrumb="Explorar"
-      description="Veja as lições disponíveis e os próximos níveis da sua trilha."
+      description="Encontre lições por nível ou tema."
       actions={
         <>
           <Link
@@ -31,7 +31,7 @@ export default function ExploreHeader({
             <BookOpen size={16} /> Plano de hoje
           </Link>
           <a href="#packs" className={homeSecondaryButton}>
-            <List size={16} /> Ver a trilha
+            <List size={16} /> Ir para busca
           </a>
         </>
       }
@@ -41,10 +41,10 @@ export default function ExploreHeader({
             href={`/explore/pack/${featuredPack.id}`}
             transitionTypes={navForwardTransitionTypes}
             prefetch={false}
-            className="workspace-summary workspace-summary-link"
+            className="discovery-featured"
           >
-            <span className="workspace-summary-icon">
-              <BookOpen size={22} />
+            <span className="discovery-featured-icon">
+              <BookOpen size={18} aria-hidden="true" />
             </span>
             <div>
               <p>
@@ -54,7 +54,7 @@ export default function ExploreHeader({
               </p>
               <strong>{featuredPack.name}</strong>
             </div>
-            <ArrowUpRight size={18} />
+            <ArrowUpRight size={16} aria-hidden="true" />
           </Link>
         )
       }

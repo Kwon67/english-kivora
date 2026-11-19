@@ -1,9 +1,8 @@
 import WorkspaceSections from '@/components/ui/WorkspaceSections'
-import type { ComponentType } from 'react'
 import { redirect } from 'next/navigation'
-import { Flame, Percent, Target, TrendingUp, Trophy, Zap } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { formatAppDate, getAppDateString, getAppDayStartUtcIso, shiftAppDate } from '@/lib/timezone'
+import { appDateRange, formatAppDate, getAppDateString, getAppDayStartUtcIso, shiftAppDate } from '@/lib/timezone'
+import { readReportPages } from '@/features/admin/lib/reportPagination'
 import HistoryChart from '@/features/review/components/HistoryChart'
 import RetentionChart from '@/features/review/components/RetentionChart'
 import ActivityHeatmap from '@/features/review/components/ActivityHeatmap'
@@ -15,22 +14,12 @@ import { SessionErrorLog } from '@/features/game/components/SessionErrorsViewer'
 import HistoryFocusAreaSection from '@/features/review/components/HistoryFocusAreaSection'
 import { getB2LearningPath } from '@/features/cefr/lib/b2Progress'
 import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
-import SectionBadge from '@/components/ui/SectionBadge'
 import ProgressReportPanel from './ProgressReportPanel'
 import { buildProgressReport } from '@/features/review/lib/progressReport'
-import {
-  historyCefrTrack,
-  historyChartBadge,
-  historyIconBox,
-  historyMilestoneBar,
-  historyPanel,
-  historySectionTitle,
-  historyShell,
-  historyTelemetryBand,
-  historyTelemetryCell,
-} from '@/features/history/lib/historyUi'
+import styles from './History.module.css'
 import HistoryHeader from './HistoryHeader'
-import { HistoryMotionItem, HistoryMotionSection } from './HistoryMotion'
+import PracticePortfolioHistory from '@/features/curriculum/components/PracticePortfolioHistory'
+import ContextPracticeHistory from '@/features/study/components/ContextPracticeHistory'
 
 type HistorySession = {
   id: string
@@ -47,28 +36,6 @@ type HistorySession = {
   session_errors: SessionErrorLog[]
 }
 
-function TelemetryMetric({
-  label,
-  value,
-  icon: Icon,
-}: {
-  label: string
-  value: string | number
-  icon: ComponentType<{ className?: string }>
-}) {
-  return (
-    <div className={historyTelemetryCell}>
-      <div className="flex items-center justify-between gap-2">
-        <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">{label}</p>
-        <span className={`h-7 w-7 shrink-0 ${historyIconBox}`}>
-          <Icon className="h-3.5 w-3.5" />
-        </span>
-      </div>
-      <p className="font-heading text-xl font-bold tabular-nums leading-none text-brand-dark sm:text-2xl">{value}</p>
-    </div>
-  )
-}
-
 export default async function HistoryPage({
   searchParams,
 }: {
@@ -81,24 +48,22 @@ export default async function HistoryPage({
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { date: filterDate } = await searchParams
+  const range = appDateRange((await searchParams).date)
+  const filterDate = range?.date
   const today = getAppDateString()
   const since = shiftAppDate(today, -364)
 
-  let query = supabase
+  const sessionQuery = () => supabase
     .from('game_sessions')
     .select('id,completed_at,correct_answers,wrong_answers,max_streak,assignments(status,game_mode,packs(name,category,description),badges(name,icon_name)),session_errors(id,created_at,card_id,cards(english_phrase,portuguese_translation,audio_url))')
     .eq('user_id', user.id)
 
-  if (filterDate) {
-    query = query.gte('completed_at', `${filterDate}T00:00:00.000Z`).lte('completed_at', `${filterDate}T23:59:59.999Z`)
-  } else {
-    query = query.limit(50)
-  }
-
   const [sessionsResult, studyEvidence, cefrProfile, b2Path, reportReviews, reportSessions] =
     await Promise.all([
-      query.order('completed_at', { ascending: false }),
+      range ? readReportPages((from, to) => sessionQuery()
+        .gte('completed_at', range.start).lt('completed_at', range.end)
+        .order('completed_at', { ascending: false }).order('id').range(from, to))
+        : sessionQuery().order('completed_at', { ascending: false }).order('id').limit(50),
       loadStudyEvidence(supabase, user.id, getAppDayStartUtcIso(since)).catch((error: unknown) => {
         console.error('History study evidence query failed', error)
         return null
@@ -108,15 +73,15 @@ export default async function HistoryPage({
       // Queries próprias do relatório, de propósito: a consulta acima não traz card_id (necessário
       // para colapsar frases repetidas) e o log de partidas dela é limitado a 50 e filtrável por
       // data — o relatório mudaria conforme o filtro do usuário, o que seria enganoso.
-      supabase
+      readReportPages((from, to) => supabase
         .from('card_reviews')
         .select('card_id,interval_days,repetitions,cards(english_phrase)')
-        .eq('user_id', user.id),
-      supabase
+        .eq('user_id', user.id).order('card_id').range(from, to)),
+      readReportPages((from, to) => supabase
         .from('game_sessions')
         .select('correct_answers,wrong_answers')
         .eq('user_id', user.id)
-        .order('completed_at', { ascending: true }),
+        .order('completed_at').order('id').range(from, to)),
     ])
 
   type ReportReviewRow = {
@@ -126,7 +91,7 @@ export default async function HistoryPage({
     cards: { english_phrase: string | null } | null
   }
   const reportRows = (reportReviews.data ?? []) as unknown as ReportReviewRow[]
-  const progressReport = buildProgressReport({
+  const progressReport = reportReviews.error || reportSessions.error ? null : buildProgressReport({
     cards: reportRows.map((row) => ({
       cardId: row.card_id,
       intervalDays: row.interval_days ?? 0,
@@ -170,14 +135,14 @@ export default async function HistoryPage({
   // Vem do mesmo relatório do painel acima, de propósito. Este bloco calculava a própria
   // distribuição com outro limite (14 dias) e contando LINHAS de card_reviews — então a mesma
   // página exibia dois valores diferentes para "Dominado", um no painel e outro no gráfico.
-  const retentionCounts = progressReport.buckets
-  const retentionTotal = progressReport.phrasesTotal
+  const retentionCounts = progressReport?.buckets
+  const retentionTotal = progressReport?.phrasesTotal ?? '—'
 
-  const retentionData = [
+  const retentionData = retentionCounts ? [
     { name: 'Aprendendo', value: retentionCounts.learning, color: 'var(--streak-accent)' },
     { name: 'Familiar', value: retentionCounts.familiar, color: 'var(--listening-accent)' },
-    { name: 'Dominado', value: retentionCounts.mastered, color: 'var(--review-accent)' },
-  ].filter((d) => d.value > 0)
+    { name: 'Intervalo longo', value: retentionCounts.mastered, color: 'var(--review-accent)' },
+  ].filter((d) => d.value > 0) : []
 
   const studyDays = studyEvidence === null ? null : aggregateStudyDays(studyEvidence)
   const activityData = Object.fromEntries((studyDays ?? []).map((day) => [
@@ -230,142 +195,100 @@ export default async function HistoryPage({
   const cefrProgress = cefrProfile.assessing ? 0 : (cefrProfile.progressToNext ?? 0)
   const b2Progress = b2Path.b2Total > 0 ? Math.round((b2Path.b2Completed / b2Path.b2Total) * 100) : 0
 
-  return (
-    <div className={historyShell}>
-      <div className="relative z-10 mx-auto w-full min-w-0 max-w-6xl space-y-6 pb-12 animate-fade-in sm:space-y-8">
-<HistoryMotionSection>
-          <HistoryHeader filterDate={filterDate} />
-        </HistoryMotionSection>
+  const metrics = [
+    ['Precisão', totalCorrect + totalWrong > 0 ? `${averageAccuracy}%` : '—'],
+    ['Sessões', totalSessions],
+    ['Acertos', totalCorrect],
+    ['Erros', totalWrong],
+    ['Melhor sequência', bestStreak],
+    ['Frases em revisão', retentionTotal],
+  ]
 
-<WorkspaceSections label="Seu progresso" tabs={[
-  { id: 'resumo', label: 'Resumo', description: 'Seus indicadores e o relatório de aprendizado.', icon: 'chart' },
-  { id: 'evolucao', label: 'Evolução', description: 'Acompanhe seu nível, a precisão e o vocabulário.', icon: 'course', anchors: ['graficos'] },
-  { id: 'habilidades', label: 'Habilidades', description: 'Veja a precisão nas habilidades que você praticou.', icon: 'target' },
-  { id: 'atividade', label: 'Atividade', description: 'Acompanhe a frequência e os resultados por dia.', icon: 'calendar', anchors: ['heatmaps'] },
-  { id: 'foco', label: 'Revisar erros', description: 'Encontre sessões recentes e pontos para praticar.', icon: 'list', anchors: ['sessoes'] },
-]}>
-<div className="workspace-panel-stack"><HistoryMotionSection className={historyTelemetryBand} stagger>
-          <HistoryMotionItem>
-            <TelemetryMetric label="Precisão" value={`${averageAccuracy}%`} icon={Target} />
-          </HistoryMotionItem>
-          <HistoryMotionItem>
-            <TelemetryMetric label="Acertos" value={totalCorrect} icon={Trophy} />
-          </HistoryMotionItem>
-          <HistoryMotionItem>
-            <TelemetryMetric label="Sequência" value={bestStreak} icon={Zap} />
-          </HistoryMotionItem>
-          <HistoryMotionItem>
-            <TelemetryMetric label="Sessões" value={totalSessions} icon={TrendingUp} />
-          </HistoryMotionItem>
-          <HistoryMotionItem>
-            <TelemetryMetric label="Erros" value={totalWrong} icon={Percent} />
-          </HistoryMotionItem>
-          <HistoryMotionItem>
-            <TelemetryMetric label="SRS" value={retentionTotal} icon={Flame} />
-          </HistoryMotionItem>
-        </HistoryMotionSection><HistoryMotionSection>
-          <ProgressReportPanel report={progressReport} />
-        </HistoryMotionSection></div>
-<div className="workspace-panel-stack"><HistoryMotionSection>
-          <div className={historyCefrTrack}>
-            <div className="min-w-0">
-              <SectionBadge label="Progresso CEFR" />
-              <p className="mt-3 font-heading text-2xl font-bold text-brand-dark sm:text-3xl">
-                {cefrProfile.level ?? 'Em avaliação'}
-              </p>
-              <p className="mt-2 font-body text-sm text-brand-secondary">
-                {cefrProfile.assessing
-                  ? 'O nível é recalculado a cada revisão e lição.'
-                  : cefrProfile.nextLevel
-                    ? `${cefrProgress}% rumo ao ${cefrProfile.nextLevel}`
-                    : 'Nível B2 detectado no escopo atual.'}
-              </p>
-              {!cefrProfile.assessing && cefrProfile.nextLevel ? (
-                <div className={historyMilestoneBar}>
-                  <div
-                    className="h-full rounded-full bg-brand-dark transition-all duration-500"
-                    style={{ width: `${Math.max(4, cefrProgress)}%` }}
-                  />
-                </div>
-              ) : null}
+  return (
+    <div className={styles.history}>
+      <HistoryHeader filterDate={filterDate} />
+      <WorkspaceSections label="Seu progresso" tabs={[
+        { id: 'resumo', label: 'Resumo', description: '', icon: 'chart' },
+        { id: 'evolucao', label: 'Evolução', description: '', icon: 'course', anchors: ['graficos'] },
+        { id: 'habilidades', label: 'Tipos de prática', description: '', icon: 'target' },
+        { id: 'atividade', label: 'Atividade', description: '', icon: 'calendar', anchors: ['heatmaps'] },
+        { id: 'foco', label: 'Revisar erros', description: '', icon: 'list', anchors: ['sessoes'] },
+      ]}>
+        <div className={styles.stack}>
+          <section aria-labelledby="history-metrics">
+            <h2 id="history-metrics">{filterDate ? 'Indicadores do dia' : 'Sessões recentes'}</h2>
+            <dl className={styles.metrics}>
+              {metrics.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
+            </dl>
+            <p className={styles.hint}>O total de frases em revisão considera todo o seu histórico.</p>
+          </section>
+          {progressReport ? <ProgressReportPanel report={progressReport} /> :
+            <p role="status">Não foi possível carregar o relatório completo. Atualize a página para tentar novamente.</p>}
+          <ContextPracticeHistory db={supabase} userId={user.id} />
+          <PracticePortfolioHistory key={user.id} userId={user.id} />
+        </div>
+        <div className={styles.stack}>
+          <section className={styles.levels} aria-label="Evolução de nível">
+            <div>
+              <h2>Estimativa de nível</h2>
+              <p className={styles.emphasis}>{cefrProfile.level ?? 'Em avaliação'}</p>
+              <p>{cefrProfile.assessing
+                ? 'Recalculada a cada revisão e lição.'
+                : cefrProfile.nextLevel
+                  ? `${cefrProgress}% rumo ao ${cefrProfile.nextLevel}`
+                  : `Estimativa ${cefrProfile.level ?? 'em avaliação'} no escopo atual.`}</p>
+              <p className={styles.hint}>Indicador baseado nos exercícios registrados, sem certificação CEFR.</p>
+              {!cefrProfile.assessing && cefrProfile.nextLevel &&
+                <div className={styles.bar} role="progressbar" aria-label="Progresso de nível" aria-valuenow={cefrProgress}>
+                  <span style={{ width: `${Math.max(4, cefrProgress)}%` }} />
+                </div>}
             </div>
-            <div className="min-w-0 sm:border-l sm:border-brand-dark/20 sm:pl-6">
-              <SectionBadge label="Trilha B2" />
-              <p className="mt-3 font-heading text-2xl font-bold tabular-nums text-brand-dark sm:text-3xl">
-                {b2Path.b2Completed}/{b2Path.b2Total}
-              </p>
-              <p className="mt-2 font-body text-sm text-brand-secondary">{b2Path.nextMilestone}</p>
-              <div className={historyMilestoneBar}>
-                <div
-                  className="h-full rounded-full bg-brand-accent transition-all duration-500"
-                  style={{ width: `${Math.max(b2Path.b2Total > 0 ? 4 : 0, b2Progress)}%` }}
-                />
+            <div>
+              <h2>Trilha B2</h2>
+              <p className={styles.emphasis}>{b2Path.b2Completed}/{b2Path.b2Total}</p>
+              <p>{b2Path.nextMilestone}</p>
+              <div className={styles.bar} role="progressbar" aria-label="Progresso na trilha B2" aria-valuenow={b2Progress}>
+                <span style={{ width: `${Math.max(b2Path.b2Total > 0 ? 4 : 0, b2Progress)}%` }} />
               </div>
             </div>
+          </section>
+          <div id="graficos" className={styles.charts}>
+            <article>
+              <h2>Evolução de acertos</h2>
+              <p className={styles.hint}>Precisão por sessão · {chartData.length} {chartData.length === 1 ? 'sessão' : 'sessões'}</p>
+              <HistoryChart data={chartData} />
+            </article>
+            <article>
+              <h2>Estágios da revisão</h2>
+              <p className={styles.hint}>Distribuição das frases pelo intervalo de revisão.</p>
+              {retentionCounts ? <RetentionChart data={retentionData} /> : <p role="status">Distribuição indisponível no momento.</p>}
+            </article>
           </div>
-        </HistoryMotionSection>
-        <HistoryMotionSection id="graficos" className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]" stagger>
-          <HistoryMotionItem>
-            <article className={historyPanel}>
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <SectionBadge label="Progressão" />
-                  <h2 className={`${historySectionTitle} mt-3`}>Evolução de acertos</h2>
-                  <p className="mt-2 text-sm text-brand-secondary">Percentual de acertos por sessão, em ordem cronológica.</p>
-                </div>
-                {chartData.length > 0 && <span className={historyChartBadge}>{chartData.length} {chartData.length === 1 ? 'sessão' : 'sessões'}</span>}
-              </div>
-              <div className="mt-5"><HistoryChart data={chartData} /></div>
-            </article>
-          </HistoryMotionItem>
-          <HistoryMotionItem>
-            <article className={historyPanel}>
-              <SectionBadge label="Retenção" />
-              <h2 className={`${historySectionTitle} mt-3`}>Domínio de vocabulário</h2>
-              <p className="mt-2 text-sm text-brand-secondary">Distribuição das frases revisadas por estágio de domínio.</p>
-              <div className="mt-5"><RetentionChart data={retentionData} /></div>
-            </article>
-          </HistoryMotionItem>
-        </HistoryMotionSection>
-      </div>
-      <div className="workspace-panel-stack">
-        <HistoryMotionSection>
-          <article className={historyPanel}>
-            <h2 className={historySectionTitle}>Precisão por habilidade</h2>
-            <p className="mt-2 text-sm text-brand-secondary">Percentual de acertos e número de respostas em cada habilidade praticada.</p>
-            <div className="mt-5"><RadarSkillsChart data={radarSkillsData} /></div>
+        </div>
+        <div className={styles.stack}>
+          <article>
+            <h2>Resultados por tipo de prática</h2>
+            <p className={styles.hint}>Acertos por modo de exercício. Conversação espontânea e escrita livre ficam fora desta estimativa.</p>
+            <RadarSkillsChart data={radarSkillsData} />
           </article>
-        </HistoryMotionSection>
-      </div>
-      <div className="workspace-panel-stack" id="heatmaps">
-        <HistoryMotionSection className="space-y-4">
+        </div>
+        <div id="heatmaps" className={styles.stack}>
           {studyDays === null ? (
-            <p className={historyPanel} role="status">Não foi possível carregar os mapas de estudo. Atualize a página para tentar novamente.</p>
+            <p role="status">Não foi possível carregar os mapas de estudo. Atualize a página para tentar novamente.</p>
           ) : (
             <>
               <StudyQualityHeatmap days={studyDays} today={today} since={since} />
-              <article className={historyPanel}>
-                <h2 className={historySectionTitle}>Volume de estudo</h2>
-                <p className="mt-2 text-sm text-brand-secondary">Respostas registradas em partidas e revisões nas últimas 12 semanas.</p>
-                <div className="mt-5"><ActivityHeatmap activityData={activityData} /></div>
+              <article>
+                <h2>Volume de estudo</h2>
+                <ActivityHeatmap activityData={activityData} />
               </article>
             </>
           )}
-        </HistoryMotionSection>
-      </div>
-<div className="workspace-panel-stack"><HistoryMotionSection id="sessoes" className="space-y-4 pt-2 sm:space-y-5">
-          <div>
-            <SectionBadge label="Linha do tempo" />
-            <h2 className={`${historySectionTitle} mt-3`}>Áreas de foco</h2>
-            <p className="mt-2 max-w-xl font-body text-sm text-brand-secondary">
-              Sessões recentes e erros para revisar — organizados em ordem cronológica.
-            </p>
-          </div>
-
+        </div>
+        <div id="sessoes" className={styles.stack}>
           <HistoryFocusAreaSection sessions={typedSessions} filterDate={filterDate} />
-        </HistoryMotionSection></div>
-</WorkspaceSections>
-</div>
+        </div>
+      </WorkspaceSections>
     </div>
   )
 }

@@ -11,13 +11,6 @@ import EmptyState from '@/components/ui/EmptyState'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { formatAppDate } from '@/lib/timezone'
 import { notify } from '@/lib/toast'
-import {
-  historyCard,
-  historyFrostedSubtle,
-  historyFrostedSurface,
-  historyPill,
-} from '@/features/history/lib/historyUi'
-import { landingRadiusLg } from '@/lib/landingStyles'
 
 export type HistoryFocusSession = {
   id: string
@@ -78,13 +71,13 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
 
   return (
     <>
-      <section className={`${historyCard} relative overflow-hidden`}>
-        <div className="border-b border-brand-dark px-4 py-5 sm:px-6">
+      <section className="history-focus">
+        <div className="border-b border-brand-dark/15 pb-3">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <h2 className="font-heading text-xl font-bold text-brand-dark sm:text-2xl">Sessões recentes</h2>
               <p className="mt-2 font-body text-sm text-brand-secondary">
-                Leitura rápida das suas sessões recentes.
+
                 {totalErrors > 0 && (
                   <span className="mt-1 block text-[var(--color-error)]">
                     {totalErrors} {totalErrors === 1 ? 'erro registrado' : 'erros registrados'}.
@@ -97,38 +90,26 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
                 type="button"
                 onClick={() => setShowConfirm(true)}
                 disabled={isPending}
-                className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 self-start rounded-control border border-error/30 bg-error-soft px-3 py-2 font-heading text-xs font-bold text-error transition-colors hover:bg-error-soft disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 self-start min-h-11 rounded-control border border-error/30 px-3 py-2 font-heading text-xs font-bold text-error transition-colors hover:bg-error-soft disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" /> : <Trash2 className="h-3.5 w-3.5" />}
                 Limpar área de foco
               </button>
             )}
           </div>
         </div>
 
-        <div className="relative px-4 py-2 sm:px-6 sm:py-3">
+        <div className="min-w-0">
           {localSessions.length > 0 ? (
-            <WorkspaceList as="ol" pageSize={5} className="history-timeline space-y-0">
-              {localSessions.map((session, index) => {
+            <WorkspaceList as="ol" pageSize={5} className="space-y-0">
+              {localSessions.map((session) => {
                 const total = session.correct_answers + session.wrong_answers
                 const pct = total > 0 ? Math.round((session.correct_answers / total) * 100) : 0
                 const statusMeta = parseAssignmentStatus(session.assignments?.status)
 
                 return (
-                  <li
-                    key={session.id}
-                    className="history-timeline-item relative py-4 pl-8 sm:pl-10 sm:py-5"
-                    style={{ animationDelay: `${index * 40}ms` }}
-                  >
-                    <span
-                      className={`absolute left-0 top-6 z-10 h-3 w-3 rounded-full border border-brand-dark sm:top-7 ${
-                        pct >= 80 ? 'bg-brand-accent' : pct >= 50 ? 'bg-brand-accent-soft' : 'bg-bg-primary'
-                      }`}
-                      aria-hidden
-                    />
-                    <div
-                      className={`${landingRadiusLg} border border-brand-dark/20 bg-bg-primary p-4 transition-transform hover:-translate-y-0.5 sm:p-5 ${historyFrostedSubtle}`}
-                    >
+                  <li key={session.id} className="history-focus-row">
+                    <div>
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div className="min-w-0">
                           <p className="flex items-center gap-2 font-body text-sm font-semibold text-brand-dark sm:text-base">
@@ -154,13 +135,13 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          <span className={`${historyPill} bg-brand-accent`}>
+                          <span className="text-sm text-brand-secondary">
                             {session.correct_answers} certos
                           </span>
-                          <span className={`inline-flex rounded-lg bg-error-soft px-2 py-1 text-xs text-error`}>
+                          <span className="text-sm text-brand-secondary">
                             {session.wrong_answers} erros
                           </span>
-                          <span className={`${historyPill} tabular-nums`}>{pct}%</span>
+                          <span className="text-sm font-semibold tabular-nums">{pct}%</span>
                         </div>
                       </div>
 
@@ -186,7 +167,7 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
               }
               variant="compact"
               className="rounded-none bg-transparent px-2 py-12"
-              imageWrapClassName={historyFrostedSubtle}
+              imageWrapClassName="history-empty-art"
               imageClassName="max-w-36"
             />
           )}
@@ -200,7 +181,6 @@ export default function HistoryFocusAreaSection({ sessions, filterDate }: Histor
           confirmLabel="Limpar"
           cancelLabel="Cancelar"
           variant="danger"
-          surfaceClassName={historyFrostedSurface}
           onConfirm={handleClearFocusArea}
           onCancel={() => setShowConfirm(false)}
         />

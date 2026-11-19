@@ -2,29 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { m } from 'motion/react'
-import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
-import { AlertCircle, ArrowRight, ChevronDown, Flame, Heart, HelpCircle, Sparkles, Trophy, Zap } from 'lucide-react'
+import { AlertCircle, ArrowRight, ChevronDown, Flame, Heart, Sparkles, Trophy, Zap } from 'lucide-react'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import type { BlitzLeaderboardEntry } from '@/features/blitz/lib/weeklyBlitzLeaderboard'
-import BlitzCountUpNumber from '@/features/blitz/components/BlitzCountUpNumber'
-import {
-  blitzCard,
-  blitzHeroArena,
-  blitzIconBox,
-  blitzKicker,
-  blitzModeOption,
-  blitzModeSwitch,
-  blitzNestedRow,
-  blitzPrimaryBtn,
-  blitzScoreTicker,
-  blitzTile,
-} from '@/features/blitz/lib/blitzUi'
+import { blitzHeroArena, blitzModeOption, blitzPrimaryBtn } from '@/features/blitz/lib/blitzUi'
 import { getCefrLevelLabel, type LearnerCefrLevel } from '@/features/cefr/lib/cefrLevels'
 import { blitzLevelsInScope } from '@/features/blitz/lib/blitzLevelScope'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
-import SectionBadge from '@/components/ui/SectionBadge'
-import StaggeredFadeIn from '@/components/ui/StaggeredFadeIn'
 
 interface BlitzLandingProps {
   personalBest: number
@@ -36,135 +20,17 @@ interface BlitzLandingProps {
   aiRetryAfterSeconds?: number
 }
 
-/**
- * Coluna decorativa do herói: o recorde de combo desenhado como marcas de contagem.
- *
- * Antes eram cinco barras subindo e descendo — um equalizador de áudio. Áudio não é o assunto do
- * Blitz, então aquilo não dizia nada: qualquer produto poderia ter a mesma animação.
- *
- * O que define o Blitz é o COMBO: acertos seguidos que multiplicam os pontos. E o jeito de contar
- * coisas seguidas no papel — que é o mundo visual deste app, com régua, lápis e papel quadriculado
- * no fundo — é o risquinho de contagem: quatro traços e uma barra atravessando o quinto.
- *
- * Então a coluna conta o SEU recorde. Com 43 de combo são 43 marcas, preenchendo de baixo para
- * cima como um medidor, e o marca-texto fecha a última leva. O número já está escrito no placar ao
- * lado; aqui ele é sentido em vez de lido.
- *
- * Desenha UMA vez e para. O herói já tem o ponto pulsando, os números contando e o halo do botão:
- * mais um loop infinito ao lado disso vira ruído. O recorde é um fato, não uma animação.
- */
-const TALLY_LEAD = 0.25
-const TALLY_STEP = 0.075
-const TALLY_DRAW = 0.2
-const TALLY_HIGHLIGHT = 0.55
-/** Teto de marcas que cabem na coluna sem estourar a altura do herói mais curto. */
-const TALLY_MAX = 45
-
-/** Cada leva já sai daqui sabendo em que marca começa: um contador mutável durante o render é
- *  reatribuição de variável de componente, que o React Compiler recusa — e com razão. */
-function tallyGroups(total: number): { tamanho: number; inicio: number }[] {
-  const grupos: { tamanho: number; inicio: number }[] = []
-  for (let feitas = 0; feitas < total; feitas += 5) {
-    grupos.push({ tamanho: Math.min(total - feitas, 5), inicio: feitas })
-  }
-  return grupos
-}
-
-/**
- * Traço riscado à mão não sai reto nem do mesmo tamanho. A variação vem do índice, não de
- * `Math.random()`: sortear aqui daria uma coluna diferente a cada render e quebraria a hidratação.
- */
-function tallyTilt(indice: number): number {
-  return (((indice * 37) % 7) - 3) * 0.5
-}
-
-function tallyHeight(indice: number): number {
-  return 26 + ((indice * 13) % 3)
-}
-
 function BlitzComboTally({ bestCombo }: { bestCombo: number }) {
-  const semMovimento = useHydratedReducedMotion()
-  // Piso de 5 (uma leva fechada) para a coluna não ficar vazia em conta nova. Ela é decorativa e
-  // `aria-hidden`: o recorde de verdade está no placar, que mostra 0 sem inventar nada.
-  const total = Math.min(Math.max(bestCombo, 5), TALLY_MAX)
-  const grupos = tallyGroups(total)
-  const destaqueInicio = TALLY_LEAD + total * TALLY_STEP + TALLY_DRAW + 0.1
+  const total = Math.min(Math.max(bestCombo, 5), 45)
 
   return (
-    <div
-      className="blitz-tile relative hidden overflow-hidden px-3 py-4 lg:flex lg:flex-col-reverse lg:items-center lg:justify-start lg:gap-3.5"
-      aria-hidden
-    >
-      {grupos.map(({ tamanho, inicio }, grupoIndex) => {
-        const tracos = Math.min(tamanho, 4)
-        const temBarra = tamanho === 5
-        const ehUltimo = grupoIndex === grupos.length - 1
-        const marcaDaBarra = inicio + 4
-        const marcasDoGrupo = Array.from({ length: tracos }, (_, i) => inicio + i)
-
+    <div className="blitz-entry-tally" aria-hidden="true">
+      {Array.from({ length: Math.ceil(total / 5) }, (_, group) => {
+        const count = Math.min(5, total - group * 5)
         return (
-          // Largura fixa de leva cheia, mesmo na incompleta: numa contagem de verdade você segue
-          // escrevendo a partir da esquerda, então os traços de cima alinham com os de baixo.
-          // Centralizar a leva incompleta a deslocaria alguns pixels e quebraria a coluna.
-          <div
-            key={grupoIndex}
-            className="relative flex h-7 w-[33px] shrink-0 items-end justify-start gap-[7px]"
-          >
-            {/* Marca-texto na última leva: o único momento de cor da coluna. Passa dos traços dos
-                dois lados, e mais à direita que à esquerda, porque caneta marca-texto não para
-                exatamente onde o texto acaba — é o excesso que faz o traço parecer feito à mão. */}
-            {ehUltimo && (
-              <m.span
-                className="pointer-events-none absolute inset-y-[-2px] left-[-9px] origin-left rounded-[2px] bg-brand-accent"
-                style={{ right: 33 - (temBarra ? 37 : tracos * 3 + (tracos - 1) * 7) - 15 }}
-                initial={semMovimento ? false : { opacity: 0, scaleX: 0.12, rotate: -1.5 }}
-                animate={{ opacity: 0.55, scaleX: 1, rotate: -1.5 }}
-                transition={
-                  semMovimento
-                    ? { duration: 0 }
-                    : { delay: destaqueInicio, duration: TALLY_HIGHLIGHT, ease: 'easeOut' }
-                }
-              />
-            )}
-
-            {marcasDoGrupo.map((indice) => (
-              <m.span
-                key={indice}
-                className="relative z-10 w-[3px] origin-bottom rounded-full bg-brand-dark"
-                style={{ height: tallyHeight(indice) }}
-                initial={semMovimento ? false : { scaleY: 0, rotate: tallyTilt(indice) }}
-                animate={{ scaleY: 1, rotate: tallyTilt(indice) }}
-                transition={
-                  semMovimento
-                    ? { duration: 0 }
-                    : {
-                        delay: TALLY_LEAD + indice * TALLY_STEP,
-                        duration: TALLY_DRAW,
-                        ease: 'easeOut',
-                      }
-                }
-              />
-            ))}
-
-            {temBarra && (
-              <m.span
-                className="absolute left-[-4px] top-[22px] z-10 h-[3px] w-[46px] origin-left rounded-full bg-brand-dark"
-                initial={
-                  semMovimento ? false : { scaleX: 0, rotate: -26 + tallyTilt(grupoIndex) }
-                }
-                animate={{ scaleX: 1, rotate: -26 + tallyTilt(grupoIndex) }}
-                transition={
-                  semMovimento
-                    ? { duration: 0 }
-                    : {
-                        delay: TALLY_LEAD + marcaDaBarra * TALLY_STEP,
-                        duration: TALLY_DRAW + 0.06,
-                        ease: 'easeOut',
-                      }
-                }
-              />
-            )}
-          </div>
+          <span key={group} data-complete={count === 5}>
+            {Array.from({ length: Math.min(4, count) }, (_, mark) => <i key={mark} />)}
+          </span>
         )
       })}
     </div>
@@ -220,273 +86,96 @@ export default function BlitzLanding({
   }, [aiRateLimited, aiRetryAfterSeconds])
 
   return (
-    <div className="min-w-0 space-y-5 pb-4 animate-fade-in sm:space-y-6">
-      <StudyBreadcrumb
-        items={[
-          { label: 'Início', href: '/home' },
-          { label: 'Blitz' },
-        ]}
-        className="px-0.5"
-      />
+    <div className="blitz-overview">
+      <StudyBreadcrumb items={[{ label: 'Início', href: '/home' }, { label: 'Blitz' }]} />
 
       {!scoresReady && (
-        <section className={`${blitzCard} px-4 py-4 font-body text-sm text-brand-dark sm:px-5`}>
-          Ranking e recordes do Blitz estão temporariamente indisponíveis. Você ainda pode jogar
-          normalmente — suas partidas serão salvas assim que o recurso for reativado.
-        </section>
+        <p className="blitz-notice" role="status">
+          Ranking e recordes temporariamente indisponíveis. Você ainda pode jogar.
+        </p>
       )}
 
-      <StaggeredFadeIn>
-        <section className={`${blitzHeroArena} p-4 sm:p-8 lg:p-10`}>
-          <div className="relative z-10 grid min-w-0 gap-6 lg:grid-cols-[1fr_5.5rem] lg:items-stretch lg:gap-8">
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                <div className={blitzIconBox}>
-                  <Zap className="h-6 w-6" strokeWidth={1.5} />
-                </div>
-              </div>
+      <section className={`${blitzHeroArena} blitz-entry-hero`} aria-labelledby="blitz-entry-title">
+        <div className="blitz-entry-content">
+          <header>
+            <h1 id="blitz-entry-title">Blitz <Zap aria-hidden="true" /></h1>
+            <p className="blitz-lead">Pratique inglês em rodadas rápidas. Faixa {faixaLabel}.</p>
+          </header>
 
-              <h1 className="mt-5 font-heading text-[2.75rem] font-bold leading-[0.95] tracking-tight text-brand-dark sm:mt-6 sm:text-6xl lg:text-7xl">
-                Blitz
-              </h1>
-
-              <div className={`${blitzScoreTicker} mt-5 sm:mt-6`}>
-                <div className="min-w-0">
-                  <span className="flex items-center gap-1.5 font-heading text-2xs font-bold uppercase tracking-widest text-brand-dark">
-                    <Trophy className="h-3.5 w-3.5 shrink-0" />
-                    Recorde
-                  </span>
-                  <span className="mt-1 block font-heading text-2xl font-bold tabular-nums text-brand-dark sm:text-3xl">
-                    <BlitzCountUpNumber value={personalBest} />
-                    <span className="ml-1 text-sm font-bold text-brand-secondary">pts</span>
-                  </span>
-                </div>
-                <div className="min-w-0 sm:border-l sm:border-brand-dark/20 sm:pl-3">
-                  <span className="flex items-center gap-1.5 font-heading text-2xs font-bold uppercase tracking-widest text-brand-dark">
-                    <Flame className="h-3.5 w-3.5 shrink-0" />
-                    Combo máx.
-                  </span>
-                  <span className="mt-1 block font-heading text-2xl font-bold tabular-nums text-brand-dark sm:text-3xl">
-                    <BlitzCountUpNumber value={bestCombo} delay={0.15} />
-                    <span className="ml-1 text-sm font-bold text-brand-secondary">x</span>
-                  </span>
-                </div>
-              </div>
-
-              <p className="blitz-lead mt-4 leading-relaxed sm:mt-5">
-                {isAiMode
-                  ? `A IA monta um pack temporário no seu nível de inglês (${faixaLabel}), sem repetir gerações anteriores. No fim, você escolhe salvar na biblioteca ou descartar.`
-                  : `Partida solo rápida com modos mistos, combos e três vidas. As frases seguem o seu nível de inglês: ${faixaLabel}.`}
-              </p>
-
-              <div className="mt-5 sm:mt-6">
-                <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
-                  Modo de jogo
-                </p>
-                <div
-                  className={`${blitzModeSwitch} mt-2`}
-                  role="group"
-                  aria-label="Modo de jogo do Blitz"
-                >
-                  <button
-                    type="button"
-                    onClick={() => setSelectedMode('standard')}
-                    className={blitzModeOption(!isAiMode)}
-                    aria-pressed={!isAiMode}
-                  >
-                    <Zap className="h-4 w-4 shrink-0" />
-                    Padrão
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedMode('ai')}
-                    className={blitzModeOption(isAiMode)}
-                    aria-pressed={isAiMode}
-                  >
-                    <Sparkles className="h-4 w-4 shrink-0" />
-                    Com IA
-                  </button>
-                </div>
-              </div>
-
-              {isAiMode && (
-                <div className="mt-5 sm:mt-6">
-                  {isLimited && (
-                    <div className={`${blitzCard} mb-4 flex items-start gap-3 px-3 py-3.5 sm:mb-5 sm:px-4`}>
-                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-brand-dark" />
-                      <div className="min-w-0">
-                        <p className="font-body text-sm font-semibold text-brand-dark">
-                          Limite diário de gerações atingido
-                        </p>
-                        <p className="mt-0.5 font-body text-xs leading-relaxed text-brand-secondary">
-                          Você usou todas as 10 gerações de Blitz IA de hoje. O limite será
-                          restaurado automaticamente em{' '}
-                          <span className="font-bold tabular-nums">{formatCountdown(secondsLeft)}</span>.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  <p className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
-                    Conteúdo desta partida
-                  </p>
-                  {/* Sem escolha de dificuldade: quem não conhece a escala CEFR não sabe responder,
-                      e nada garantia que a resposta batesse com o nível real — dava para pedir
-                      conteúdo muito acima do próprio inglês. O nível do perfil decide, e a tela
-                      mostra qual é para a partida não parecer arbitrária. */}
-                  <div className={`${blitzTile} mt-3`} data-testid="blitz-ai-level-scope">
-                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                      <span className="font-heading text-base font-bold text-brand-dark sm:text-lg">
-                        Seu nível: {teto}
-                      </span>
-                      <span className="font-body text-[11px] font-semibold text-brand-secondary sm:text-xs">
-                        {getCefrLevelLabel(teto)}
-                      </span>
-                    </div>
-                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                      {faixaDoUsuario.map((nivel) => (
-                        <span
-                          key={nivel}
-                          className={`rounded-control px-2 py-0.5 font-heading text-2xs font-bold ${
-                            nivel === teto
-                              ? 'blitz-selected-surface text-brand-dark'
-                              : 'bg-bg-primary/70 text-brand-secondary'
-                          }`}
-                        >
-                          {nivel}
-                        </span>
-                      ))}
-                    </div>
-                    <p className="mt-2 font-body text-[11px] font-semibold leading-tight text-brand-secondary sm:text-xs">
-                      A IA gera frases dessa faixa, concentradas no {teto}. Conforme você pratica, seu
-                      nível sobe e o conteúdo acompanha.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              <div className="relative mt-6 inline-block w-full sm:mt-8 sm:w-auto">
-                <Link
-                  href={playHref}
-                  data-testid="blitz-play-link"
-                  className={`${blitzPrimaryBtn} relative`}
-                  transitionTypes={navForwardTransitionTypes}
-                >
-                  {isAiMode ? <Sparkles className="h-4 w-4 shrink-0" /> : <Zap className="h-4 w-4 shrink-0" />}
-                  <span className="truncate">
-                    {isAiMode ? (
-                      <>
-                        <span className="sm:hidden">IA · {teto}</span>
-                        <span className="hidden sm:inline">Jogar com IA (nível {teto})</span>
-                      </>
-                    ) : (
-                      'Entrar na arena'
-                    )}
-                  </span>
-                  <ArrowRight className="h-4 w-4 shrink-0" />
-                </Link>
-              </div>
-            </div>
-
-            <BlitzComboTally bestCombo={bestCombo} />
+          <div className="blitz-entry-modes" role="group" aria-label="Modo de jogo do Blitz">
+            <button type="button" onClick={() => setSelectedMode('standard')} className={blitzModeOption(!isAiMode)} aria-pressed={!isAiMode}>
+              <Zap size={16} aria-hidden="true" /> Padrão
+            </button>
+            <button type="button" onClick={() => setSelectedMode('ai')} className={blitzModeOption(isAiMode)} aria-pressed={isAiMode}>
+              <Sparkles size={16} aria-hidden="true" /> Com IA
+            </button>
           </div>
-        </section>
-      </StaggeredFadeIn>
-
-      <StaggeredFadeIn delay={0.05}>
-        <section className={`${blitzCard} p-4 sm:p-6`}>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
-              <SectionBadge label="Top da semana" animate={false} />
-              <h2 className="mt-3 font-heading text-lg font-bold text-brand-dark sm:text-2xl">
-                Quem está no topo
-              </h2>
-            </div>
-            <Link
-              href="/blitz/ranking"
-              className="shrink-0 font-body text-xs font-semibold text-brand-dark underline underline-offset-4 hover:text-brand-secondary"
-              transitionTypes={navForwardTransitionTypes}
-            >
-              Ranking completo
-            </Link>
+          <div className="blitz-entry-mode-detail">
+            {isAiMode ? (
+              <div data-testid="blitz-ai-level-scope">
+                <p><strong>Seu nível: {teto}</strong> · {getCefrLevelLabel(teto)}</p>
+                <p>Frases inéditas na faixa {faixaLabel}, com foco em {teto}. No fim, você pode salvar ou descartar o pack.</p>
+              </div>
+            ) : (
+              <p>Três vidas, combos e desafios em modos mistos.</p>
+            )}
           </div>
 
-          {leaderboard.length === 0 ? (
-            <p className="mt-4 font-body text-sm text-brand-secondary">Seja o primeiro a pontuar esta semana.</p>
-          ) : (
-            <ol className="mt-4 space-y-2.5 sm:mt-5 sm:space-y-3">
-              {leaderboard.map((entry, index) => (
-                <li
-                  key={entry.userId}
-                  className={`${blitzNestedRow} ${
-                    index === 0
-                      ? 'blitz-selected-surface border-brand-dark'
-                      : index === 1
-                        ? 'bg-bg-primary/35'
-                        : ''
-                  }`}
-                >
-                  <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
-                    <span
-                      className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-brand-dark font-heading text-xs font-bold ${
-                        index === 0 ? 'bg-brand-dark text-white' : 'bg-bg-card text-brand-dark'
-                      }`}
-                    >
-                      {index === 0 ? (
-                        <Trophy className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden />
-                      ) : (
-                        entry.rank
-                      )}
-                    </span>
-                    <span className="min-w-0 truncate font-body font-semibold text-brand-dark">{entry.username}</span>
-                    {index === 0 ? (
-                      <span className={`${blitzKicker} shrink-0`}>Líder</span>
-                    ) : null}
-                  </div>
-                  <span className="shrink-0 self-end font-heading text-sm font-bold tabular-nums text-brand-dark sm:self-auto">
-                    {entry.score} pts
-                  </span>
-                </li>
-              ))}
-            </ol>
+          {isAiMode && isLimited && (
+            <div className="blitz-notice blitz-notice-inline">
+              <AlertCircle size={17} aria-hidden="true" />
+              <div>
+                <p><strong>Limite diário de 10 gerações atingido.</strong></p>
+                <p>Novas gerações em <span className="tabular-nums">{formatCountdown(secondsLeft)}</span>.</p>
+              </div>
+            </div>
           )}
-        </section>
-      </StaggeredFadeIn>
 
-      {/* Rules are onboarding, not a standing need — you read them once. Collapsed, they stop
-          costing a full phone screen on every visit but stay one tap away. */}
-      <StaggeredFadeIn delay={0.1}>
-        <details className={`${blitzCard} group overflow-hidden`}>
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 marker:content-none sm:p-5">
-            <span className="flex min-w-0 items-center gap-2.5">
-              <HelpCircle className="h-4 w-4 shrink-0 text-brand-dark" strokeWidth={1.5} />
-              <span className="font-heading text-sm font-bold text-brand-dark sm:text-base">
-                Como funciona
-              </span>
-            </span>
-            <ChevronDown
-              className="h-4 w-4 shrink-0 text-brand-secondary transition-transform duration-300 group-open:rotate-180"
-              strokeWidth={1.5}
-            />
-          </summary>
-          <div className="grid gap-3 border-t border-brand-dark/15 p-4 sm:grid-cols-3 sm:gap-4 sm:p-5">
-            <article className={`${blitzTile} text-left`}>
-              <Heart className="h-5 w-5 text-brand-dark" strokeWidth={1.5} />
-              <h3 className="mt-3 font-body font-semibold text-brand-dark">3 vidas</h3>
-              <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">Cada erro custa um coração. Quando acabarem, a partida termina.</p>
-            </article>
-            <article className={`${blitzTile} text-left`}>
-              <Flame className="h-5 w-5 text-brand-dark" strokeWidth={1.5} />
-              <h3 className="mt-3 font-body font-semibold text-brand-dark">Combos</h3>
-              <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">Acertos seguidos aumentam o multiplicador até 5x.</p>
-            </article>
-            <article className={`${blitzTile} text-left`}>
-              <Zap className="h-5 w-5 text-brand-dark" strokeWidth={1.5} />
-              <h3 className="mt-3 font-body font-semibold text-brand-dark">Modos mistos</h3>
-              <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">Múltipla escolha, digitação, combinação e fala no microfone em sequência aleatória.</p>
-            </article>
-          </div>
-        </details>
-      </StaggeredFadeIn>
+          <Link href={playHref} data-testid="blitz-play-link" className={blitzPrimaryBtn} transitionTypes={navForwardTransitionTypes}>
+            {isAiMode ? `Jogar com IA (${teto})` : 'Entrar na arena'}
+            <ArrowRight size={17} aria-hidden="true" />
+          </Link>
+        </div>
+
+        <div className="blitz-entry-records">
+          <dl>
+            <div><dt><Trophy size={15} aria-hidden="true" /> Recorde</dt><dd>{personalBest} <small>pts</small></dd></div>
+            <div><dt><Flame size={15} aria-hidden="true" /> Melhor combo</dt><dd>{bestCombo}<small>x</small></dd></div>
+          </dl>
+          <BlitzComboTally bestCombo={bestCombo} />
+        </div>
+      </section>
+
+      <section className="blitz-weekly" aria-labelledby="blitz-weekly-title">
+        <div className="blitz-section-heading">
+          <h2 id="blitz-weekly-title">Top da semana</h2>
+          <Link href="/blitz/ranking" className="product-text-link" transitionTypes={navForwardTransitionTypes}>
+            Ranking completo <ArrowRight size={15} aria-hidden="true" />
+          </Link>
+        </div>
+        {leaderboard.length === 0 ? (
+          <p className="blitz-list-empty">{scoresReady ? 'Seja o primeiro a pontuar esta semana.' : 'A classificação aparecerá quando o ranking voltar.'}</p>
+        ) : (
+          <ol className="blitz-standing-list">
+            {leaderboard.map((entry, index) => (
+              <li key={entry.rank} data-leader={index === 0} className="blitz-standing-row">
+                <span className="blitz-standing-place">#{entry.rank}</span>
+                <span className="blitz-standing-name">{entry.username}</span>
+                <strong className="blitz-standing-score">{entry.score} <small>pts</small></strong>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
+
+      <details className="blitz-entry-guide">
+        <summary>Como funciona <ChevronDown size={17} aria-hidden="true" /></summary>
+        <dl>
+          <div><dt><Heart size={16} aria-hidden="true" /> Três vidas</dt><dd>Cada erro custa uma vida. A partida termina quando elas acabam.</dd></div>
+          <div><dt><Flame size={16} aria-hidden="true" /> Combos</dt><dd>Acertos seguidos aumentam o multiplicador até 5x.</dd></div>
+          <div><dt><Zap size={16} aria-hidden="true" /> Modos mistos</dt><dd>As rodadas podem incluir tradução, escrita, combinação, escuta e fala.</dd></div>
+        </dl>
+      </details>
     </div>
   )
 }

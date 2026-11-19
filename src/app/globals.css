@@ -8,7 +8,6 @@
 @import "./refinement.css";
 @import "./product.css"; /* Shared editorial system */
 @import "./workspace-editorial.css";
-@import "./blitz.css";
 
 @source "../";
 
@@ -517,23 +516,6 @@ select {
   .focus-hero-shadow {
     box-shadow: none;
   }
-}
-
-/* Left accent rails — inset box-shadow only (stays inside rounded cards) */
-.problem-word-card {
-  overflow: hidden;
-}
-
-.problem-severity-rail-critical {
-  box-shadow: inset 4px 0 0 var(--kivora-action);
-}
-
-.problem-severity-rail-medium {
-  box-shadow: inset 4px 0 0 var(--kivora-action-soft);
-}
-
-.problem-severity-rail-light {
-  box-shadow: inset 4px 0 0 rgba(107, 101, 96, 0.45);
 }
 
 .library-archive {

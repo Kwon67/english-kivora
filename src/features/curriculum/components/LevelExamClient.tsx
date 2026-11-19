@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import {
   ArrowRight,
   Check,
@@ -10,7 +10,6 @@ import {
   Keyboard,
   ListChecks,
   Loader2,
-  RotateCcw,
   Trophy,
   X,
 } from 'lucide-react'
@@ -24,16 +23,14 @@ import type { PublicExamQuestion } from '@/features/curriculum/lib/levelExam'
 import AudioButton from '@/components/ui/AudioButton'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
-import { notify } from '@/lib/toast'
 import { cn } from '@/lib/utils'
 import {
-  homeCardClass,
-  homeIconBox,
   homePrimaryButton,
   homeSecondaryButton,
   homeSectionTitleClass,
   homeSmallPillClass,
 } from '@/lib/homeStyles'
+import './activity.css'
 
 type LevelExamClientProps = {
   level: LearnerCefrLevel
@@ -59,19 +56,30 @@ const KIND_LABEL: Record<PublicExamQuestion['kind'], string> = {
   typing: 'Escreva em inglês',
 }
 
-const surface = `${homeCardClass} home-frosted-surface home-frosted-surface-soft relative p-6 sm:p-8`
+const surface = 'assessment-screen'
 
 export default function LevelExamClient(props: LevelExamClientProps) {
   const router = useRouter()
   const [phase, setPhase] = useState<Phase>({ name: 'intro' })
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState('')
+  const questionHeading = useRef<HTMLHeadingElement>(null)
+  const resultHeading = useRef<HTMLHeadingElement>(null)
+
+  useEffect(() => {
+    if (phase.name === 'running' && phase.questions[phase.index]?.kind !== 'typing') {
+      questionHeading.current?.focus()
+    }
+    if (phase.name === 'result') resultHeading.current?.focus()
+  }, [phase])
 
   function start() {
+    setError('')
     startTransition(async () => {
       const result = await startLevelExamAction(props.level)
       if (!result.success) {
-        notify.error(result.error)
+        setError(result.error)
         return
       }
       setAnswers({})
@@ -80,10 +88,11 @@ export default function LevelExamClient(props: LevelExamClientProps) {
   }
 
   function submit(attemptId: string, finalAnswers: Record<string, string>) {
+    setError('')
     startTransition(async () => {
       const result = await submitLevelExamAction(attemptId, finalAnswers)
       if (!result.success) {
-        notify.error(result.error)
+        setError(result.error)
         return
       }
       setPhase({ name: 'result', result })
@@ -92,16 +101,16 @@ export default function LevelExamClient(props: LevelExamClientProps) {
     })
   }
 
+  if (phase.name === 'result') {
+    return <ExamResult {...props} result={phase.result} headingRef={resultHeading} />
+  }
+
   if (props.passedResult) {
     return <PassedSummary {...props} passedResult={props.passedResult} />
   }
 
   if (phase.name === 'intro') {
-    return <ExamIntro {...props} onStart={start} starting={isPending} />
-  }
-
-  if (phase.name === 'result') {
-    return <ExamResult {...props} result={phase.result} />
+    return <ExamIntro {...props} onStart={start} starting={isPending} error={error} />
   }
 
   const question = phase.questions[phase.index]
@@ -110,7 +119,7 @@ export default function LevelExamClient(props: LevelExamClientProps) {
   const current = answers[question.id] ?? ''
 
   function next() {
-    if (!current.trim() || phase.name !== 'running') return
+    if (!current.trim() || isPending || phase.name !== 'running') return
     if (isLast) {
       submit(phase.attemptId, answers)
       return
@@ -119,15 +128,15 @@ export default function LevelExamClient(props: LevelExamClientProps) {
   }
 
   return (
-    <article className={surface} aria-live="polite">
+    <article className={surface} aria-busy={isPending}>
       <div className="flex items-center justify-between gap-3">
-        <span className={cn(homeSmallPillClass, 'bg-brand-accent')}>Prova final · {props.level}</span>
+        <span className="product-kicker">Prova final · {props.level}</span>
         <span className="font-heading text-sm font-bold tabular-nums text-brand-secondary">
-          {phase.index + 1} / {total}
+          Questão {phase.index + 1} de {total}
         </span>
       </div>
       <div
-        className="mt-4 h-2 overflow-hidden rounded-full border border-brand-dark/30 bg-bg-primary"
+        className="assessment-progress"
         role="progressbar"
         aria-label="Progresso da prova"
         aria-valuemin={0}
@@ -135,17 +144,19 @@ export default function LevelExamClient(props: LevelExamClientProps) {
         aria-valuenow={phase.index}
       >
         <div
-          className="h-full rounded-full bg-brand-accent transition-[width] duration-300"
+          className="assessment-progress-fill"
           style={{ width: `${(phase.index / total) * 100}%` }}
         />
       </div>
 
-      <p className="mt-8 font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">
-        {KIND_LABEL[question.kind]}
-      </p>
+      {question.kind === 'listening' ? (
+        <h2 ref={questionHeading} tabIndex={-1} className="assessment-question mt-8">{KIND_LABEL.listening}</h2>
+      ) : (
+        <p className="product-kicker mt-8">{KIND_LABEL[question.kind]}</p>
+      )}
 
       {question.kind === 'listening' ? (
-        <div className="mt-6 flex justify-center py-4">
+        <div className="mt-4 flex">
           <AudioButton
             key={question.id}
             url={`/api/exam-audio/${phase.attemptId}/${question.id}`}
@@ -155,7 +166,7 @@ export default function LevelExamClient(props: LevelExamClientProps) {
         </div>
       ) : (
         <div className="mt-3 flex items-start gap-3">
-          <h2 className="min-w-0 flex-1 font-heading text-2xl font-bold leading-snug text-brand-dark sm:text-3xl">
+          <h2 ref={questionHeading} tabIndex={-1} className="assessment-question min-w-0 flex-1" lang={question.kind === 'en_pt' ? 'en' : 'pt-BR'}>
             {question.prompt}
           </h2>
           {question.kind === 'en_pt' ? (
@@ -167,6 +178,7 @@ export default function LevelExamClient(props: LevelExamClientProps) {
       <div className="mt-6">
         {question.kind === 'typing' ? (
           <input
+            disabled={isPending}
             key={question.id}
             type="text"
             autoFocus
@@ -176,37 +188,32 @@ export default function LevelExamClient(props: LevelExamClientProps) {
             value={current}
             onChange={(event) => setAnswers({ ...answers, [question.id]: event.target.value })}
             onKeyDown={(event) => {
-              if (event.key === 'Enter') next()
+              if (event.key === 'Enter' && !event.nativeEvent.isComposing) next()
             }}
             placeholder="Digite a frase em inglês"
             aria-label="Sua resposta em inglês"
-            className="w-full rounded-control border-2 border-brand-dark bg-bg-card px-4 py-3 font-body text-base text-brand-dark outline-none placeholder:text-brand-secondary/70 focus:ring-4 focus:ring-brand-accent/60"
+            className="assessment-input"
           />
         ) : (
-          <div className="grid gap-3" role="radiogroup" aria-label="Alternativas">
-            {question.options?.map((option) => {
-              const selected = current === option
-              return (
-                <button
-                  key={option}
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  onClick={() => setAnswers({ ...answers, [question.id]: option })}
-                  className={cn(
-                    'rounded-control border-2 border-brand-dark px-4 py-3 text-left font-body text-base font-semibold text-brand-dark transition-colors',
-                    selected ? 'bg-brand-accent' : 'bg-bg-card hover:bg-bg-primary'
-                  )}
-                >
-                  {option}
-                </button>
-              )
-            })}
-          </div>
+          <fieldset className="assessment-options" disabled={isPending}>
+            <legend className="sr-only">Alternativas</legend>
+            {question.options?.map((option) => (
+              <label key={option} className="assessment-option">
+                <input
+                  type="radio"
+                  name={`exam-${question.id}`}
+                  checked={current === option}
+                  onChange={() => setAnswers({ ...answers, [question.id]: option })}
+                />
+                <span lang={question.kind === 'en_pt' ? 'pt-BR' : 'en'}>{option}</span>
+              </label>
+            ))}
+          </fieldset>
         )}
       </div>
 
-      <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {error && <p className="product-error mt-5" role="alert">{error}</p>}
+      <div className="assessment-actions assessment-actions-between">
         <Link
           href="/courses#trilha"
           transitionTypes={navBackTransitionTypes}
@@ -220,8 +227,8 @@ export default function LevelExamClient(props: LevelExamClientProps) {
           disabled={!current.trim() || isPending}
           className={cn(homePrimaryButton, 'w-full disabled:opacity-50 sm:w-auto')}
         >
-          {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          {isLast ? 'Entregar prova' : 'Confirmar'}
+          {isPending ? <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin motion-reduce:animate-none" /> : null}
+          {isPending ? 'Entregando prova…' : isLast ? 'Entregar prova' : 'Confirmar'}
           {!isLast && !isPending ? <ArrowRight className="h-4 w-4" /> : null}
         </button>
       </div>
@@ -240,28 +247,26 @@ function ExamIntro({
   cooldownMinutes,
   onStart,
   starting,
-}: LevelExamClientProps & { onStart: () => void; starting: boolean }) {
+  error,
+}: LevelExamClientProps & { onStart: () => void; starting: boolean; error: string }) {
   const ready = totalPacks > 0 && donePacks >= totalPacks
 
   return (
     <article className={surface}>
-      <div className={`h-12 w-12 ${homeIconBox}`}>
-        <Trophy className="h-6 w-6" strokeWidth={1.5} />
-      </div>
-      <SectionBadge label={ready ? 'Prova final' : 'Prova para pular'} className="mt-5" />
+      <SectionBadge label={ready ? 'Prova final' : 'Avanço de nível'} />
       <h1 className={`mt-4 ${homeSectionTitleClass}`}>
         Prova final do {level} · {levelLabel}
       </h1>
       <p className="mt-3 font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
         {ready
-          ? `Você concluiu as ${totalPacks} lições do ${level}. Agora mostre que domina o nível.`
-          : `Você concluiu ${donePacks} de ${totalPacks} lições do ${level}. Se já domina o conteúdo, passar nesta prova conclui o nível inteiro.`}
+          ? `Você concluiu as ${totalPacks} lições do ${level}. Confira o que reteve do conteúdo da trilha.`
+          : `Você concluiu ${donePacks} de ${totalPacks} lições do ${level}. A aprovação conclui esta etapa da trilha.`}
       </p>
 
       <ul className="mt-6 grid gap-3 font-body text-sm text-brand-dark">
         <li className="flex items-start gap-3">
           <ListChecks className="mt-0.5 h-4 w-4 shrink-0" />
-          {questionCount} questões tiradas de todas as lições do {level}.
+          {questionCount} questões com uma amostra das lições do {level}.
         </li>
         <li className="flex items-start gap-3">
           <Headphones className="mt-0.5 h-4 w-4 shrink-0" />
@@ -279,20 +284,20 @@ function ExamIntro({
         </li>
       </ul>
 
-      <p className="mt-6 rounded-container border border-brand-dark/30 bg-bg-primary/70 p-4 font-body text-xs leading-relaxed text-brand-secondary">
-        A correção aparece só no final. Se sair no meio, a mesma prova continua de onde parou por até
-        1h30. Se não passar, dá para tentar de novo depois de uma pausa curta para revisar.
+      <p className="assessment-note">
+        Este checkpoint avalia uma amostra de frases. Não certifica CEFR nem avalia interação espontânea ou mediação. A correção aparece só no final. Se sair antes de entregar, você pode reabrir a mesma prova por até 1h30. As respostas ainda não entregues ficam nesta tela. Se não passar, dá para tentar de novo depois de uma pausa curta para revisar.
       </p>
 
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+      {error && <p className="product-error mt-5" role="alert">{error}</p>}
+      <div className="assessment-actions">
         <button
           type="button"
           onClick={onStart}
           disabled={starting || cooldownMinutes > 0}
           className={cn(homePrimaryButton, 'w-full disabled:opacity-50 sm:w-auto')}
         >
-          {starting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trophy className="h-4 w-4" />}
-          {cooldownMinutes > 0 ? `Disponível em ${cooldownMinutes} min` : 'Começar prova'}
+          {starting ? <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin motion-reduce:animate-none" /> : <Trophy className="h-4 w-4" />}
+          {cooldownMinutes > 0 ? `Disponível em ${cooldownMinutes} min` : starting ? 'Abrindo prova…' : 'Começar prova'}
         </button>
         <Link
           href="/courses#trilha"
@@ -311,19 +316,18 @@ function ExamResult({
   questionCount,
   passMark,
   result,
-}: LevelExamClientProps & { result: Extract<SubmitExamResult, { success: true }> }) {
+  headingRef,
+}: LevelExamClientProps & { result: Extract<SubmitExamResult, { success: true }>; headingRef: React.Ref<HTMLHeadingElement> }) {
   const percent = Math.round((result.score / result.total) * 100)
   const mistakes = result.review.filter((item) => !item.correct)
 
   return (
     <article className={surface}>
-      <div className={cn('h-14 w-14', homeIconBox, !result.passed && 'bg-bg-primary')}>
-        {result.passed ? <Trophy className="h-7 w-7" strokeWidth={1.5} /> : <RotateCcw className="h-6 w-6" />}
-      </div>
-      <h1 className={`mt-5 ${homeSectionTitleClass}`}>
+      <SectionBadge label="Resultado da prova" />
+      <h1 ref={headingRef} tabIndex={-1} className={`mt-4 ${homeSectionTitleClass}`}>
         {result.passed ? `Aprovado no ${level}!` : 'Ainda não foi desta vez'}
       </h1>
-      <p className="mt-3 font-heading text-lg font-bold text-brand-dark">
+      <p className="assessment-score">
         {result.score}/{result.total} acertos · {percent}%
       </p>
       <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary sm:text-base">
@@ -350,21 +354,21 @@ function ExamResult({
       ) : null}
 
       {mistakes.length > 0 ? (
-        <details className="group mt-6 rounded-container border border-brand-dark/30 bg-bg-primary/60">
-          <summary className="cursor-pointer list-none px-4 py-3 font-heading text-sm font-bold text-brand-dark marker:content-none">
+        <details className="assessment-review">
+          <summary className="cursor-pointer py-3 font-heading text-sm font-bold text-brand-dark">
             Ver {mistakes.length} {mistakes.length === 1 ? 'erro' : 'erros'} com a resposta certa
           </summary>
-          <ul className="grid gap-3 border-t border-brand-dark/20 p-4">
+          <ul className="grid gap-4 py-3">
             {mistakes.map((item) => (
               <li key={item.id} className="font-body text-sm">
                 <p className="font-semibold text-brand-dark">{item.prompt}</p>
                 <p className="mt-1 flex items-start gap-2 text-brand-secondary">
-                  <X className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                  {item.given ?? 'Sem resposta'}
+                  <X aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  <span><span className="sr-only">Sua resposta: </span>{item.given ?? 'Sem resposta'}</span>
                 </p>
                 <p className="mt-0.5 flex items-start gap-2 text-brand-dark">
-                  <Check className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                  {item.answer}
+                  <Check aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  <span><span className="sr-only">Resposta correta: </span>{item.answer}</span>
                 </p>
               </li>
             ))}
@@ -393,9 +397,6 @@ function PassedSummary({
 }: LevelExamClientProps & { passedResult: { score: number; total: number } }) {
   return (
     <article className={surface}>
-      <div className={`h-12 w-12 ${homeIconBox}`}>
-        <Trophy className="h-6 w-6" strokeWidth={1.5} />
-      </div>
       <h1 className={`mt-5 ${homeSectionTitleClass}`}>
         {level} · {levelLabel} aprovado
       </h1>

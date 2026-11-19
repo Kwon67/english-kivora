@@ -1,14 +1,12 @@
 'use client'
 
-import { Card as SurfaceCard } from '@/components/shadcn/card'
+import { wordId } from '@/features/words/wordId'
 import { useEffect, useRef } from 'react'
-import { Loader2 } from 'lucide-react'
 import GameWrapper from '@/features/game/components/GameWrapper'
 import { useGameStore } from '@/store/gameStore'
 import type { Card, GameMode } from '@/types/database.types'
 import type { TypingDirection } from '@/features/game/components/TypingMode'
-import { homeCardClass, homeIconBoxBase } from '@/lib/homeStyles'
-import { landingCtaCardShadow } from '@/lib/landingStyles'
+import RouteLoadingSkeleton, { Skeleton, SkeletonText } from '@/components/ui/RouteLoadingSkeleton'
 
 interface GameClientProps {
   cards: Card[]
@@ -48,6 +46,7 @@ export default function GameClient({
     // If we're already on this assignment and mode, don't reset.
     // This allows resuming after F5.
     if (storeAssignmentId === assignmentId && useGameStore.getState().gameMode === gameMode) {
+      if (!useGameStore.getState().resultSubmissionId) useGameStore.setState({ resultSubmissionId: wordId() })
       return
     }
 
@@ -70,17 +69,14 @@ export default function GameClient({
 
   if (!ready) {
     return (
-      <div className="flex min-h-[70vh] items-center justify-center px-4">
-        <SurfaceCard asChild unstyled><div className={`${homeCardClass} ${landingCtaCardShadow} w-full max-w-md p-10 text-center`}>
-          <div className={`mx-auto ${homeIconBoxBase} h-20 w-20 p-5`}>
-            <Loader2 className="h-10 w-10 animate-spin" strokeWidth={1.5} />
-          </div>
-          <h2 className="mt-8 font-heading text-3xl font-bold text-brand-dark">Preparando</h2>
-          <p className="mt-3 font-body text-sm font-medium text-brand-secondary">
-            Sua prática já vai começar.
-          </p>
-        </div></SurfaceCard>
-      </div>
+      <RouteLoadingSkeleton label="Preparando sua prática">
+        <div className="assignment-activity space-y-5" aria-hidden="true">
+          <Skeleton className="h-4 w-24 rounded-full" />
+          <Skeleton className="h-10 w-3/4 rounded-control" />
+          <SkeletonText className="max-w-sm" />
+          <Skeleton className="h-11 w-36 rounded-control" />
+        </div>
+      </RouteLoadingSkeleton>
     )
   }
 

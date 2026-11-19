@@ -158,12 +158,12 @@ export default function JourneyRibbon() {
       let resizeTimer: ReturnType<typeof setTimeout> | undefined
       let clipRoot: SVGGElement | undefined
       const clips: SVGClipPathElement[] = []
-      let segments: { path: SVGPathElement; length: number; end: number }[] = []
+      let segments: { path: SVGPathElement; length: number; end: number; visible: boolean; partial: boolean }[] = []
       let renderedLength = 0
       let oldStart = 0, fullEnd = 0, journeyTop = 0, focusOffset = 0, footerStart = 0
       let lookup: Arrival[] = []
       let curveCache = new Map<string, FlatCurve>()
-      let layoutKey = '', lastOffset = ''
+      let layoutKey = ''
       const prefix = mobile ? MOBILE_START : DESKTOP_START
       const originalCurves = prefixCurves(prefix)
       const copyClasses = [styles.sectionIntro, styles.smallManifesto, styles.practiceCopy, styles.memoryCopy, styles.conversationCopy, styles.pricingHeading, styles.faqList, styles.sketchLabel]
@@ -183,31 +183,32 @@ export default function JourneyRibbon() {
       }
 
       const draw = () => {
+        if (reduced) return
         const virtualScroll = oldStart + progress.value * (fullEnd - oldStart)
         const spatial = lengthAtY(lookup, virtualScroll + focusOffset - journeyTop)
-        // The endpoint exits the canvas. Blend into that hidden tail near the
-        // end so it cannot pull the visible tip ahead as the footer enters.
+        // Blend into the hidden tail as the footer enters the viewport.
         const footer = Math.min(1, Math.max(0, (virtualScroll - footerStart) / Math.max(1, fullEnd - footerStart)))
         const blend = footer * footer * (3 - 2 * footer)
-        const drawn = reduced ? length : spatial + (length - spatial) * blend
-        const offset = `${Math.max(0, length - drawn)}`
-        if (offset !== lastOffset) { ink.style.strokeDashoffset = offset; lastOffset = offset }
+        const drawn = spatial + (length - spatial) * blend
         const distanceDrawn = drawn / length * renderedLength
-        for (const { path, length: segmentLength, end } of segments) {
+        for (const segment of segments) {
+          const { path, length: segmentLength, end } = segment
           const remaining = end - distanceDrawn
           const visible = remaining < segmentLength
-          setAttribute(path, 'visibility', visible ? 'visible' : 'hidden')
-          if (!visible) continue
-          if (remaining <= 0) {
-            if (path.style.strokeDasharray) {
+          if (visible !== segment.visible) {
+            path.setAttribute('visibility', visible ? 'visible' : 'hidden')
+            segment.visible = visible
+          }
+          const partial = visible && remaining > 0
+          if (partial !== segment.partial) {
+            if (partial) path.style.strokeDasharray = String(segmentLength)
+            else {
               path.style.removeProperty('stroke-dasharray')
               path.style.removeProperty('stroke-dashoffset')
             }
-          } else {
-            const dash = String(segmentLength)
-            if (path.style.strokeDasharray !== dash) path.style.strokeDasharray = dash
-            path.style.strokeDashoffset = String(remaining)
+            segment.partial = partial
           }
+          if (partial) path.style.strokeDashoffset = String(remaining)
         }
       }
       const updateScrollBounds = () => {
@@ -220,26 +221,32 @@ export default function JourneyRibbon() {
       const measure = () => {
         const width = journey.clientWidth
         height = journey.offsetHeight
-        const nextKey = [width, height, ...sections.flatMap(section => {
-          const position = layoutPosition(section, journey)
-          return [position.x, position.y, section.offsetWidth, section.offsetHeight]
-        })].join(',')
+        const dimensions = (element: HTMLElement) => ({
+          ...layoutPosition(element, journey),
+          width: element.offsetWidth,
+          height: element.offsetHeight,
+        })
+        const sectionBoxes = sections.map(dimensions)
+        const clearanceBoxes = clearance.map(({ element }) => dimensions(element))
+        const nextKey = [width, height, ...[...sectionBoxes, ...clearanceBoxes].flatMap(
+          box => [box.x, box.y, box.width, box.height],
+        )].join(',')
         if (nextKey === layoutKey) return false
         layoutKey = nextKey
-        const hero = sections[0]
-        const practice = sections[2]
+        const hero = sectionBoxes[0]
+        const practice = sectionBoxes[2]
         // Exactly the old SVG boxes: hero alone on mobile; first three sections
         // on desktop. Extending the viewBox height does not stretch this prefix.
-        initialSpan = mobile ? hero.offsetHeight : layoutPosition(practice, journey).y + practice.offsetHeight
+        initialSpan = mobile ? hero.height : practice.y + practice.height
         const scaleX = width / (mobile ? 390 : 1440)
         const scaleY = initialSpan / (mobile ? 950 : 2400)
         const viewWidth = width / scaleX
         const viewHeight = height / scaleY
-        const point = (section: HTMLElement, x: number, y: number): Point => ({ x: viewWidth * x, y: (layoutPosition(section, journey).y + section.offsetHeight * y) / scaleY })
+        const point = (section: typeof hero, x: number, y: number): Point => ({ x: viewWidth * x, y: (section.y + section.height * y) / scaleY })
         const end: Point = mobile ? { x: 240, y: 570 } : { x: 1465, y: 2300 }
         const points: Point[] = mobile
-          ? [end, point(hero, .28, .93), point(sections[1], .76, .45), point(sections[1], .3, .92), point(practice, .72, .32), point(practice, .24, .86), point(sections[3], .72, .63), point(sections[3], .3, .94), point(sections[4], .72, .68), point(sections[5], .5, .5), point(sections[6], .7, .7), point(sections[7], .2, .55), point(sections[8], .75, .65), point(sections[9], .42, .6), { x: viewWidth * 1.12, y: viewHeight + 50 / scaleY }]
-          : [end, point(sections[3], .28, .65), point(sections[4], .73, .65), point(sections[5], .54, .5), point(sections[6], .65, .65), point(sections[7], .2, .55), point(sections[8], .75, .65), point(sections[9], .38, .6), { x: viewWidth * 1.12, y: viewHeight + 70 / scaleY }]
+          ? [end, point(hero, .28, .93), point(sectionBoxes[1], .76, .45), point(sectionBoxes[1], .3, .92), point(practice, .72, .32), point(practice, .24, .86), point(sectionBoxes[3], .72, .63), point(sectionBoxes[3], .3, .94), point(sectionBoxes[4], .72, .68), point(sectionBoxes[5], .5, .5), point(sectionBoxes[6], .7, .7), point(sectionBoxes[7], .2, .55), point(sectionBoxes[8], .75, .65), point(sectionBoxes[9], .42, .6), { x: viewWidth * 1.12, y: viewHeight + 50 / scaleY }]
+          : [end, point(sectionBoxes[3], .28, .65), point(sectionBoxes[4], .73, .65), point(sectionBoxes[5], .54, .5), point(sectionBoxes[6], .65, .65), point(sectionBoxes[7], .2, .55), point(sectionBoxes[8], .75, .65), point(sectionBoxes[9], .38, .6), { x: viewWidth * 1.12, y: viewHeight + 70 / scaleY }]
         let extension = ''
         const curves = [...originalCurves]
         for (let index = 0; index < points.length - 1; index++) {
@@ -257,7 +264,7 @@ export default function JourneyRibbon() {
         ink.setAttribute('stroke-width', String(strokeWidth))
         ink.setAttribute('d', prefix + extension)
         length = ink.getTotalLength()
-        ink.style.strokeDasharray = `${length}`
+        if (reduced) ink.style.removeProperty('stroke-dasharray')
         if (!reduced) {
           const mapped = arrivalLookup(curves, curveCache, scaleX, scaleY, length)
           lookup = mapped.lookup; curveCache = mapped.cache
@@ -266,19 +273,19 @@ export default function JourneyRibbon() {
         // is kept as one clear foreground block, not chopped into sentence gaps.
         setAttribute(maskBase, 'width', `${viewWidth}`)
         setAttribute(maskBase, 'height', `${viewHeight}`)
-        clearance.forEach(({ element, rect }) => {
-          const position = layoutPosition(element, journey)
+        clearance.forEach(({ rect }, index) => {
+          const position = clearanceBoxes[index]
           setAttribute(rect, 'x', `${(position.x - 7) / scaleX}`)
           setAttribute(rect, 'y', `${(position.y - 7) / scaleY}`)
-          setAttribute(rect, 'width', `${(element.offsetWidth + 14) / scaleX}`)
-          setAttribute(rect, 'height', `${(element.offsetHeight + 14) / scaleY}`)
+          setAttribute(rect, 'width', `${(position.width + 14) / scaleX}`)
+          setAttribute(rect, 'height', `${(position.height + 14) / scaleY}`)
           setAttribute(rect, 'rx', `${7 / scaleX}`)
         })
-        for (const [name, section] of [['memory', sections[3]], ['footer', sections[9]]] as const) {
+        for (const [name, index] of [['memory', 3], ['footer', 9]] as const) {
           const surface = root.current?.querySelector<HTMLElement>(`[data-ribbon-surface="${name}"]`)
           if (!surface) continue
-          const position = layoutPosition(section, journey)
-          Object.assign(surface.style, { left: `${position.x}px`, top: `${position.y}px`, width: `${section.offsetWidth}px`, height: `${section.offsetHeight}px`, borderRadius: getComputedStyle(section).borderRadius })
+          const position = sectionBoxes[index]
+          Object.assign(surface.style, { left: `${position.x}px`, top: `${position.y}px`, width: `${position.width}px`, height: `${position.height}px`, borderRadius: getComputedStyle(sections[index]).borderRadius })
         }
         // Keep the reference path for geometry and reduced motion. In motion,
         // only the cubic at the tip animates. Earlier cubics are solid paths.
@@ -317,6 +324,7 @@ export default function JourneyRibbon() {
           const path = document.createElementNS(SVG_NS, 'path')
           path.setAttribute('class', styles.ribbonInk)
           path.setAttribute('fill', 'none')
+          path.setAttribute('visibility', 'hidden')
           path.setAttribute('vector-effect', 'non-scaling-stroke')
           path.setAttribute('stroke-width', String(strokeWidth))
           path.setAttribute('d', `M${start.x} ${start.y}C${first.x} ${first.y} ${second.x} ${second.y} ${end.x} ${end.y}`)
@@ -330,7 +338,7 @@ export default function JourneyRibbon() {
           appendClipped(path, clearances.filter(({ x, y, w, h }) => x < maxX && x + w > minX && y < maxY && y + h > minY))
           const segmentLength = path.getTotalLength()
           renderedLength += segmentLength
-          return { path, length: segmentLength, end: renderedLength }
+          return { path, length: segmentLength, end: renderedLength, visible: false, partial: false }
         })
         if (reduced) appendClipped(ink, clearances)
         else ink.setAttribute('visibility', 'hidden')

@@ -29,7 +29,7 @@ export const homeFooterCardClass = `${homeCardClass} ${landingCtaCardShadow}`
 export const homeNestedCardClass = `${landingRadiusLg} border border-brand-border bg-bg-card`
 
 export const homeShellClass =
-  'home-mobile-optimized landing-light relative min-w-0 bg-bg-primary pb-4 font-body text-brand-dark sm:pb-10'
+  'home-mobile-optimized relative isolate min-w-0 bg-bg-primary pb-4 font-body text-brand-dark sm:pb-10'
 
 // Both variants now share the page gutters without negative margin compensation.
 export const homeShellBelowContentClass = homeShellClass

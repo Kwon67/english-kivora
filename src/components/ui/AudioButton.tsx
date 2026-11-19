@@ -26,6 +26,8 @@ interface AudioButtonProps {
   disabled?: boolean
   variant?: 'default' | 'game' | 'tile'
   onPlaybackEnded?: () => void
+  onPlaybackError?: () => void
+  onPlaybackStarted?: () => void
 }
 
 export const AUDIO_STOP_EVENT = 'kivora:stop-audio'
@@ -40,6 +42,8 @@ export default function AudioButton({
   disabled = false,
   variant = 'default',
   onPlaybackEnded,
+  onPlaybackError,
+  onPlaybackStarted,
 }: AudioButtonProps) {
   const [playing, setPlaying] = useState(false)
   const [error, setError] = useState(false)
@@ -49,8 +53,9 @@ export default function AudioButton({
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
-    const savedSpeed = localStorage.getItem('kivora_audio_speed')
-    if (savedSpeed) {
+    let savedSpeed: string | null = null
+    try { savedSpeed = localStorage.getItem('kivora_audio_speed') } catch { /* Optional preference. */ }
+    if (savedSpeed && [0.5, 0.75, 1].includes(Number(savedSpeed))) {
       setTimeout(() => setSpeed(Number(savedSpeed)), 0)
     }
 
@@ -72,7 +77,9 @@ export default function AudioButton({
       setPlaying(false)
     }, 0)
 
-    const audio = new Audio(resolvedUrl)
+    const audio = new Audio()
+    audio.preload = 'none'
+    audio.src = resolvedUrl
     audio.defaultPlaybackRate = speed
     audio.playbackRate = speed
     audio.preservesPitch = true
@@ -89,6 +96,7 @@ export default function AudioButton({
     audio.onplay = () => {
       if (!isDestroyed) {
         audio.playbackRate = speed
+        onPlaybackStarted?.()
       }
     }
 
@@ -102,6 +110,7 @@ export default function AudioButton({
       if (!isDestroyed) setTimeout(() => {
         setError(true)
         setPlaying(false)
+        onPlaybackError?.()
       }, 0)
     }
     audioRef.current = audio
@@ -200,6 +209,7 @@ export default function AudioButton({
         }).catch(() => {
           setError(true)
           setPlaying(false)
+          onPlaybackError?.()
         })
       }
     }
@@ -216,7 +226,7 @@ export default function AudioButton({
     else newSpeed = 1
 
     setSpeed(newSpeed)
-    localStorage.setItem('kivora_audio_speed', String(newSpeed))
+    try { localStorage.setItem('kivora_audio_speed', String(newSpeed)) } catch { /* Optional preference. */ }
     window.dispatchEvent(new CustomEvent(AUDIO_SPEED_EVENT, { detail: newSpeed }))
   }
 
@@ -234,6 +244,7 @@ export default function AudioButton({
       } ${className}`}
       onClick={(e) => e.stopPropagation()}
     >
+      {error && <span className="sr-only" role="status">Áudio indisponível. Tente novamente.</span>}
       <button
         type="button"
         data-audio-play
@@ -244,13 +255,13 @@ export default function AudioButton({
           disabled
             ? 'text-text-subtle opacity-40 cursor-not-allowed'
             : error
-            ? 'text-error opacity-50 cursor-not-allowed'
+            ? 'text-error'
             : playing
               ? 'text-primary bg-primary-light scale-110'
               : 'text-text-subtle hover:text-primary hover:bg-[var(--color-surface-hover)] active:scale-90'
         }`}
-        title={disabled ? 'Áudio bloqueado durante a gravação' : error ? 'Erro ao carregar áudio' : 'Ouvir pronúncia'}
-        disabled={disabled || error}
+        title={disabled ? 'Áudio bloqueado durante a gravação' : error ? 'Áudio indisponível. Tentar novamente' : 'Ouvir pronúncia'}
+        disabled={disabled}
       >
         {error ? (
           <VolumeX className={isGame ? 'h-6 w-6' : isTile ? 'h-3.5 w-3.5' : 'h-5 w-5'} />
@@ -266,10 +277,10 @@ export default function AudioButton({
           onClick={handleSpeedChange}
           title="Velocidade de reprodução (clique para alterar)"
           disabled={disabled}
-          className={`bg-transparent font-bold text-text-subtle rounded-lg border-none focus:ring-0 transition-all ${
+          className={`bg-transparent font-bold rounded-lg border-none focus:ring-0 transition-all ${
             isGame
-              ? 'inline-flex min-h-11 w-16 shrink-0 items-center justify-center whitespace-nowrap px-2 text-[13px] tabular-nums hover:bg-[var(--color-surface-hover)]'
-              : 'text-xs px-2 py-1 hover:bg-[var(--color-surface-hover)]'
+              ? 'text-[var(--kivora-ink)] inline-flex min-h-11 w-16 shrink-0 items-center justify-center whitespace-nowrap px-2 text-[13px] tabular-nums hover:bg-[var(--color-surface-hover)]'
+              : 'text-text-subtle text-xs px-2 py-1 hover:bg-[var(--color-surface-hover)]'
           } ${
             disabled
               ? 'cursor-not-allowed opacity-40'

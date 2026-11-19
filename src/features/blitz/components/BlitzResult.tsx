@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAnimatedDismiss } from '@/components/motion/useAnimatedDismiss'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
-import { ArrowUpRight, Brain, CheckCircle2, Home, RotateCcw, Save, Sparkles, Trash2, Trophy, X, Zap } from 'lucide-react'
+import { ArrowUpRight, Brain, CheckCircle2, Home, RotateCcw, Save, Trash2, Trophy, X, Zap } from 'lucide-react'
 import { queueBlitzMissesForReview, saveBlitzAiPack } from '@/app/actions'
 import type { BlitzAiPackDraft } from '@/app/actions'
 import { navBackTransitionTypes } from '@/lib/navigationTransitions'
@@ -14,11 +14,9 @@ import { VOICES } from '@/lib/voices'
 import BlitzMissRecap from '@/features/blitz/components/BlitzMissRecap'
 import BlitzCountUpNumber from '@/features/blitz/components/BlitzCountUpNumber'
 import { BLITZ_NOTABLE_SCORE } from '@/features/blitz/lib/blitzScoring'
-import { blitzKicker, blitzPrimaryBtn, blitzSoftBtn, blitzTile } from '@/features/blitz/lib/blitzUi'
+import { blitzKicker, blitzPrimaryBtn, blitzSoftBtn } from '@/features/blitz/lib/blitzUi'
 import { getBlitzStudyRecommendation } from '@/features/blitz/lib/blitzRecommendation'
 import { getUniqueBlitzMissCardIds, type BlitzMiss } from '@/features/blitz/lib/blitzMisses'
-
-const GOOD_RUN_TONES = new Set(['Sequência forte', 'Bom ritmo', 'Boa marca'])
 
 const QUEST_LABELS: Record<string, string> = {
   any_session: 'Missão diária concluída',
@@ -27,7 +25,6 @@ const QUEST_LABELS: Record<string, string> = {
 }
 
 type BlitzResultTone = {
-  label: string
   title: string
   description: string
 }
@@ -41,47 +38,43 @@ function getBlitzResultTone(options: {
 }): BlitzResultTone {
   if (options.isNewRecord) {
     return {
-      label: 'Recorde',
-      title: 'Você subiu o próprio teto.',
-      description: 'Essa foi sua melhor marca no Blitz até agora. Vale tentar outra rodada enquanto o ritmo está quente.',
+      title: 'Sua melhor pontuação',
+      description: 'Você superou seu recorde no Blitz.',
     }
   }
 
   if (options.maxCombo >= 10) {
     return {
-      label: 'Sequência forte',
-      title: `Combo ${options.maxCombo} segurou a partida.`,
-      description: 'Você manteve uma boa sequência de acertos. O próximo salto está em reduzir os erros finais.',
+      title: `Combo de ${options.maxCombo}`,
+      description: 'Acertos seguidos aumentaram seu multiplicador.',
     }
   }
 
   if (options.cardsAnswered >= 8 && options.missedCount <= 1) {
     return {
-      label: 'Bom ritmo',
-      title: 'Rodada limpa e consistente.',
-      description: 'Poucos erros e várias respostas em sequência. Mais uma partida pode transformar isso em recorde.',
+      title: 'Boa sequência de respostas',
+      description: 'Você respondeu a vários desafios com poucos erros.',
     }
   }
 
   if (options.score >= BLITZ_NOTABLE_SCORE) {
     return {
-      label: 'Boa marca',
-      title: 'Pontuação sólida para uma rodada rápida.',
-      description: `Você passou de ${BLITZ_NOTABLE_SCORE} pontos. Foque em combos maiores para multiplicar o score.`,
+      title: 'Boa pontuação',
+      description: `Você passou de ${BLITZ_NOTABLE_SCORE} pontos. Combos maiores multiplicam os pontos.`,
     }
   }
 
   return {
-    label: 'Aquecimento',
-    title: 'Boa rodada para calibrar.',
+    title: 'Continue praticando',
     description: options.missedCount > 0
       ? 'Revise os erros agora e volte para uma sequência mais longa.'
-      : 'Você respondeu sem acumular muitos desafios. A próxima rodada já começa mais afiada.',
+      : 'Jogue outra rodada para praticar mais frases.',
   }
 }
 
 interface BlitzResultProps {
   score: number
+  saveStatus: 'pending' | 'saved' | 'failed'
   maxCombo: number
   cardsAnswered: number
   personalBest: number
@@ -101,6 +94,7 @@ interface BlitzResultProps {
 
 export default function BlitzResult({
   score,
+  saveStatus,
   maxCombo,
   cardsAnswered,
   personalBest,
@@ -183,8 +177,7 @@ export default function BlitzResult({
   }
 
   useEffect(() => {
-    const isBigCelebration = isNewRecord || Boolean(unlockedBadges?.length)
-    if (!isBigCelebration && !GOOD_RUN_TONES.has(resultTone.label)) return
+    if (!isNewRecord && !unlockedBadges?.length) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     let cancelled = false
@@ -195,9 +188,9 @@ export default function BlitzResult({
       resetConfetti = celebrate.reset
       void celebrate({
         disableForReducedMotion: true,
-        particleCount: isBigCelebration ? 120 : 45,
-        spread: isBigCelebration ? 72 : 55,
-        startVelocity: isBigCelebration ? 45 : 28,
+        particleCount: 26,
+        spread: 52,
+        startVelocity: 26,
         origin: { y: 0.65 },
         colors: CELEBRATION_COLORS,
       })
@@ -206,7 +199,7 @@ export default function BlitzResult({
       cancelled = true
       resetConfetti?.()
     }
-  }, [isNewRecord, unlockedBadges?.length, resultTone.label])
+  }, [isNewRecord, unlockedBadges?.length])
 
   const rewardMessages = [
     ...(streakUpdated ? ['Sequência diária mantida!'] : []),
@@ -218,13 +211,14 @@ export default function BlitzResult({
     <div
       ref={panel}
       className="blitz-result"
+      data-record={isNewRecord}
       role="dialog"
       aria-modal="true"
       aria-labelledby="blitz-result-title"
     >
-      <header className="blitz-result-header">
+      <header className="blitz-result-header" style={{ backgroundColor: 'var(--brand-sage)' }}>
         <div>
-          <p className={blitzKicker}><Zap size={14} aria-hidden="true" /> Fim de jogo</p>
+          <p className={blitzKicker}>{isNewRecord ? <Trophy size={15} aria-hidden="true" /> : <Zap size={15} aria-hidden="true" />} Fim de jogo</p>
           <h1 id="blitz-result-title">{isNewRecord ? 'Novo recorde!' : 'Boa partida!'}</h1>
           <p className="blitz-result-count">
             {cardsAnswered} {cardsAnswered === 1 ? 'desafio respondido' : 'desafios respondidos'}
@@ -237,15 +231,15 @@ export default function BlitzResult({
 
       <div className="blitz-result-body" tabIndex={0} role="region" aria-label="Detalhes da partida">
         <dl className="blitz-result-metrics">
-          <div><dt>Pontuação</dt><dd><BlitzCountUpNumber value={score} /></dd></div>
-          <div><dt>Melhor combo</dt><dd><BlitzCountUpNumber value={maxCombo} delay={0.1} /></dd></div>
-          <div><dt>Recorde</dt><dd><BlitzCountUpNumber value={personalBest} delay={0.2} /></dd></div>
+          <div><dt>Pontuação</dt><dd><BlitzCountUpNumber value={score} duration={0.35} /></dd></div>
+          <div><dt>Melhor combo</dt><dd>{maxCombo}</dd></div>
+          <div><dt>Recorde</dt><dd>{personalBest}</dd></div>
         </dl>
 
+        {saveStatus === 'pending' && <p role="status" className="blitz-result-detail">Salvando partida…</p>}
+        {saveStatus === 'failed' && <p role="alert" className="blitz-result-detail">Salvamento da partida no ranking não confirmado.</p>}
+
         <div className="blitz-result-note">
-          <span className="blitz-result-note-icon" aria-hidden="true">
-            {isNewRecord ? <Trophy size={18} /> : <Sparkles size={18} />}
-          </span>
           <div>
             <h2>{resultTone.title}</h2>
             <p>{resultTone.description}</p>
@@ -284,7 +278,7 @@ export default function BlitzResult({
         )}
 
         {isAiResult && (
-          <div className={`${blitzTile} text-left`}>
+          <section className="blitz-result-pack">
             <p className={blitzKicker}>Pack gerado por IA</p>
             <h2 className="mt-3 font-heading text-base font-bold text-brand-dark">{aiPack?.name}</h2>
             <p className="mt-2 font-body text-sm leading-relaxed text-brand-secondary">
@@ -334,15 +328,15 @@ export default function BlitzResult({
               </button>
             </div>
             {packMessage && (
-              <p className="smooth-appear mt-3 flex items-center gap-2 font-body text-sm font-semibold text-brand-dark">
+              <p role="status" className="mt-3 flex items-center gap-2 font-body text-sm font-semibold text-brand-dark">
                 <CheckCircle2 className="h-4 w-4" />
                 {packMessage}
               </p>
             )}
             {packError && (
-              <p className="smooth-appear mt-3 font-body text-sm font-semibold text-error">{packError}</p>
+              <p role="alert" className="mt-3 font-body text-sm font-semibold text-error">{packError}</p>
             )}
-          </div>
+          </section>
         )}
 
         {rewardMessages.length > 0 && (

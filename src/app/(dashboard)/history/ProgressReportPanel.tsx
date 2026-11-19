@@ -1,12 +1,5 @@
-import { Card } from '@/components/shadcn/card'
-import { CheckCircle2, HelpCircle, Minus, TrendingDown, TrendingUp } from 'lucide-react'
-import SectionBadge from '@/components/ui/SectionBadge'
-import {
-  historyFrostedSubtle,
-  historyPanel,
-  historySectionTitle,
-} from '@/features/history/lib/historyUi'
-import { homeNestedCardClass, homePillClass } from '@/lib/homeStyles'
+import { Minus, TrendingDown, TrendingUp } from 'lucide-react'
+import styles from './History.module.css'
 import {
   MASTERED_INTERVAL_DAYS,
   MIN_ANSWERS_FOR_ACCURACY,
@@ -19,80 +12,30 @@ const TENDENCIA = {
   estavel: { Icon: Minus, texto: 'Seu acerto está estável.' },
 } as const
 
-/**
- * O painel que responde "estou aprendendo?".
- *
- * Ele mostra de onde cada número vem. Um relatório de progresso que não pode ser conferido é
- * decoração: o aluno não tem como saber se "103 frases dominadas" quer dizer alguma coisa, e o
- * número mais bonito é sempre o mais fácil de inflar.
- */
 export default function ProgressReportPanel({ report }: { report: ProgressReport }) {
   const tendencia = report.trend ? TENDENCIA[report.trend] : null
 
   return (
-    <article className={historyPanel} aria-labelledby="progress-report-title">
-      {/* Não "Seu progresso": o cabeçalho da própria página já usa esse rótulo, e duas seções
-          com o mesmo nome na mesma tela não dizem ao leitor qual é qual. */}
-      <SectionBadge label="Aprendizado" />
-      <h2 id="progress-report-title" className={`${historySectionTitle} mt-3`}>
-        Você está aprendendo?
-      </h2>
-
-      <div className="mt-6 grid gap-3 sm:grid-cols-2">
-        <Card asChild unstyled><div className={`${homeNestedCardClass} ${historyFrostedSubtle} p-4 sm:p-5`}>
-          <p className={homePillClass}>Frases dominadas</p>
-          <p className="mt-3 font-heading text-3xl font-bold leading-none text-brand-dark">
-            {report.phrasesMastered}
-          </p>
-          <p className="mt-2 font-body text-xs leading-relaxed text-brand-secondary">
-            de {report.phrasesTotal} que você já estudou. Conta como dominada a frase que você
-            acerta com {MASTERED_INTERVAL_DAYS} dias ou mais entre uma revisão e outra.
-          </p>
-        </div></Card>
-
-        <Card asChild unstyled><div className={`${homeNestedCardClass} ${historyFrostedSubtle} p-4 sm:p-5`}>
-          <p className={homePillClass}>Taxa de acerto</p>
-          {report.accuracy === null ? (
-            <>
-              <p className="mt-3 flex items-center gap-2 font-heading text-3xl font-bold leading-none text-brand-secondary">
-                <HelpCircle className="h-6 w-6 shrink-0" strokeWidth={1.5} />
-                —
-              </p>
-              <p className="mt-2 font-body text-xs leading-relaxed text-brand-secondary">
-                {report.accuracySample} resposta{report.accuracySample === 1 ? '' : 's'} até agora.
-                A partir de {MIN_ANSWERS_FOR_ACCURACY} dá para mostrar um número que signifique
-                algo — antes disso seria chute com cara de estatística.
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="mt-3 font-heading text-3xl font-bold leading-none text-brand-dark">
-                {report.accuracy}%
-              </p>
-              <p className="mt-2 font-body text-xs leading-relaxed text-brand-secondary">
-                sobre {report.accuracySample} respostas suas nas partidas.
-              </p>
-            </>
-          )}
-        </div></Card>
-      </div>
-
-      {tendencia ? (
-        <p className="mt-4 flex items-start gap-2 font-body text-sm leading-relaxed text-brand-secondary">
-          <tendencia.Icon className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
-          {tendencia.texto}
-        </p>
-      ) : null}
-
-      {report.duplicatesCollapsed > 0 ? (
-        <p className="mt-4 flex items-start gap-2 font-body text-xs leading-relaxed text-brand-secondary">
-          <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
-          {report.duplicatesCollapsed} card{report.duplicatesCollapsed === 1 ? '' : 's'} que
-          repet{report.duplicatesCollapsed === 1 ? 'e' : 'em'} uma frase já contada
-          {report.duplicatesCollapsed === 1 ? ' foi descontado' : ' foram descontados'} — packs
-          diferentes trazem frases iguais, e contar as duas vezes inflaria o total.
-        </p>
-      ) : null}
+    <article aria-labelledby="progress-report-title">
+      <h2 id="progress-report-title">Como sua revisão evolui</h2>
+      <dl className={styles.report}>
+        <div>
+          <dt>Frases com intervalo longo</dt>
+          <dd>{report.phrasesMastered} de {report.phrasesTotal}<small>Revisão marcada para {MASTERED_INTERVAL_DAYS} dias ou mais.</small></dd>
+        </div>
+        <div>
+          <dt>Taxa de acerto geral</dt>
+          <dd>{report.accuracy === null ? '—' : `${report.accuracy}%`}<small>{report.accuracySample} {report.accuracySample === 1 ? 'resposta registrada' : 'respostas registradas'}.
+            {report.accuracy === null && ` A taxa aparece a partir de ${MIN_ANSWERS_FOR_ACCURACY} respostas.`}
+          </small></dd>
+        </div>
+      </dl>
+      {tendencia && <p className={styles.trend}><tendencia.Icon size={16} aria-hidden="true" />{tendencia.texto}</p>}
+      <details className={styles.method}>
+        <summary>Como os indicadores são calculados?</summary>
+        <p>O intervalo indica estabilidade na revisão. O uso espontâneo da frase exige outras atividades.</p>
+        {report.duplicatesCollapsed > 0 && <p>Frases repetidas contam uma vez. Cards repetidos descontados: {report.duplicatesCollapsed}.</p>}
+      </details>
     </article>
   )
 }

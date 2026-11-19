@@ -1,5 +1,7 @@
 'use client'
 
+import styles from '@/features/admin/components/AdminWorkspace.module.css'
+
 import { useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { Trash2 } from 'lucide-react'
@@ -64,6 +66,7 @@ export default function DeleteMemberButton({
       </button>
       {confirmOpen && (
         <ConfirmDialog
+          surfaceClassName={styles.dialog}
           title="Remover membro"
           description={`Tem certeza que deseja remover "${username}"? Os dados e as atribuições do membro serão apagados. Esta ação não pode ser desfeita.`}
           confirmLabel="Remover"

@@ -5,11 +5,9 @@ import { AlertCircle, AlertTriangle, Brain, CheckCircle2 } from 'lucide-react'
 import ProblemWordsList from '@/features/review/components/ProblemWordsList'
 import { createClient } from '@/lib/supabase/server'
 import { formatAppDateTime, getAppDayStartUtcIso, getAppDateString, shiftAppDate } from '@/lib/timezone'
-import SectionBadge from '@/components/ui/SectionBadge'
 import {
   getProblemWordSeverity,
   problemWordsPanel,
-  problemWordsFrostedSubtle,
   problemWordsSectionTitle,
   problemWordsShell,
   problemWordsTelemetryBand,
@@ -134,10 +132,7 @@ export default async function ProblemWordsPage() {
     <div className={problemWordsShell}>
       <div className="relative z-10 mx-auto w-full min-w-0 max-w-3xl space-y-6 pb-12 animate-fade-in sm:space-y-8">
         <ProblemWordsMotionSection>
-          <ProblemWordsHeader
-            problemCount={topProblemWords.length}
-            criticalCount={criticalCount}
-          />
+          <ProblemWordsHeader />
         </ProblemWordsMotionSection>
 
         <ProblemWordsMotionSection className={problemWordsTelemetryBand} stagger>
@@ -151,7 +146,7 @@ export default async function ProblemWordsPage() {
             <TelemetryMetric label="Médios" value={mediumCount} icon={AlertCircle} />
           </ProblemWordsMotionItem>
           <ProblemWordsMotionItem>
-            <TelemetryMetric label="Quase OK" value={almostMastered.length} icon={CheckCircle2} />
+            <TelemetryMetric label="Quase dominados" value={almostMastered.length} icon={CheckCircle2} />
           </ProblemWordsMotionItem>
         </ProblemWordsMotionSection>
 
@@ -162,13 +157,12 @@ export default async function ProblemWordsPage() {
         ]} defaultValue="terms">
         <div>
           <LeechSection cards={leechCards} />
-          {!leechCards.length && <p className="p-5 text-brand-secondary">Nenhuma frase com dificuldade persistente.</p>}
+          {!leechCards.length && <p className="py-4 text-brand-secondary">Nenhuma frase com dificuldade persistente.</p>}
         </div>
 
         <ProblemWordsMotionSection id="termos">
           <div className="mb-4 sm:mb-5">
-            <SectionBadge label="Termos críticos" />
-            <h2 className={`${problemWordsSectionTitle} mt-3`}>Pratique onde você erra</h2>
+            <h2 className={`${problemWordsSectionTitle}`}>Pratique onde você erra</h2>
             <p className="mt-2 max-w-xl font-body text-sm text-brand-secondary">
               Ordenados por frequência de erro nos últimos 30 dias. A barra lateral indica a severidade.
             </p>
@@ -183,19 +177,18 @@ export default async function ProblemWordsPage() {
 
         <div>{almostMastered.length > 0 ? (
           <ProblemWordsMotionSection className={problemWordsPanel} stagger>
-            <SectionBadge label="Quase dominadas" />
-            <h2 className={`${problemWordsSectionTitle} mt-3`}>Consolidação leve</h2>
+            <h2 className={`${problemWordsSectionTitle}`}>Consolidação leve</h2>
             <p className="mt-2 max-w-xl font-body text-sm text-brand-secondary">
               Termos com boa retenção — uma revisão rápida pode fixá-los de vez.
             </p>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <ul className="problem-words-rows mt-4" role="list">
               {almostMastered.map((review) => (
-                <ProblemWordsMotionItem key={review.card_id}>
-                  <div className={`rounded-control border border-brand-dark bg-bg-primary p-4 transition-transform hover:-translate-y-0.5 ${problemWordsFrostedSubtle}`}>
+                <li key={review.card_id}>
+                  <div className="py-4">
                     <div className="flex items-start gap-2">
                       <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-dark" strokeWidth={1.5} />
                       <div className="min-w-0">
-                        <p className="font-heading text-sm font-bold text-brand-dark">{review.cards?.english_phrase}</p>
+                        <p lang="en" className="font-heading text-sm font-semibold text-brand-dark">{review.cards?.english_phrase}</p>
                         <p className="mt-1 font-body text-sm text-brand-secondary">{review.cards?.portuguese_translation}</p>
                         <p className="mt-3 font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                           Próxima revisão: {formatAppDateTime(review.next_review_date)}
@@ -203,11 +196,11 @@ export default async function ProblemWordsPage() {
                       </div>
                     </div>
                   </div>
-                </ProblemWordsMotionItem>
+                </li>
               ))}
-            </div>
+            </ul>
           </ProblemWordsMotionSection>
-        ) : <p className="p-5 text-brand-secondary">Ainda não há termos nesta etapa de consolidação.</p>}</div>
+        ) : <p className="py-4 text-brand-secondary">Ainda não há termos nesta etapa de consolidação.</p>}</div>
         </WorkspaceSections>
       </div>
     </div>

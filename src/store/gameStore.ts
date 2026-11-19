@@ -1,5 +1,6 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { wordId } from '@/features/words/wordId'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import type { Card, GameMode } from '@/types/database.types'
 import type { TypingDirection } from '@/features/game/components/TypingMode'
 
@@ -7,6 +8,7 @@ type GamePhase = 'intro' | 'playing' | 'result'
 
 interface GameState {
   hasHydrated: boolean
+  resultSubmissionId: string
 
   // Config
   cards: Card[]
@@ -54,6 +56,7 @@ export const useGameStore = create<GameState>()(
   persist(
     (set, get) => ({
       hasHydrated: false,
+      resultSubmissionId: '',
 
       // Config
       cards: [],
@@ -79,6 +82,7 @@ export const useGameStore = create<GameState>()(
       // Actions
       setConfig: (config) =>
         set({
+          resultSubmissionId: wordId(),
           cards: config.cards,
           activeQueue: config.cards,
           gameMode: config.gameMode,
@@ -183,6 +187,11 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: 'game-storage',
+      storage: createJSONStorage(() => ({
+        getItem: (key: string) => { try { const value = localStorage.getItem(key); if (value) JSON.parse(value); return value } catch { return null } },
+        setItem: (key: string, value: string) => { try { localStorage.setItem(key, value) } catch { /* Reviewing remains possible without storage. */ } },
+        removeItem: (key: string) => { try { localStorage.removeItem(key) } catch { /* Optional local recovery. */ } },
+      })),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true)
       },

@@ -1336,6 +1336,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      update_member_group_atomic: {
+        Args: { p_group_id:string; p_expected:Json; p_name:string; p_description:string|null; p_member_ids:string[] }
+        Returns: string
+      }
+
       apply_abacatepay_subscription_event: {
         Args: {
           p_current_period_end: string | null
@@ -1370,7 +1375,7 @@ export type Database = {
         Args: { p_window_start: string; p_limit?: number }
         Returns: {
           rank: number
-          user_id: string
+          user_id: string | null
           username: string
           score: number
           max_combo: number

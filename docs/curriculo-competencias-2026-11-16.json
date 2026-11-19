@@ -1,0 +1,2142 @@
+{
+  "format": 2,
+  "status": "editorial_targets_not_certification",
+  "units": [
+    {
+      "level": "A1",
+      "lesson": {
+        "id": "a1-meeting-01",
+        "title": "Combinar um encontro",
+        "preparation": "Você recebe um convite. Procure o horário e o lugar.",
+        "text": "Hi! I am Maya. Let’s meet at the café at ten. The café is next to the library. See you there!",
+        "question": "Onde e quando será o encontro?",
+        "choices": [
+          "Na biblioteca, às dez.",
+          "No café, às dez.",
+          "No café, às duas."
+        ],
+        "answer": 1,
+        "explanation": "“At the café” indica o lugar e “at ten” indica o horário. “Next to the library” explica onde fica o café.",
+        "prompt": "Responda a Maya em inglês: apresente-se, confirme se pode ir e faça uma pergunta simples sobre o encontro.",
+        "example": "Hi Maya! I am Ana. Ten is fine. Can I bring a friend?",
+        "criteria": [
+          "Eu me apresentei.",
+          "Eu confirmei minha disponibilidade.",
+          "Eu fiz uma pergunta sobre o encontro."
+        ],
+        "shadowing": "Let’s meet at the café at ten."
+      },
+      "turn": "I cannot meet at ten. Can we meet at eleven?",
+      "interaction": "Responda em inglês a esta nova mensagem. Considere a necessidade ou objeção sem inventar informações.",
+      "mediation": "Explique em inglês os pontos essenciais da situação a alguém que não leu o texto. Preserve limites, condições e informações ainda ausentes.",
+      "checks": [
+        "Eu respondi à necessidade ou objeção apresentada.",
+        "Eu adaptei a explicação sem inventar informações."
+      ],
+      "tags": [
+        "retomada"
+      ],
+      "turns": [
+        "Where is the café again?",
+        "Please send one short message with the time and place."
+      ],
+      "transfer": {
+        "id": "a1-meeting-01:transfer",
+        "domain": "serviços locais",
+        "text": "The pool opens at nine on Sunday. Tickets are two pounds. Bring a towel.",
+        "question": "A que horas a piscina abre no domingo?",
+        "choices": [
+          "Às nove.",
+          "Às dez.",
+          "Às onze."
+        ],
+        "answer": 0,
+        "explanation": "Nine significa nove. O aviso não menciona dez ou onze.",
+        "prompt": "Convide uma pessoa para a piscina em inglês. Informe horário e o que levar.",
+        "criteria": [
+          "Informei nove horas no domingo e a necessidade de levar toalha.",
+          "Escrevi um convite simples e compreensível para outra pessoa."
+        ],
+        "objectives": [
+          {
+            "id": "a1-meeting-01:transfer:reception",
+            "skill": "reception",
+            "task": "A que horas a piscina abre no domingo?",
+            "criteria": [
+              "Nine significa nove. O aviso não menciona dez ou onze."
+            ]
+          },
+          {
+            "id": "a1-meeting-01:transfer:production",
+            "skill": "production",
+            "task": "Convide uma pessoa para a piscina em inglês. Informe horário e o que levar.",
+            "criteria": [
+              "Informei nove horas no domingo e a necessidade de levar toalha.",
+              "Escrevi um convite simples e compreensível para outra pessoa."
+            ]
+          }
+        ]
+      },
+      "prerequisites": [],
+      "packIds": [
+        "cf9a23fd-a714-43ee-ad20-52290b8fcf58"
+      ],
+      "objectives": [
+        {
+          "id": "a1-meeting-01:reception",
+          "skill": "reception",
+          "task": "Onde e quando será o encontro?",
+          "criteria": [
+            "Identifica a informação solicitada sem alterar seu sentido."
+          ]
+        },
+        {
+          "id": "a1-meeting-01:production",
+          "skill": "production",
+          "task": "Responda a Maya em inglês: apresente-se, confirme se pode ir e faça uma pergunta simples sobre o encontro.",
+          "criteria": [
+            "Eu me apresentei.",
+            "Eu confirmei minha disponibilidade.",
+            "Eu fiz uma pergunta sobre o encontro."
+          ]
+        },
+        {
+          "id": "a1-meeting-01:interaction",
+          "skill": "interaction",
+          "task": "Responda em inglês a esta nova mensagem. Considere a necessidade ou objeção sem inventar informações.",
+          "criteria": [
+            "Eu respondi à necessidade ou objeção apresentada."
+          ]
+        },
+        {
+          "id": "a1-meeting-01:mediation",
+          "skill": "mediation",
+          "task": "Explique em inglês os pontos essenciais da situação a alguém que não leu o texto. Preserve limites, condições e informações ainda ausentes.",
+          "criteria": [
+            "Eu adaptei a explicação sem inventar informações."
+          ]
+        }
+      ]
+    },
+    {
+      "level": "A1",
+      "lesson": {
+        "id": "a1-shop-02",
+        "title": "Pedir um item",
+        "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+        "text": "You are at a small shop. The blue notebook is three pounds. The red notebook is five pounds. The shop closes at six.",
+        "question": "Qual caderno custa três libras?",
+        "choices": [
+          "O vermelho.",
+          "O azul.",
+          "Os dois."
+        ],
+        "answer": 1,
+        "explanation": "Blue notebook identifica o caderno azul; three pounds é o preço.",
+        "prompt": "Escreva um pedido em inglês: diga qual caderno quer e pergunte se pode pagar com cartão.",
+        "example": "A blue notebook, please. Can I pay by card?",
+        "criteria": [
+          "Eu atendi ao pedido da tarefa.",
+          "Eu preservei as informações relevantes.",
+          "Minha resposta está compreensível para o destinatário."
+        ],
+        "shadowing": "A blue notebook, please."
+      },
+      "turn": "We only take cash. Do you still want the notebook?",
+      "interaction": "Responda ao atendente. Aceite ou recuse e agradeça.",
+      "mediation": "Uma amiga quer o caderno mais barato. Escreva em inglês qual é e quanto custa.",
+      "checks": [
+        "Eu respondi à pergunta sobre dinheiro.",
+        "Eu preservei cor e preço."
+      ],
+      "tags": [
+        "compras",
+        "números",
+        "objetos"
+      ],
+      "turns": [
+        "The red one is also available. Which colour do you want?",
+        "Would you like a bag?"
+      ],
+      "transfer": {
+        "id": "a1-shop-02:transfer",
+        "domain": "alimentação",
+        "text": "The lunch box has rice and beans. Water is free. Juice is two pounds.",
+        "question": "Qual bebida é gratuita?",
+        "choices": [
+          "Suco.",
+          "Água.",
+          "As duas."
+        ],
+        "answer": 1,
+        "explanation": "Water is free informa que a água é gratuita.",
+        "prompt": "Peça uma refeição e uma bebida em inglês. Diga sua escolha sem inventar preços.",
+        "criteria": [
+          "Distingui água gratuita de suco pago.",
+          "Fiz um pedido simples com minha escolha, sem inventar o preço da refeição."
+        ],
+        "objectives": [
+          {
+            "id": "a1-shop-02:transfer:reception",
+            "skill": "reception",
+            "task": "Qual bebida é gratuita?",
+            "criteria": [
+              "Water is free informa que a água é gratuita."
+            ]
+          },
+          {
+            "id": "a1-shop-02:transfer:production",
+            "skill": "production",
+            "task": "Peça uma refeição e uma bebida em inglês. Diga sua escolha sem inventar preços.",
+            "criteria": [
+              "Distingui água gratuita de suco pago.",
+              "Fiz um pedido simples com minha escolha, sem inventar o preço da refeição."
+            ]
+          }
+        ]
+      },
+      "prerequisites": [
+        "a1-meeting-01"
+      ],
+      "packIds": [
+        "033aed12-d9a5-4bb1-aca4-af1766bdaf0e"
+      ],
+      "objectives": [
+        {
+          "id": "a1-shop-02:reception",
+          "skill": "reception",
+          "task": "Qual caderno custa três libras?",
+          "criteria": [
+            "Identifica a informação solicitada sem alterar seu sentido."
+          ]
+        },
+        {
+          "id": "a1-shop-02:production",
+          "skill": "production",
+          "task": "Escreva um pedido em inglês: diga qual caderno quer e pergunte se pode pagar com cartão.",
+          "criteria": [
+            "Eu atendi ao pedido da tarefa.",
+            "Eu preservei as informações relevantes.",
+            "Minha resposta está compreensível para o destinatário."
+          ]
+        },
+        {
+          "id": "a1-shop-02:interaction",
+          "skill": "interaction",
+          "task": "Responda ao atendente. Aceite ou recuse e agradeça.",
+          "criteria": [
+            "Eu respondi à pergunta sobre dinheiro."
+          ]
+        },
+        {
+          "id": "a1-shop-02:mediation",
+          "skill": "mediation",
+          "task": "Uma amiga quer o caderno mais barato. Escreva em inglês qual é e quanto custa.",
+          "criteria": [
+            "Eu preservei cor e preço."
+          ]
+        }
+      ]
+    },
+    {
+      "level": "A1",
+      "lesson": {
+        "id": "a1-club-02",
+        "title": "Convidar para um clube",
+        "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+        "text": "The reading club meets on Tuesday at four. We meet in Room Two. Bring a short book. New members are welcome.",
+        "question": "O que é preciso levar?",
+        "choices": [
+          "Um livro curto.",
+          "Uma cadeira.",
+          "Um ingresso."
+        ],
+        "answer": 0,
+        "explanation": "Bring a short book pede um livro curto; não há ingresso no aviso.",
+        "prompt": "Convide um amigo em inglês. Diga dia, horário e sala.",
+        "example": "Come to the reading club on Tuesday at four. We meet in Room Two.",
+        "criteria": [
+          "Eu atendi ao pedido da tarefa.",
+          "Eu preservei as informações relevantes.",
+          "Minha resposta está compreensível para o destinatário."
+        ],
+        "shadowing": "Come to the reading club on Tuesday at four."
+      },
+      "turn": "I can come at five. Is that the start time?",
+      "interaction": "Corrija o horário com gentileza.",
+      "mediation": "Seu colega não viu o aviso. Passe em inglês o lugar e o que ele precisa levar.",
+      "checks": [
+        "Eu corrigi five para four.",
+        "Eu transmiti sala e item, sem inventar ingresso."
+      ],
+      "tags": [
+        "dias",
+        "horas",
+        "escola"
+      ],
+      "turns": [
+        "Can I come without a book this week?",
+        "Who should I ask about that?"
+      ],
+      "transfer": {
+        "id": "a1-club-02:transfer",
+        "domain": "rotina doméstica",
+        "text": "Please feed the cat at six. The food is in the kitchen. Do not open the front door.",
+        "question": "Onde está a comida?",
+        "choices": [
+          "Na porta.",
+          "Na sala.",
+          "Na cozinha."
+        ],
+        "answer": 2,
+        "explanation": "In the kitchen significa na cozinha.",
+        "prompt": "Confirme em inglês a hora de alimentar o gato e a instrução sobre a porta.",
+        "criteria": [
+          "Confirmei seis horas e mantive a porta da frente fechada na instrução.",
+          "Usei uma confirmação simples e compreensível."
+        ],
+        "objectives": [
+          {
+            "id": "a1-club-02:transfer:reception",
+            "skill": "reception",
+            "task": "Onde está a comida?",
+            "criteria": [
+              "In the kitchen significa na cozinha."
+            ]
+          },
+          {
+            "id": "a1-club-02:transfer:production",
+            "skill": "production",
+            "task": "Confirme em inglês a hora de alimentar o gato e a instrução sobre a porta.",
+            "criteria": [
+              "Confirmei seis horas e mantive a porta da frente fechada na instrução.",
+              "Usei uma confirmação simples e compreensível."
+            ]
+          }
+        ]
+      },
+      "prerequisites": [
+        "a1-shop-02"
+      ],
+      "packIds": [
+        "8a606e40-a2c8-4b8f-a1bb-f13e88d1d049"
+      ],
+      "objectives": [
+        {
+          "id": "a1-club-02:reception",
+          "skill": "reception",
+          "task": "O que é preciso levar?",
+          "criteria": [
+            "Identifica a informação solicitada sem alterar seu sentido."
+          ]
+        },
+        {
+          "id": "a1-club-02:production",
+          "skill": "production",
+          "task": "Convide um amigo em inglês. Diga dia, horário e sala.",
+          "criteria": [
+            "Eu atendi ao pedido da tarefa.",
+            "Eu preservei as informações relevantes.",
+            "Minha resposta está compreensível para o destinatário."
+          ]
+        },
+        {
+          "id": "a1-club-02:interaction",
+          "skill": "interaction",
+          "task": "Corrija o horário com gentileza.",
+          "criteria": [
+            "Eu corrigi five para four."
+          ]
+        },
+        {
+          "id": "a1-club-02:mediation",
+          "skill": "mediation",
+          "task": "Seu colega não viu o aviso. Passe em inglês o lugar e o que ele precisa levar.",
+          "criteria": [
+            "Eu transmiti sala e item, sem inventar ingresso."
+          ]
+        }
+      ]
+    },
+    {
+      "level": "A2",
+      "lesson": {
+        "id": "a2-route-01",
+        "title": "Encontrar outra rota",
+        "preparation": "Um ônibus mudou de trajeto. Procure a alternativa e o motivo.",
+        "text": "The number 8 bus is not stopping at the museum today because the street is closed. Take the number 12 to Green Park. From there, walk along King Street for five minutes. The museum is on your left.",
+        "question": "Qual é a alternativa para chegar ao museu?",
+        "choices": [
+          "Pegar o 12 e depois caminhar.",
+          "Esperar o 8 na rua fechada.",
+          "Caminhar cinco minutos até o parque e voltar."
+        ],
+        "answer": 0,
+        "explanation": "O aviso orienta pegar o 12 até Green Park e caminhar pela King Street. O 8 não para no museu hoje.",
+        "prompt": "Um visitante não leu o aviso. Explique em inglês como chegar ao museu e por que a rota mudou.",
+        "example": "The street is closed today. Take bus 12 to Green Park, then walk along King Street for five minutes. The museum is on your left.",
+        "criteria": [
+          "Eu expliquei por que a rota mudou.",
+          "Eu mantive o ônibus, o ponto e a direção corretos.",
+          "Eu organizei as instruções em sequência."
+        ],
+        "shadowing": "From there, walk along King Street for five minutes."
+      },
+      "turn": "I cannot walk far. Is there another option in the notice?",
+      "interaction": "Responda em inglês a esta nova mensagem. Considere a necessidade ou objeção sem inventar informações.",
+      "mediation": "Explique em inglês os pontos essenciais da situação a alguém que não leu o texto. Preserve limites, condições e informações ainda ausentes.",
+      "checks": [
+        "Eu respondi à necessidade ou objeção apresentada.",
+        "Eu adaptei a explicação sem inventar informações."
+      ],
+      "tags": [
+        "retomada"
+      ],
+      "turns": [
+        "Could you check whether the museum has an accessible entrance?",
+        "What can we confirm from the notice while we wait?"
+      ],
+      "transfer": {
+        "id": "a2-route-01:transfer",
+        "domain": "serviços públicos",
+        "text": "The parcel desk closes at four today. For collection, bring your ID and the reference number. Someone else may collect only with written permission.",
+        "question": "O que outra pessoa precisa para retirar?",
+        "choices": [
+          "Apenas o número.",
+          "Permissão escrita.",
+          "Uma passagem."
+        ],
+        "answer": 1,
+        "explanation": "Written permission é uma condição adicional para retirada por outra pessoa.",
+        "prompt": "Explique a uma amiga em inglês o que levar para retirar por você; não garanta que só o número basta.",
+        "criteria": [
+          "Incluí documento, referência e permissão escrita para a retirada por outra pessoa.",
+          "Expliquei as condições à amiga sem confundir permissão com garantia."
+        ],
+        "objectives": [
+          {
+            "id": "a2-route-01:transfer:reception",
+            "skill": "reception",
+            "task": "O que outra pessoa precisa para retirar?",
+            "criteria": [
+              "Written permission é uma condição adicional para retirada por outra pessoa."
+            ]
+          },
+          {
+            "id": "a2-route-01:transfer:production",
+            "skill": "production",
+            "task": "Explique a uma amiga em inglês o que levar para retirar por você; não garanta que só o número basta.",
+            "criteria": [
+              "Incluí documento, referência e permissão escrita para a retirada por outra pessoa.",
+              "Expliquei as condições à amiga sem confundir permissão com garantia."
+            ]
+          }
+        ]
+      },
+      "prerequisites": [],
+      "packIds": [
+        "1690f7e8-83c8-497a-84ad-b9f44a0eb063"
+      ],
+      "objectives": [
+        {
+          "id": "a2-route-01:reception",
+          "skill": "reception",
+          "task": "Qual é a alternativa para chegar ao museu?",
+          "criteria": [
+            "Identifica a informação solicitada sem alterar seu sentido."
+          ]
+        },
+        {
+          "id": "a2-route-01:production",
+          "skill": "production",
+          "task": "Um visitante não leu o aviso. Explique em inglês como chegar ao museu e por que a rota mudou.",
+          "criteria": [
+            "Eu expliquei por que a rota mudou.",
+            "Eu mantive o ônibus, o ponto e a direção corretos.",
+            "Eu organizei as instruções em sequência."
+          ]
+        },
+        {
+          "id": "a2-route-01:interaction",
+          "skill": "interaction",
+          "task": "Responda em inglês a esta nova mensagem. Considere a necessidade ou objeção sem inventar informações.",
+          "criteria": [
+            "Eu respondi à necessidade ou objeção apresentada."
+          ]
+        },
+        {
+          "id": "a2-route-01:mediation",
+          "skill": "mediation",
+          "task": "Explique em inglês os pontos essenciais da situação a alguém que não leu o texto. Preserve limites, condições e informações ainda ausentes.",
+          "criteria": [
+            "Eu adaptei a explicação sem inventar informações."
+          ]
+        }
+      ]
+    },
+    {
+      "level": "A2",
+      "lesson": {
+        "id": "a2-repair-02",
+        "title": "Combinar um conserto",
+        "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+        "text": "Your bicycle repair is ready. You can collect it before five today or after ten tomorrow. The rear light still needs a new battery. We have not charged you for a battery.",
+        "question": "O que ainda falta?",
+        "choices": [
+          "Pagar por outra bicicleta.",
+          "Trocar a bateria da luz traseira.",
+          "Consertar os freios."
+        ],
+        "answer": 1,
+        "explanation": "Still needs indica o que ainda falta. A mensagem não diz que a bateria foi cobrada.",
+        "prompt": "Escreva à oficina dizendo quando vai buscar a bicicleta e pergunte se há bateria à venda.",
+        "example": "I will collect my bicycle tomorrow after ten. Do you sell batteries for the rear light?",
+        "criteria": [
+          "Eu atendi ao pedido da tarefa.",
+          "Eu preservei as informações relevantes.",
+          "Minha resposta está compreensível para o destinatário."
+        ],
+        "shadowing": "I will collect my bicycle tomorrow after ten."
+      },
+      "turn": "We have one battery left, but we cannot keep it without confirmation.",
+      "interaction": "Confirme se quer a bateria e faça uma pergunta sobre o preço.",
+      "mediation": "Um familiar buscará a bicicleta. Explique em inglês o horário e a pendência, sem dizer que tudo já está resolvido.",
+      "checks": [
+        "Eu respondi ao pedido de confirmação.",
+        "Eu preservei horário e pendência."
+      ],
+      "tags": [
+        "serviços",
+        "planos",
+        "compras"
+      ],
+      "turns": [
+        "Would tomorrow at eleven work for collection?",
+        "Please confirm what is repaired and what still needs attention."
+      ],
+      "transfer": {
+        "id": "a2-repair-02:transfer",
+        "domain": "moradia",
+        "text": "The lift will be out of service on Thursday morning. Deliveries can be left with reception. Residents needing help should call before Wednesday evening.",
+        "question": "Até quando pedir ajuda?",
+        "choices": [
+          "Quinta à noite.",
+          "Depois da entrega.",
+          "Antes de quarta à noite."
+        ],
+        "answer": 2,
+        "explanation": "Before Wednesday evening é o prazo para solicitar ajuda.",
+        "prompt": "Escreva em inglês para pedir ajuda e explicar onde uma entrega pode ficar.",
+        "criteria": [
+          "Pedi ajuda antes de quarta à noite e indiquei a recepção para a entrega.",
+          "Relacionei a necessidade de ajuda à indisponibilidade do elevador."
+        ],
+        "objectives": [
+          {
+            "id": "a2-repair-02:transfer:reception",
+            "skill": "reception",
+            "task": "Até quando pedir ajuda?",
+            "criteria": [
+              "Before Wednesday evening é o prazo para solicitar ajuda."
+            ]
+          },
+          {
+            "id": "a2-repair-02:transfer:production",
+            "skill": "production",
+            "task": "Escreva em inglês para pedir ajuda e explicar onde uma entrega pode ficar.",
+            "criteria": [
+              "Pedi ajuda antes de quarta à noite e indiquei a recepção para a entrega.",
+              "Relacionei a necessidade de ajuda à indisponibilidade do elevador."
+            ]
+          }
+        ]
+      },
+      "prerequisites": [
+        "a2-route-01"
+      ],
+      "packIds": [
+        "60e430c4-e778-4aa1-8c0d-c67730000122"
+      ],
+      "objectives": [
+        {
+          "id": "a2-repair-02:reception",
+          "skill": "reception",
+          "task": "O que ainda falta?",
+          "criteria": [
+            "Identifica a informação solicitada sem alterar seu sentido."
+          ]
+        },
+        {
+          "id": "a2-repair-02:production",
+          "skill": "production",
+          "task": "Escreva à oficina dizendo quando vai buscar a bicicleta e pergunte se há bateria à venda.",
+          "criteria": [
+            "Eu atendi ao pedido da tarefa.",
+            "Eu preservei as informações relevantes.",
+            "Minha resposta está compreensível para o destinatário."
+          ]
+        },
+        {
+          "id": "a2-repair-02:interaction",
+          "skill": "interaction",
+          "task": "Confirme se quer a bateria e faça uma pergunta sobre o preço.",
+          "criteria": [
+            "Eu respondi ao pedido de confirmação."
+          ]
+        },
+        {
+          "id": "a2-repair-02:mediation",
+          "skill": "mediation",
+          "task": "Um familiar buscará a bicicleta. Explique em inglês o horário e a pendência, sem dizer que tudo já está resolvido.",
+          "criteria": [
+            "Eu preservei horário e pendência."
+          ]
+        }
+      ]
+    },
+    {
+      "level": "A2",
+      "lesson": {
+        "id": "a2-picnic-02",
+        "title": "Reorganizar uma atividade",
+        "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+        "text": "Our picnic is moving to the hall because of the rain. Please arrive at noon. There is a kitchen, but no plates or cups. Everyone should bring something to share.",
+        "question": "Por que levar pratos?",
+        "choices": [
+          "A cozinha está fechada.",
+          "O encontro foi cancelado.",
+          "O salão não tem pratos."
+        ],
+        "answer": 2,
+        "explanation": "A cozinha existe, mas não há pratos nem copos. O encontro mudou de lugar.",
+        "prompt": "Escreva ao grupo o que você vai levar e confirme onde e quando será o encontro.",
+        "example": "I can bring plates and some fruit. See you in the hall at noon.",
+        "criteria": [
+          "Eu atendi ao pedido da tarefa.",
+          "Eu preservei as informações relevantes.",
+          "Minha resposta está compreensível para o destinatário."
+        ],
+        "shadowing": "I can bring plates and some fruit."
+      },
+      "turn": "Thanks. Could you bring cups instead? Alex is bringing plates.",
+      "interaction": "Responda à mudança e confirme o que levará.",
+      "mediation": "Avise um colega em inglês sobre a mudança de local e o motivo.",
+      "checks": [
+        "Eu ajustei minha oferta à resposta do grupo.",
+        "Eu mantive lugar e motivo corretos."
+      ],
+      "tags": [
+        "convites",
+        "clima",
+        "comida"
+      ],
+      "turns": [
+        "Could you arrive fifteen minutes early to help set up?",
+        "Please tell the others what you can bring and when you can arrive."
+      ],
+      "transfer": {
+        "id": "a2-picnic-02:transfer",
+        "domain": "viagem",
+        "text": "The hostel stores bags free until three. After three, storage costs four euros. Check-in begins at two.",
+        "question": "Quando começa a cobrança por bagagem?",
+        "choices": [
+          "Depois das três.",
+          "Às duas.",
+          "Ao chegar."
+        ],
+        "answer": 0,
+        "explanation": "After three indica o início da cobrança; check-in é um horário diferente.",
+        "prompt": "Avise seu colega em inglês sobre check-in e bagagem e proponha um horário para buscá-la.",
+        "criteria": [
+          "Separei check-in às duas de bagagem gratuita até as três.",
+          "Propus um horário de retirada coerente com as condições."
+        ],
+        "objectives": [
+          {
+            "id": "a2-picnic-02:transfer:reception",
+            "skill": "reception",
+            "task": "Quando começa a cobrança por bagagem?",
+            "criteria": [
+              "After three indica o início da cobrança; check-in é um horário diferente."
+            ]
+          },
+          {
+            "id": "a2-picnic-02:transfer:production",
+            "skill": "production",
+            "task": "Avise seu colega em inglês sobre check-in e bagagem e proponha um horário para buscá-la.",
+            "criteria": [
+              "Separei check-in às duas de bagagem gratuita até as três.",
+              "Propus um horário de retirada coerente com as condições."
+            ]
+          }
+        ]
+      },
+      "prerequisites": [
+        "a2-repair-02"
+      ],
+      "packIds": [
+        "bba7e0bf-bf2d-46ef-91f3-52dd7042652c"
+      ],
+      "objectives": [
+        {
+          "id": "a2-picnic-02:reception",
+          "skill": "reception",
+          "task": "Por que levar pratos?",
+          "criteria": [
+            "Identifica a informação solicitada sem alterar seu sentido."
+          ]
+        },
+        {
+          "id": "a2-picnic-02:production",
+          "skill": "production",
+          "task": "Escreva ao grupo o que você vai levar e confirme onde e quando será o encontro.",
+          "criteria": [
+            "Eu atendi ao pedido da tarefa.",
+            "Eu preservei as informações relevantes.",
+            "Minha resposta está compreensível para o destinatário."
+          ]
+        },
+        {
+          "id": "a2-picnic-02:interaction",
+          "skill": "interaction",
+          "task": "Responda à mudança e confirme o que levará.",
+          "criteria": [
+            "Eu ajustei minha oferta à resposta do grupo."
+          ]
+        },
+        {
+          "id": "a2-picnic-02:mediation",
+          "skill": "mediation",
+          "task": "Avise um colega em inglês sobre a mudança de local e o motivo.",
+          "criteria": [
+            "Eu mantive lugar e motivo corretos."
+          ]
+        }
+      ]
+    },
+    {
+      "level": "B1",
+      "lesson": {
+        "id": "b1-plans-01",
+        "title": "Adaptar um plano",
+        "preparation": "Seu grupo precisa mudar um passeio. Separe restrições e possibilidades.",
+        "text": "We planned to visit the outdoor market on Saturday, but heavy rain is expected. The community centre has offered us a room in the afternoon. It is free, although we need to bring our own food. Sam can only join before three, and Jo needs a place near the bus station. The centre is a short walk from the station.",
+        "question": "Qual proposta considera as restrições do grupo?",
+        "choices": [
+          "Encontro ao ar livre à noite.",
+          "Encontro no centro depois das quatro.",
+          "Encontro no centro no início da tarde, levando comida."
+        ],
+        "answer": 2,
+        "explanation": "O centro protege da chuva, fica perto da estação e permite um encontro antes das três. O grupo precisa levar comida.",
+        "prompt": "Escreva ao grupo propondo um plano, justificando duas escolhas e perguntando se todos concordam.",
+        "example": "How about meeting at the centre at one? We can avoid the rain and Sam can stay for a while. It is also near the station for Jo. I can bring sandwiches. Does that work for everyone?",
+        "criteria": [
+          "Minha proposta considera horário e lugar.",
+          "Eu expliquei duas razões.",
+          "Eu abri espaço para o grupo responder."
+        ],
+        "shadowing": "How about meeting at the centre at one?"
+      },
+      "turn": "I can bring food, but I need to leave at two. Can I still join?",
+      "interaction": "Responda em inglês a esta nova mensagem. Considere a necessidade ou objeção sem inventar informações.",
+      "mediation": "Explique em inglês os pontos essenciais da situação a alguém que não leu o texto. Preserve limites, condições e informações ainda ausentes.",
+      "checks": [
+        "Eu respondi à necessidade ou objeção apresentada.",
+        "Eu adaptei a explicação sem inventar informações."
+      ],
+      "tags": [
+        "retomada"
+      ],
+      "turns": [
+        "Would starting at one give us enough time together?",
+        "Can you send the group a plan and mention anything still undecided?"
+      ],
+      "transfer": {
+        "id": "b1-plans-01:transfer",
+        "domain": "trabalho",
+        "text": "A colleague can exchange a Friday shift if the manager approves by Wednesday. The colleague cannot work after six. You need Friday afternoon free.",
+        "question": "Qual condição ainda falta?",
+        "choices": [
+          "A loja fechar.",
+          "Aprovação do gerente.",
+          "Trabalhar depois das seis."
+        ],
+        "answer": 1,
+        "explanation": "A troca depende da aprovação até quarta, não apenas do acordo entre colegas.",
+        "prompt": "Proponha a troca em inglês ao gerente, incluindo a condição de horário e uma alternativa se não for aprovada.",
+        "criteria": [
+          "Preservei aprovação até quarta e limite das seis horas.",
+          "Propus a troca e uma alternativa sem tratar a aprovação como certa."
+        ],
+        "objectives": [
+          {
+            "id": "b1-plans-01:transfer:reception",
+            "skill": "reception",
+            "task": "Qual condição ainda falta?",
+            "criteria": [
+              "A troca depende da aprovação até quarta, não apenas do acordo entre colegas."
+            ]
+          },
+          {
+            "id": "b1-plans-01:transfer:production",
+            "skill": "production",
+            "task": "Proponha a troca em inglês ao gerente, incluindo a condição de horário e uma alternativa se não for aprovada.",
+            "criteria": [
+              "Preservei aprovação até quarta e limite das seis horas.",
+              "Propus a troca e uma alternativa sem tratar a aprovação como certa."
+            ]
+          }
+        ]
+      },
+      "prerequisites": [],
+      "packIds": [
+        "99982a5b-1db1-42fc-98b2-8b34abc3b712"
+      ],
+      "objectives": [
+        {
+          "id": "b1-plans-01:reception",
+          "skill": "reception",
+          "task": "Qual proposta considera as restrições do grupo?",
+          "criteria": [
+            "Identifica a informação solicitada sem alterar seu sentido."
+          ]
+        },
+        {
+          "id": "b1-plans-01:production",
+          "skill": "production",
+          "task": "Escreva ao grupo propondo um plano, justificando duas escolhas e perguntando se todos concordam.",
+          "criteria": [
+            "Minha proposta considera horário e lugar.",
+            "Eu expliquei duas razões.",
+            "Eu abri espaço para o grupo responder."
+          ]
+        },
+        {
+          "id": "b1-plans-01:interaction",
+          "skill": "interaction",
+          "task": "Responda em inglês a esta nova mensagem. Considere a necessidade ou objeção sem inventar informações.",
+          "criteria": [
+            "Eu respondi à necessidade ou objeção apresentada."
+          ]
+        },
+        {
+          "id": "b1-plans-01:mediation",
+          "skill": "mediation",
+          "task": "Explique em inglês os pontos essenciais da situação a alguém que não leu o texto. Preserve limites, condições e informações ainda ausentes.",
+          "criteria": [
+            "Eu adaptei a explicação sem inventar informações."
+          ]
+        }
+      ]
+    },
+    {
+      "level": "B1",
+      "lesson": {
+        "id": "b1-volunteer-02",
+        "title": "Negociar uma troca",
+        "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+        "text": "A volunteer needs to swap Saturday morning for Sunday afternoon. The organiser can allow the change if another volunteer covers Saturday. The Sunday team already has enough drivers but needs someone to welcome visitors.",
+        "question": "Qual condição permite a troca?",
+        "choices": [
+          "Outra pessoa cobrir sábado.",
+          "O voluntário dirigir domingo.",
+          "Cancelar a atividade."
+        ],
+        "answer": 0,
+        "explanation": "A cobertura de sábado é a condição. Domingo precisa de recepção, não de mais motoristas.",
+        "prompt": "Peça a troca ao organizador, explique uma razão e ofereça uma forma de conseguir cobertura.",
+        "example": "Could I move to Sunday afternoon? I have a family appointment on Saturday. I can ask Kim to cover my shift and help welcome visitors on Sunday.",
+        "criteria": [
+          "Eu atendi ao pedido da tarefa.",
+          "Eu preservei as informações relevantes.",
+          "Minha resposta está compreensível para o destinatário."
+        ],
+        "shadowing": "Could I move to Sunday afternoon? I have a family appointment on Saturday."
+      },
+      "turn": "Kim can cover only the first hour. We need cover until noon.",
+      "interaction": "Responda à cobertura parcial e proponha um próximo passo sem prometer algo ainda não confirmado.",
+      "mediation": "Resuma a situação para outro voluntário em inglês, distinguindo o que já foi combinado e o que falta.",
+      "checks": [
+        "Eu considerei a cobertura incompleta.",
+        "Eu distingui acordo de proposta."
+      ],
+      "tags": [
+        "trabalho",
+        "pedidos",
+        "planos"
+      ],
+      "turns": [
+        "Could we ask someone to cover the remaining hours rather than cancel the swap?",
+        "What should we tell the organiser before anyone confirms?"
+      ],
+      "transfer": {
+        "id": "b1-volunteer-02:transfer",
+        "domain": "consumo",
+        "text": "A train ticket can be changed before departure for a fee. Refunds are available only if the service is cancelled. Your appointment has moved to the next day; the train is still running.",
+        "question": "Qual opção é permitida pelo texto?",
+        "choices": [
+          "Reembolso garantido.",
+          "Troca gratuita.",
+          "Troca com taxa antes da partida."
+        ],
+        "answer": 2,
+        "explanation": "A mudança do compromisso permite solicitar troca com taxa, mas não garante reembolso.",
+        "prompt": "Explique em inglês a mudança ao atendimento e pergunte sobre a taxa sem afirmar um direito que o texto não oferece.",
+        "criteria": [
+          "Pedi troca antes da partida, admitindo a taxa.",
+          "Expliquei a mudança de compromisso sem prometer reembolso."
+        ],
+        "objectives": [
+          {
+            "id": "b1-volunteer-02:transfer:reception",
+            "skill": "reception",
+            "task": "Qual opção é permitida pelo texto?",
+            "criteria": [
+              "A mudança do compromisso permite solicitar troca com taxa, mas não garante reembolso."
+            ]
+          },
+          {
+            "id": "b1-volunteer-02:transfer:production",
+            "skill": "production",
+            "task": "Explique em inglês a mudança ao atendimento e pergunte sobre a taxa sem afirmar um direito que o texto não oferece.",
+            "criteria": [
+              "Pedi troca antes da partida, admitindo a taxa.",
+              "Expliquei a mudança de compromisso sem prometer reembolso."
+            ]
+          }
+        ]
+      },
+      "prerequisites": [
+        "b1-plans-01"
+      ],
+      "packIds": [
+        "4c56b3a7-9031-4760-a926-449d4673a94d"
+      ],
+      "objectives": [
+        {
+          "id": "b1-volunteer-02:reception",
+          "skill": "reception",
+          "task": "Qual condição permite a troca?",
+          "criteria": [
+            "Identifica a informação solicitada sem alterar seu sentido."
+          ]
+        },
+        {
+          "id": "b1-volunteer-02:production",
+          "skill": "production",
+          "task": "Peça a troca ao organizador, explique uma razão e ofereça uma forma de conseguir cobertura.",
+          "criteria": [
+            "Eu atendi ao pedido da tarefa.",
+            "Eu preservei as informações relevantes.",
+            "Minha resposta está compreensível para o destinatário."
+          ]
+        },
+        {
+          "id": "b1-volunteer-02:interaction",
+          "skill": "interaction",
+          "task": "Responda à cobertura parcial e proponha um próximo passo sem prometer algo ainda não confirmado.",
+          "criteria": [
+            "Eu considerei a cobertura incompleta."
+          ]
+        },
+        {
+          "id": "b1-volunteer-02:mediation",
+          "skill": "mediation",
+          "task": "Resuma a situação para outro voluntário em inglês, distinguindo o que já foi combinado e o que falta.",
+          "criteria": [
+            "Eu distingui acordo de proposta."
+          ]
+        }
+      ]
+    },
+    {
+      "level": "B1",
+      "lesson": {
+        "id": "b1-course-02",
+        "title": "Escolher uma oficina",
+        "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+        "text": "Two workshops fit your budget. The online class meets every Wednesday evening and includes recordings. The studio class meets on Saturday mornings and provides materials, but there are no recordings. You sometimes work late on Wednesdays.",
+        "question": "Qual vantagem atende a quem perde uma aula online?",
+        "choices": [
+          "Materiais no estúdio.",
+          "Gravações disponíveis.",
+          "Aulas todo dia."
+        ],
+        "answer": 1,
+        "explanation": "As gravações permitem rever a aula; não há promessa de aula diária.",
+        "prompt": "Recomende uma oficina a alguém com essa rotina. Dê duas razões e reconheça uma desvantagem.",
+        "example": "I would choose the online class because I can watch the recordings after work and avoid travelling. However, I would need to buy my own materials.",
+        "criteria": [
+          "Eu atendi ao pedido da tarefa.",
+          "Eu preservei as informações relevantes.",
+          "Minha resposta está compreensível para o destinatário."
+        ],
+        "shadowing": "I would choose the online class because I can watch the recordings after work and avoid travelling."
+      },
+      "turn": "I learn better with other people in the same room. Would that change your advice?",
+      "interaction": "Ajuste sua recomendação à preferência da pessoa.",
+      "mediation": "Explique as duas opções a um amigo em inglês sem transformar sua preferência em fato.",
+      "checks": [
+        "Eu respondi à preferência do interlocutor.",
+        "Eu separei características e recomendação."
+      ],
+      "tags": [
+        "educação",
+        "preferências",
+        "comparações"
+      ],
+      "turns": [
+        "I also need to miss two Saturdays. How should we weigh that?",
+        "Can you explain the trade-off without promising recordings from the studio?"
+      ],
+      "transfer": {
+        "id": "b1-course-02:transfer",
+        "domain": "vida comunitária",
+        "text": "A neighbourhood garden offers morning and evening volunteer slots. Tools are provided, but induction is compulsory before the first session. You are free only after work and have never attended induction.",
+        "question": "O que precisa acontecer antes da primeira sessão?",
+        "choices": [
+          "A orientação inicial.",
+          "Comprar ferramentas.",
+          "Ir de manhã."
+        ],
+        "answer": 0,
+        "explanation": "Induction is compulsory é o pré-requisito, mesmo com vaga à noite.",
+        "prompt": "Peça em inglês uma vaga à noite e combine a orientação; explique sua disponibilidade.",
+        "criteria": [
+          "Reconheci a orientação obrigatória e as ferramentas fornecidas.",
+          "Combinei a disponibilidade à noite com o pré-requisito."
+        ],
+        "objectives": [
+          {
+            "id": "b1-course-02:transfer:reception",
+            "skill": "reception",
+            "task": "O que precisa acontecer antes da primeira sessão?",
+            "criteria": [
+              "Induction is compulsory é o pré-requisito, mesmo com vaga à noite."
+            ]
+          },
+          {
+            "id": "b1-course-02:transfer:production",
+            "skill": "production",
+            "task": "Peça em inglês uma vaga à noite e combine a orientação; explique sua disponibilidade.",
+            "criteria": [
+              "Reconheci a orientação obrigatória e as ferramentas fornecidas.",
+              "Combinei a disponibilidade à noite com o pré-requisito."
+            ]
+          }
+        ]
+      },
+      "prerequisites": [
+        "b1-volunteer-02"
+      ],
+      "packIds": [
+        "89bda049-c870-4dcc-bf36-1cdf81f3f5e7"
+      ],
+      "objectives": [
+        {
+          "id": "b1-course-02:reception",
+          "skill": "reception",
+          "task": "Qual vantagem atende a quem perde uma aula online?",
+          "criteria": [
+            "Identifica a informação solicitada sem alterar seu sentido."
+          ]
+        },
+        {
+          "id": "b1-course-02:production",
+          "skill": "production",
+          "task": "Recomende uma oficina a alguém com essa rotina. Dê duas razões e reconheça uma desvantagem.",
+          "criteria": [
+            "Eu atendi ao pedido da tarefa.",
+            "Eu preservei as informações relevantes.",
+            "Minha resposta está compreensível para o destinatário."
+          ]
+        },
+        {
+          "id": "b1-course-02:interaction",
+          "skill": "interaction",
+          "task": "Ajuste sua recomendação à preferência da pessoa.",
+          "criteria": [
+            "Eu respondi à preferência do interlocutor."
+          ]
+        },
+        {
+          "id": "b1-course-02:mediation",
+          "skill": "mediation",
+          "task": "Explique as duas opções a um amigo em inglês sem transformar sua preferência em fato.",
+          "criteria": [
+            "Eu separei características e recomendação."
+          ]
+        }
+      ]
+    },
+    {
+      "level": "B2",
+      "lesson": {
+        "id": "b2-trial-01",
+        "title": "Recomendar com ressalvas",
+        "preparation": "Leia a proposta como alguém que precisa decidir. Que evidência ainda falta?",
+        "text": "A team is considering a four-day working week. Supporters argue that fewer interruptions could improve concentration and reduce staff turnover. However, the support desk must remain available five days a week. A small trial elsewhere reported higher satisfaction, but did not measure response times. One manager proposes a staggered schedule for three months, with service quality reviewed every fortnight.",
+        "question": "Qual ressalva impede tratar o outro teste como prova suficiente?",
+        "choices": [
+          "Não foram medidos os tempos de resposta.",
+          "Ninguém relatou maior satisfação.",
+          "O suporte só atende quatro dias."
+        ],
+        "answer": 0,
+        "explanation": "Satisfação e qualidade do serviço são medidas diferentes. O texto informa que os tempos de resposta não foram medidos.",
+        "prompt": "Recomende ou rejeite o teste. Apresente uma razão, responda à objeção sobre o suporte e proponha um critério de revisão.",
+        "example": "I would support a limited trial, provided that the desk remains staffed throughout the week. Greater satisfaction is promising, but it does not guarantee reliable service. We should track response times and reconsider the schedule if they deteriorate.",
+        "criteria": [
+          "Eu sustentei uma posição.",
+          "Eu respondi à objeção sobre o suporte.",
+          "Eu propus uma medida verificável."
+        ],
+        "shadowing": "Greater satisfaction is promising, but it does not guarantee reliable service."
+      },
+      "turn": "The support team worries that it will carry all the extra work. How would you address that?",
+      "interaction": "Responda em inglês a esta nova mensagem. Considere a necessidade ou objeção sem inventar informações.",
+      "mediation": "Explique em inglês os pontos essenciais da situação a alguém que não leu o texto. Preserve limites, condições e informações ainda ausentes.",
+      "checks": [
+        "Eu respondi à necessidade ou objeção apresentada.",
+        "Eu adaptei a explicação sem inventar informações."
+      ],
+      "tags": [
+        "retomada"
+      ],
+      "turns": [
+        "What evidence would tell us that the staggered schedule is fair?",
+        "How would you explain a decision to revise the trial rather than abandon it?"
+      ],
+      "transfer": {
+        "id": "b2-trial-01:transfer",
+        "domain": "consumo digital",
+        "text": "An online shop plans to make express delivery the default. A small test found fewer abandoned baskets but did not record delivery complaints. Customers must actively select the cheaper option.",
+        "question": "Qual conclusão é sustentada pelo teste?",
+        "choices": [
+          "Todos preferem entrega expressa.",
+          "Houve menos abandono no teste, sem dados sobre reclamações.",
+          "O custo não afeta ninguém."
+        ],
+        "answer": 1,
+        "explanation": "O teste mede abandono; não comprova preferência geral nem ausência de efeitos adversos.",
+        "prompt": "Escreva em inglês uma recomendação equilibrada sobre o padrão de entrega, incluindo transparência de preço e um critério de revisão.",
+        "criteria": [
+          "Separei redução observada de abandono de preferências não comprovadas.",
+          "Propus transparência de preço e um critério verificável para revisar o piloto."
+        ],
+        "objectives": [
+          {
+            "id": "b2-trial-01:transfer:reception",
+            "skill": "reception",
+            "task": "Qual conclusão é sustentada pelo teste?",
+            "criteria": [
+              "O teste mede abandono; não comprova preferência geral nem ausência de efeitos adversos."
+            ]
+          },
+          {
+            "id": "b2-trial-01:transfer:production",
+            "skill": "production",
+            "task": "Escreva em inglês uma recomendação equilibrada sobre o padrão de entrega, incluindo transparência de preço e um critério de revisão.",
+            "criteria": [
+              "Separei redução observada de abandono de preferências não comprovadas.",
+              "Propus transparência de preço e um critério verificável para revisar o piloto."
+            ]
+          }
+        ]
+      },
+      "prerequisites": [],
+      "packIds": [
+        "419b49ff-63f2-45c6-95e2-70038980a234"
+      ],
+      "objectives": [
+        {
+          "id": "b2-trial-01:reception",
+          "skill": "reception",
+          "task": "Qual ressalva impede tratar o outro teste como prova suficiente?",
+          "criteria": [
+            "Identifica a informação solicitada sem alterar seu sentido."
+          ]
+        },
+        {
+          "id": "b2-trial-01:production",
+          "skill": "production",
+          "task": "Recomende ou rejeite o teste. Apresente uma razão, responda à objeção sobre o suporte e proponha um critério de revisão.",
+          "criteria": [
+            "Eu sustentei uma posição.",
+            "Eu respondi à objeção sobre o suporte.",
+            "Eu propus uma medida verificável."
+          ]
+        },
+        {
+          "id": "b2-trial-01:interaction",
+          "skill": "interaction",
+          "task": "Responda em inglês a esta nova mensagem. Considere a necessidade ou objeção sem inventar informações.",
+          "criteria": [
+            "Eu respondi à necessidade ou objeção apresentada."
+          ]
+        },
+        {
+          "id": "b2-trial-01:mediation",
+          "skill": "mediation",
+          "task": "Explique em inglês os pontos essenciais da situação a alguém que não leu o texto. Preserve limites, condições e informações ainda ausentes.",
+          "criteria": [
+            "Eu adaptei a explicação sem inventar informações."
+          ]
+        }
+      ]
+    },
+    {
+      "level": "B2",
+      "lesson": {
+        "id": "b2-library-02",
+        "title": "Conciliar acesso e silêncio",
+        "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+        "text": "A library proposes opening its study room to community groups after six. Students worry about noise during exams. Group organisers say a full ban would exclude people who cannot meet earlier. A separate entrance is available, but sound insulation has not been tested.",
+        "question": "Qual informação ainda precisa ser verificada?",
+        "choices": [
+          "Se existem estudantes.",
+          "Se os grupos preferem o silêncio.",
+          "Se o isolamento evita ruído."
+        ],
+        "answer": 2,
+        "explanation": "A existência de entrada separada não demonstra isolamento acústico.",
+        "prompt": "Recomende um teste limitado, reconheça as duas necessidades e proponha uma medida de avaliação.",
+        "example": "A short trial could allow evening meetings while protecting study time. We should measure noise in the reading area and pause the trial during exams if the agreed limit is exceeded.",
+        "criteria": [
+          "Eu atendi ao pedido da tarefa.",
+          "Eu preservei as informações relevantes.",
+          "Minha resposta está compreensível para o destinatário."
+        ],
+        "shadowing": "A short trial could allow evening meetings while protecting study time."
+      },
+      "turn": "The groups cannot plan events if permission may disappear at any moment.",
+      "interaction": "Negocie um acordo com aviso e condições claras, sem apagar a preocupação dos estudantes.",
+      "mediation": "Prepare uma síntese neutra para o conselho da biblioteca em inglês.",
+      "checks": [
+        "Eu negociei previsibilidade e limite.",
+        "Eu representei as duas necessidades."
+      ],
+      "tags": [
+        "negociação",
+        "opiniões",
+        "reuniões"
+      ],
+      "turns": [
+        "Could fixed quiet dates during exams give both sides some certainty?",
+        "What would you put in a trial agreement before the insulation is tested?"
+      ],
+      "transfer": {
+        "id": "b2-library-02:transfer",
+        "domain": "trabalho e tecnologia",
+        "text": "A company proposes recording all internal meetings for absent staff. Some employees handle sensitive client information. Automatic transcripts frequently misidentify names, and no deletion period has been agreed.",
+        "question": "Qual risco permanece sem solução?",
+        "choices": [
+          "Ninguém falta às reuniões.",
+          "Todas as transcrições são corretas.",
+          "Retenção indefinida e erros de transcrição."
+        ],
+        "answer": 2,
+        "explanation": "Não há prazo de exclusão, e o texto registra erros nos nomes.",
+        "prompt": "Proponha em inglês um piloto que considere acesso, consentimento, retenção e correção; diferencie proposta de regra já acordada.",
+        "criteria": [
+          "Considerei acesso, consentimento, retenção e correção das transcrições.",
+          "Distingui minha proposta de condições ainda não acordadas."
+        ],
+        "objectives": [
+          {
+            "id": "b2-library-02:transfer:reception",
+            "skill": "reception",
+            "task": "Qual risco permanece sem solução?",
+            "criteria": [
+              "Não há prazo de exclusão, e o texto registra erros nos nomes."
+            ]
+          },
+          {
+            "id": "b2-library-02:transfer:production",
+            "skill": "production",
+            "task": "Proponha em inglês um piloto que considere acesso, consentimento, retenção e correção; diferencie proposta de regra já acordada.",
+            "criteria": [
+              "Considerei acesso, consentimento, retenção e correção das transcrições.",
+              "Distingui minha proposta de condições ainda não acordadas."
+            ]
+          }
+        ]
+      },
+      "prerequisites": [
+        "b2-trial-01"
+      ],
+      "packIds": [
+        "d4da1e74-6692-4f52-aa49-0c75f6237b50"
+      ],
+      "objectives": [
+        {
+          "id": "b2-library-02:reception",
+          "skill": "reception",
+          "task": "Qual informação ainda precisa ser verificada?",
+          "criteria": [
+            "Identifica a informação solicitada sem alterar seu sentido."
+          ]
+        },
+        {
+          "id": "b2-library-02:production",
+          "skill": "production",
+          "task": "Recomende um teste limitado, reconheça as duas necessidades e proponha uma medida de avaliação.",
+          "criteria": [
+            "Eu atendi ao pedido da tarefa.",
+            "Eu preservei as informações relevantes.",
+            "Minha resposta está compreensível para o destinatário."
+          ]
+        },
+        {
+          "id": "b2-library-02:interaction",
+          "skill": "interaction",
+          "task": "Negocie um acordo com aviso e condições claras, sem apagar a preocupação dos estudantes.",
+          "criteria": [
+            "Eu negociei previsibilidade e limite."
+          ]
+        },
+        {
+          "id": "b2-library-02:mediation",
+          "skill": "mediation",
+          "task": "Prepare uma síntese neutra para o conselho da biblioteca em inglês.",
+          "criteria": [
+            "Eu representei as duas necessidades."
+          ]
+        }
+      ]
+    },
+    {
+      "level": "B2",
+      "lesson": {
+        "id": "b2-survey-02",
+        "title": "Comparar evidências",
+        "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+        "text": "A café survey found that most respondents wanted reusable cups. Only customers who used the café app saw the survey. Staff reported that washing space was limited at busy times. The owner wants to replace all disposable cups next week.",
+        "question": "Qual limitação afeta a representatividade?",
+        "choices": [
+          "Só usuários do app responderam.",
+          "A pesquisa mencionou copos.",
+          "Os funcionários trabalham no café."
+        ],
+        "answer": 0,
+        "explanation": "Quem não usa o app ficou fora. Preferência declarada também não resolve a capacidade de lavagem.",
+        "prompt": "Escreva uma recomendação com uma ressalva metodológica e uma medida prática.",
+        "example": "I support reducing waste, but the survey may not represent all customers. A smaller trial would let staff test washing capacity before a full change.",
+        "criteria": [
+          "Eu atendi ao pedido da tarefa.",
+          "Eu preservei as informações relevantes.",
+          "Minha resposta está compreensível para o destinatário."
+        ],
+        "shadowing": "I support reducing waste, but the survey may not represent all customers."
+      },
+      "turn": "A trial sounds like another excuse to delay. What would make it a real commitment?",
+      "interaction": "Proponha prazo, critério e decisão após o teste.",
+      "mediation": "Explique em inglês a diferença entre apoio ao objetivo e evidência suficiente para o plano.",
+      "checks": [
+        "Eu ofereci compromisso verificável.",
+        "Eu preservei a limitação da amostra."
+      ],
+      "tags": [
+        "pesquisa",
+        "ambiente",
+        "argumentação"
+      ],
+      "turns": [
+        "Which customers should we hear from beyond app users?",
+        "Can you propose a decision date and a measure that includes staff workload?"
+      ],
+      "transfer": {
+        "id": "b2-survey-02:transfer",
+        "domain": "educação",
+        "text": "A college wants to replace tutorials with recorded lectures. Streaming data show that most students opened the videos, but do not show whether they watched them fully. Students with unstable internet were not included in the survey.",
+        "question": "O que os dados de acesso comprovam?",
+        "choices": [
+          "Abertura dos vídeos.",
+          "Aprendizagem de todos.",
+          "Ausência de barreiras."
+        ],
+        "answer": 0,
+        "explanation": "Abrir um vídeo não comprova completá-lo ou aprender; a amostra exclui um grupo relevante.",
+        "prompt": "Redija em inglês uma resposta que reconheça benefícios possíveis e proponha evidências e apoio antes de substituir as tutorias.",
+        "criteria": [
+          "Distingui abertura, visualização completa e aprendizagem.",
+          "Incluí quem tem internet instável e propus evidência antes da substituição."
+        ],
+        "objectives": [
+          {
+            "id": "b2-survey-02:transfer:reception",
+            "skill": "reception",
+            "task": "O que os dados de acesso comprovam?",
+            "criteria": [
+              "Abrir um vídeo não comprova completá-lo ou aprender; a amostra exclui um grupo relevante."
+            ]
+          },
+          {
+            "id": "b2-survey-02:transfer:production",
+            "skill": "production",
+            "task": "Redija em inglês uma resposta que reconheça benefícios possíveis e proponha evidências e apoio antes de substituir as tutorias.",
+            "criteria": [
+              "Distingui abertura, visualização completa e aprendizagem.",
+              "Incluí quem tem internet instável e propus evidência antes da substituição."
+            ]
+          }
+        ]
+      },
+      "prerequisites": [
+        "b2-library-02"
+      ],
+      "packIds": [
+        "169e0da0-f12a-4d78-b9c1-f861a7f6e0e5"
+      ],
+      "objectives": [
+        {
+          "id": "b2-survey-02:reception",
+          "skill": "reception",
+          "task": "Qual limitação afeta a representatividade?",
+          "criteria": [
+            "Identifica a informação solicitada sem alterar seu sentido."
+          ]
+        },
+        {
+          "id": "b2-survey-02:production",
+          "skill": "production",
+          "task": "Escreva uma recomendação com uma ressalva metodológica e uma medida prática.",
+          "criteria": [
+            "Eu atendi ao pedido da tarefa.",
+            "Eu preservei as informações relevantes.",
+            "Minha resposta está compreensível para o destinatário."
+          ]
+        },
+        {
+          "id": "b2-survey-02:interaction",
+          "skill": "interaction",
+          "task": "Proponha prazo, critério e decisão após o teste.",
+          "criteria": [
+            "Eu ofereci compromisso verificável."
+          ]
+        },
+        {
+          "id": "b2-survey-02:mediation",
+          "skill": "mediation",
+          "task": "Explique em inglês a diferença entre apoio ao objetivo e evidência suficiente para o plano.",
+          "criteria": [
+            "Eu preservei a limitação da amostra."
+          ]
+        }
+      ]
+    },
+    {
+      "level": "C1",
+      "lesson": {
+        "id": "c1-evidence-01",
+        "title": "Preservar os limites da evidência",
+        "preparation": "Um parecer pode soar positivo sem autorizar uma conclusão forte. Observe as ressalvas.",
+        "text": "The pilot appears to have widened access to evening classes, although the headline attendance figure conceals substantial variation between districts. Participants who completed the course reported greater confidence; those who withdrew were not surveyed. Extending the programme may therefore be justified as an access measure, but claims about its educational impact would be premature. A revised evaluation should distinguish participation from sustained learning and include the experiences of those who left.",
+        "question": "Qual conclusão preserva as ressalvas do parecer?",
+        "choices": [
+          "O programa comprovou aprendizagem para todos.",
+          "Há sinais de maior acesso, mas o efeito na aprendizagem ainda precisa de avaliação.",
+          "As desistências provam que o programa fracassou."
+        ],
+        "answer": 1,
+        "explanation": "O parecer distingue acesso, confiança relatada e aprendizagem. A ausência de quem desistiu limita o que se pode concluir.",
+        "prompt": "Explique o parecer em inglês a uma associação de moradores. Evite jargão, preserve duas limitações e sugira um próximo passo.",
+        "example": "More people seem to be reaching the classes, but attendance alone does not tell us what they learned. We also know little about why some people left. Continuing the programme could make sense if the next evaluation follows learning over time and listens to those who withdrew.",
+        "criteria": [
+          "Eu distingui participação de aprendizagem.",
+          "Eu preservei duas limitações sem exagerar a conclusão.",
+          "Eu adaptei a explicação ao público."
+        ],
+        "shadowing": "Attendance alone does not tell us what they learned."
+      },
+      "turn": "Some residents think higher attendance proves better learning. How would you respond?",
+      "interaction": "Responda em inglês a esta nova mensagem. Considere a necessidade ou objeção sem inventar informações.",
+      "mediation": "Explique em inglês os pontos essenciais da situação a alguém que não leu o texto. Preserve limites, condições e informações ainda ausentes.",
+      "checks": [
+        "Eu respondi à necessidade ou objeção apresentada.",
+        "Eu adaptei a explicação sem inventar informações."
+      ],
+      "tags": [
+        "retomada"
+      ],
+      "turns": [
+        "Would removing the headline claim make the pilot sound like a failure?",
+        "Can you offer wording that supports access while reserving judgement on learning?"
+      ],
+      "transfer": {
+        "id": "c1-evidence-01:transfer",
+        "domain": "trabalho e inclusão",
+        "text": "A recruitment pilot reduced average processing time. Applicants who abandoned the online form were excluded from the analysis. The report calls the process more accessible, although no accessibility testing was conducted.",
+        "question": "Qual afirmação extrapola a evidência?",
+        "choices": [
+          "O tempo médio caiu entre os casos analisados.",
+          "O processo ficou mais acessível.",
+          "Houve desistências excluídas."
+        ],
+        "answer": 1,
+        "explanation": "Eficiência nos casos concluídos não estabelece acessibilidade nem representa desistentes.",
+        "prompt": "Prepare em inglês uma nota ao conselho que separe eficiência, acesso e lacunas de avaliação, sem descartar o resultado observado.",
+        "criteria": [
+          "Distingui tempo de processamento de acessibilidade e incluí o viés das desistências.",
+          "Preservei o resultado observado sem aceitar a conclusão mais ampla."
+        ],
+        "objectives": [
+          {
+            "id": "c1-evidence-01:transfer:reception",
+            "skill": "reception",
+            "task": "Qual afirmação extrapola a evidência?",
+            "criteria": [
+              "Eficiência nos casos concluídos não estabelece acessibilidade nem representa desistentes."
+            ]
+          },
+          {
+            "id": "c1-evidence-01:transfer:production",
+            "skill": "production",
+            "task": "Prepare em inglês uma nota ao conselho que separe eficiência, acesso e lacunas de avaliação, sem descartar o resultado observado.",
+            "criteria": [
+              "Distingui tempo de processamento de acessibilidade e incluí o viés das desistências.",
+              "Preservei o resultado observado sem aceitar a conclusão mais ampla."
+            ]
+          }
+        ]
+      },
+      "prerequisites": [],
+      "packIds": [
+        "107fc0f5-4c84-4a2f-8e4c-32d5f21903bf"
+      ],
+      "objectives": [
+        {
+          "id": "c1-evidence-01:reception",
+          "skill": "reception",
+          "task": "Qual conclusão preserva as ressalvas do parecer?",
+          "criteria": [
+            "Identifica a informação solicitada sem alterar seu sentido."
+          ]
+        },
+        {
+          "id": "c1-evidence-01:production",
+          "skill": "production",
+          "task": "Explique o parecer em inglês a uma associação de moradores. Evite jargão, preserve duas limitações e sugira um próximo passo.",
+          "criteria": [
+            "Eu distingui participação de aprendizagem.",
+            "Eu preservei duas limitações sem exagerar a conclusão.",
+            "Eu adaptei a explicação ao público."
+          ]
+        },
+        {
+          "id": "c1-evidence-01:interaction",
+          "skill": "interaction",
+          "task": "Responda em inglês a esta nova mensagem. Considere a necessidade ou objeção sem inventar informações.",
+          "criteria": [
+            "Eu respondi à necessidade ou objeção apresentada."
+          ]
+        },
+        {
+          "id": "c1-evidence-01:mediation",
+          "skill": "mediation",
+          "task": "Explique em inglês os pontos essenciais da situação a alguém que não leu o texto. Preserve limites, condições e informações ainda ausentes.",
+          "criteria": [
+            "Eu adaptei a explicação sem inventar informações."
+          ]
+        }
+      ]
+    },
+    {
+      "level": "C1",
+      "lesson": {
+        "id": "c1-archive-02",
+        "title": "Explicar uma ressalva",
+        "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+        "text": "A city archive has digitised its most frequently requested documents. Officials describe the portal as representative of local history. Yet requests have mainly come from established researchers; records used by smaller community groups remain largely uncatalogued. The portal improves access to a selection, not necessarily to the breadth of the archive.",
+        "question": "Qual inferência excede a evidência?",
+        "choices": [
+          "A digitalização amplia algum acesso.",
+          "O portal representa toda a história local.",
+          "A seleção reflete pedidos anteriores."
+        ],
+        "answer": 1,
+        "explanation": "A seleção por procura anterior pode reproduzir lacunas. Acessibilidade parcial não equivale a representatividade.",
+        "prompt": "Redija um parecer que reconheça o ganho sem legitimar a conclusão excessiva.",
+        "example": "The portal is a valuable access tool, but its selection reflects prior demand rather than a demonstrated cross-section of local history. A community-led cataloguing phase would make the next expansion more defensible.",
+        "criteria": [
+          "Eu atendi ao pedido da tarefa.",
+          "Eu preservei as informações relevantes.",
+          "Minha resposta está compreensível para o destinatário."
+        ],
+        "shadowing": "The portal is a valuable access tool, but its selection reflects prior demand rather than a demonstrated cross-section of local history."
+      },
+      "turn": "Calling the portal unrepresentative may undermine support for future funding.",
+      "interaction": "Reformule a crítica para preservar precisão e viabilidade do diálogo.",
+      "mediation": "Explique a uma associação comunitária, em inglês acessível, por que seleção e representatividade são diferentes.",
+      "checks": [
+        "Eu reconheci a preocupação sem retirar a ressalva.",
+        "Eu expliquei a distinção sem jargão desnecessário."
+      ],
+      "tags": [
+        "análise",
+        "apresentações",
+        "comunidade"
+      ],
+      "turns": [
+        "How could we acknowledge the selection without dismissing the portal’s value?",
+        "Which communities should help shape the next cataloguing priorities?"
+      ],
+      "transfer": {
+        "id": "c1-archive-02:transfer",
+        "domain": "informação pública",
+        "text": "A transport dashboard reports improved punctuality after excluding cancelled services. Officials cite it as evidence of a more reliable network. Passengers whose journeys were cancelled experienced no service at all.",
+        "question": "Que limitação altera a interpretação?",
+        "choices": [
+          "A pontualidade nunca importa.",
+          "Todos os trajetos foram cancelados.",
+          "Os cancelamentos ficaram fora do indicador."
+        ],
+        "answer": 2,
+        "explanation": "Excluir cancelamentos pode melhorar o indicador sem demonstrar confiabilidade da rede como um todo.",
+        "prompt": "Reescreva em inglês a mensagem pública preservando o ganho medido e explicando por que falta uma medida de confiabilidade.",
+        "criteria": [
+          "Preservei o ganho de pontualidade entre serviços incluídos.",
+          "Expliquei por que excluir cancelamentos limita a afirmação sobre confiabilidade."
+        ],
+        "objectives": [
+          {
+            "id": "c1-archive-02:transfer:reception",
+            "skill": "reception",
+            "task": "Que limitação altera a interpretação?",
+            "criteria": [
+              "Excluir cancelamentos pode melhorar o indicador sem demonstrar confiabilidade da rede como um todo."
+            ]
+          },
+          {
+            "id": "c1-archive-02:transfer:production",
+            "skill": "production",
+            "task": "Reescreva em inglês a mensagem pública preservando o ganho medido e explicando por que falta uma medida de confiabilidade.",
+            "criteria": [
+              "Preservei o ganho de pontualidade entre serviços incluídos.",
+              "Expliquei por que excluir cancelamentos limita a afirmação sobre confiabilidade."
+            ]
+          }
+        ]
+      },
+      "prerequisites": [
+        "c1-evidence-01"
+      ],
+      "packIds": [
+        "b8eec019-b7fe-46ac-b879-618949cc25d8"
+      ],
+      "objectives": [
+        {
+          "id": "c1-archive-02:reception",
+          "skill": "reception",
+          "task": "Qual inferência excede a evidência?",
+          "criteria": [
+            "Identifica a informação solicitada sem alterar seu sentido."
+          ]
+        },
+        {
+          "id": "c1-archive-02:production",
+          "skill": "production",
+          "task": "Redija um parecer que reconheça o ganho sem legitimar a conclusão excessiva.",
+          "criteria": [
+            "Eu atendi ao pedido da tarefa.",
+            "Eu preservei as informações relevantes.",
+            "Minha resposta está compreensível para o destinatário."
+          ]
+        },
+        {
+          "id": "c1-archive-02:interaction",
+          "skill": "interaction",
+          "task": "Reformule a crítica para preservar precisão e viabilidade do diálogo.",
+          "criteria": [
+            "Eu reconheci a preocupação sem retirar a ressalva."
+          ]
+        },
+        {
+          "id": "c1-archive-02:mediation",
+          "skill": "mediation",
+          "task": "Explique a uma associação comunitária, em inglês acessível, por que seleção e representatividade são diferentes.",
+          "criteria": [
+            "Eu expliquei a distinção sem jargão desnecessário."
+          ]
+        }
+      ]
+    },
+    {
+      "level": "C1",
+      "lesson": {
+        "id": "c1-handover-02",
+        "title": "Preservar uma incerteza",
+        "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+        "text": "A project handover says delivery is on track, assuming a supplier confirms the replacement part this week. The summary omits that condition. The new manager interprets the headline as a firm commitment and tells the client that no delay is expected. The team has an alternative supplier, but has not verified compatibility.",
+        "question": "O que precisa ser corrigido na comunicação?",
+        "choices": [
+          "A promessa tratada como incondicional.",
+          "A existência de uma equipe.",
+          "A data de uma entrega já concluída."
+        ],
+        "answer": 0,
+        "explanation": "O prazo depende de confirmação; a alternativa também não está validada.",
+        "prompt": "Escreva uma atualização ao cliente que corrija a expectativa sem inventar certeza nem culpar pessoas.",
+        "example": "Our current schedule remains achievable, subject to confirmation of the replacement part. We are checking an alternative, but cannot yet treat it as a confirmed fallback. We will update you after those checks.",
+        "criteria": [
+          "Eu atendi ao pedido da tarefa.",
+          "Eu preservei as informações relevantes.",
+          "Minha resposta está compreensível para o destinatário."
+        ],
+        "shadowing": "Our current schedule remains achievable, subject to confirmation of the replacement part."
+      },
+      "turn": "The client needs a date today. Can we simply use the original one?",
+      "interaction": "Responda distinguindo estimativa, condição e compromisso de atualização.",
+      "mediation": "Faça um resumo em inglês para uma equipe não técnica, preservando as duas incertezas.",
+      "checks": [
+        "Eu mantive a condição ao responder à pressão.",
+        "Eu preservei confirmação e compatibilidade como pendências."
+      ],
+      "tags": [
+        "projetos",
+        "condições",
+        "comunicação"
+      ],
+      "turns": [
+        "What could we promise now without implying that compatibility is confirmed?",
+        "Please draft a short handover that separates commitments from assumptions."
+      ],
+      "transfer": {
+        "id": "c1-handover-02:transfer",
+        "domain": "pesquisa e comunicação",
+        "text": "A study reports an association between evening screen use and shorter sleep. It did not assign participants to different routines or control for shift work. A press release says screens caused the reduction.",
+        "question": "Qual formulação preserva o desenho do estudo?",
+        "choices": [
+          "Houve associação, sem causalidade demonstrada.",
+          "Telas causaram a redução.",
+          "Trabalho por turnos foi descartado."
+        ],
+        "answer": 0,
+        "explanation": "Um estudo observacional sem esses controles não demonstra a causa anunciada.",
+        "prompt": "Escreva em inglês uma correção para leitores não especialistas, preservando o achado e explicitando limites sem sugerir que nada foi aprendido.",
+        "criteria": [
+          "Mantive a associação encontrada sem convertê-la em causalidade.",
+          "Expliquei limites de desenho e turnos de trabalho em linguagem acessível."
+        ],
+        "objectives": [
+          {
+            "id": "c1-handover-02:transfer:reception",
+            "skill": "reception",
+            "task": "Qual formulação preserva o desenho do estudo?",
+            "criteria": [
+              "Um estudo observacional sem esses controles não demonstra a causa anunciada."
+            ]
+          },
+          {
+            "id": "c1-handover-02:transfer:production",
+            "skill": "production",
+            "task": "Escreva em inglês uma correção para leitores não especialistas, preservando o achado e explicitando limites sem sugerir que nada foi aprendido.",
+            "criteria": [
+              "Mantive a associação encontrada sem convertê-la em causalidade.",
+              "Expliquei limites de desenho e turnos de trabalho em linguagem acessível."
+            ]
+          }
+        ]
+      },
+      "prerequisites": [
+        "c1-archive-02"
+      ],
+      "packIds": [
+        "e7a7fffd-7dfb-4868-895f-72939e528b4a"
+      ],
+      "objectives": [
+        {
+          "id": "c1-handover-02:reception",
+          "skill": "reception",
+          "task": "O que precisa ser corrigido na comunicação?",
+          "criteria": [
+            "Identifica a informação solicitada sem alterar seu sentido."
+          ]
+        },
+        {
+          "id": "c1-handover-02:production",
+          "skill": "production",
+          "task": "Escreva uma atualização ao cliente que corrija a expectativa sem inventar certeza nem culpar pessoas.",
+          "criteria": [
+            "Eu atendi ao pedido da tarefa.",
+            "Eu preservei as informações relevantes.",
+            "Minha resposta está compreensível para o destinatário."
+          ]
+        },
+        {
+          "id": "c1-handover-02:interaction",
+          "skill": "interaction",
+          "task": "Responda distinguindo estimativa, condição e compromisso de atualização.",
+          "criteria": [
+            "Eu mantive a condição ao responder à pressão."
+          ]
+        },
+        {
+          "id": "c1-handover-02:mediation",
+          "skill": "mediation",
+          "task": "Faça um resumo em inglês para uma equipe não técnica, preservando as duas incertezas.",
+          "criteria": [
+            "Eu preservei confirmação e compatibilidade como pendências."
+          ]
+        }
+      ]
+    },
+    {
+      "level": "C2",
+      "lesson": {
+        "id": "c2-deliberation-01",
+        "title": "Distinguir consenso e consentimento",
+        "preparation": "Compare o que cada voz afirma e o que deixa em aberto. Não tome silêncio por concordância.",
+        "text": "The chair described the consultation as “a clear mandate to proceed”. The report itself was more circumspect: most respondents supported the aim, while several questioned whether the proposed safeguards could be enforced. An adviser argued that delaying action would itself distribute risks, chiefly to people absent from the consultation. A critic replied that urgency might justify a provisional measure, but could not retrospectively turn an uneven consultation into informed consent. Both accepted that doing nothing had costs; they disagreed about what that fact authorised.",
+        "question": "Qual é o desacordo central, apesar do ponto de acordo?",
+        "choices": [
+          "Se a inação tem algum custo.",
+          "Se todos rejeitam o objetivo.",
+          "O que os custos da inação justificam e se a consulta autoriza a medida."
+        ],
+        "answer": 2,
+        "explanation": "As duas vozes reconhecem custos da inação. Divergem sobre a autorização que isso oferece e sobre a legitimidade de interpretar apoio ao objetivo como consentimento à medida.",
+        "prompt": "Escreva uma síntese para o conselho: represente as duas posições, delimite o acordo e proponha uma decisão provisória sem chamar silêncio ou apoio parcial de consentimento.",
+        "example": "There is agreement that inaction is consequential, but no shared inference about the authority to proceed. A narrowly bounded interim measure might address urgent risks without presenting the consultation as a mandate it did not establish. Any decision should specify its expiry, enforceable safeguards and how absent voices will influence reconsideration.",
+        "criteria": [
+          "Eu diferenciei custo da inação, autorização e consentimento.",
+          "Eu representei as posições sem criar falso consenso.",
+          "Eu delimitei condições e incertezas da decisão."
+        ],
+        "shadowing": "They disagreed about what that fact authorised."
+      },
+      "turn": "Could we describe the provisional measure as consensus to reassure the public?",
+      "interaction": "Responda em inglês a esta nova mensagem. Considere a necessidade ou objeção sem inventar informações.",
+      "mediation": "Explique em inglês os pontos essenciais da situação a alguém que não leu o texto. Preserve limites, condições e informações ainda ausentes.",
+      "checks": [
+        "Eu respondi à necessidade ou objeção apresentada.",
+        "Eu adaptei a explicação sem inventar informações."
+      ],
+      "tags": [
+        "retomada"
+      ],
+      "turns": [
+        "How can we acknowledge urgency without implying that the consultation settled the safeguards?",
+        "Can you draft a provisional recommendation and state whose objections remain unresolved?"
+      ],
+      "transfer": {
+        "id": "c2-deliberation-01:transfer",
+        "domain": "memória e representação",
+        "text": "A museum says it has returned a community’s voice by inviting two advisers to approve labels. One adviser regards this as useful participation; the other argues that approval within a fixed framework leaves the institution’s authority intact. Both welcome access to the collection.",
+        "question": "Em que os assessores concordam?",
+        "choices": [
+          "Que a autoridade foi transferida.",
+          "Que o acesso à coleção é bem-vindo.",
+          "Que os rótulos resolvem a representação."
+        ],
+        "answer": 1,
+        "explanation": "O acordo sobre acesso não implica acordo sobre autoridade ou representação.",
+        "prompt": "Produza em inglês uma síntese pública que preserve a concessão comum e a divergência sobre autoridade, sem fabricar uma posição coletiva.",
+        "criteria": [
+          "Preservei o acordo sobre acesso sem atribuir concordância sobre autoridade.",
+          "Representei as duas posições e a concessão compartilhada sem fabricar uma voz coletiva."
+        ],
+        "objectives": [
+          {
+            "id": "c2-deliberation-01:transfer:reception",
+            "skill": "reception",
+            "task": "Em que os assessores concordam?",
+            "criteria": [
+              "O acordo sobre acesso não implica acordo sobre autoridade ou representação."
+            ]
+          },
+          {
+            "id": "c2-deliberation-01:transfer:production",
+            "skill": "production",
+            "task": "Produza em inglês uma síntese pública que preserve a concessão comum e a divergência sobre autoridade, sem fabricar uma posição coletiva.",
+            "criteria": [
+              "Preservei o acordo sobre acesso sem atribuir concordância sobre autoridade.",
+              "Representei as duas posições e a concessão compartilhada sem fabricar uma voz coletiva."
+            ]
+          }
+        ]
+      },
+      "prerequisites": [],
+      "packIds": [
+        "78fa7340-6962-4416-b4c4-a564fa77dfac"
+      ],
+      "objectives": [
+        {
+          "id": "c2-deliberation-01:reception",
+          "skill": "reception",
+          "task": "Qual é o desacordo central, apesar do ponto de acordo?",
+          "criteria": [
+            "Identifica a informação solicitada sem alterar seu sentido."
+          ]
+        },
+        {
+          "id": "c2-deliberation-01:production",
+          "skill": "production",
+          "task": "Escreva uma síntese para o conselho: represente as duas posições, delimite o acordo e proponha uma decisão provisória sem chamar silêncio ou apoio parcial de consentimento.",
+          "criteria": [
+            "Eu diferenciei custo da inação, autorização e consentimento.",
+            "Eu representei as posições sem criar falso consenso.",
+            "Eu delimitei condições e incertezas da decisão."
+          ]
+        },
+        {
+          "id": "c2-deliberation-01:interaction",
+          "skill": "interaction",
+          "task": "Responda em inglês a esta nova mensagem. Considere a necessidade ou objeção sem inventar informações.",
+          "criteria": [
+            "Eu respondi à necessidade ou objeção apresentada."
+          ]
+        },
+        {
+          "id": "c2-deliberation-01:mediation",
+          "skill": "mediation",
+          "task": "Explique em inglês os pontos essenciais da situação a alguém que não leu o texto. Preserve limites, condições e informações ainda ausentes.",
+          "criteria": [
+            "Eu adaptei a explicação sem inventar informações."
+          ]
+        }
+      ]
+    },
+    {
+      "level": "C2",
+      "lesson": {
+        "id": "c2-award-02",
+        "title": "Interpretar uma concessão",
+        "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+        "text": "The panel called the proposal audacious, though not always in the ways its authors intended. One reviewer praised its refusal of easy answers; another wondered whether unresolved contradictions were being recast as intellectual courage. Both welcomed the questions it raised, but only the first treated that achievement as sufficient grounds for the award.",
+        "question": "O que a convergência entre avaliadores não estabelece?",
+        "choices": [
+          "Que a proposta levantou questões.",
+          "Que há divergência de julgamento.",
+          "Que ambos recomendam o prêmio."
+        ],
+        "answer": 2,
+        "explanation": "Acolher as perguntas não equivale a julgar a obra merecedora do prêmio. A concessão inicial contém distância crítica.",
+        "prompt": "Escreva um parecer que interprete o tom e explicite a diferença entre mérito e suficiência para o prêmio.",
+        "example": "The panel recognises the proposal’s capacity to unsettle familiar assumptions, but that shared judgement does not settle whether its unresolved contradictions are productive. The recommendation turns on the weight assigned to that distinction.",
+        "criteria": [
+          "Eu atendi ao pedido da tarefa.",
+          "Eu preservei as informações relevantes.",
+          "Minha resposta está compreensível para o destinatário."
+        ],
+        "shadowing": "The panel recognises the proposal’s capacity to unsettle familiar assumptions, but that shared judgement does not settle whether its unresolved contradictions are productive."
+      },
+      "turn": "Your summary sounds as if the second reviewer dislikes difficult work. Is that fair?",
+      "interaction": "Repare a interpretação sem apagar a crítica nem fabricar equivalência entre as posições.",
+      "mediation": "Prepare uma síntese em inglês para o público, sem caricaturar os avaliadores ou eliminar a ambiguidade relevante.",
+      "checks": [
+        "Eu corrigi a atribuição indevida de intenção.",
+        "Eu preservei a divergência de critérios."
+      ],
+      "tags": [
+        "nuances",
+        "crítica",
+        "debates"
+      ],
+      "turns": [
+        "Could you preserve both the praise and the disagreement about the award threshold?",
+        "How would your wording change for the authors rather than the panel?"
+      ],
+      "transfer": {
+        "id": "c2-award-02:transfer",
+        "domain": "governança profissional",
+        "text": "A professional body calls its guidance voluntary, while requiring members to explain departures during renewal. Defenders see accountable discretion; critics see an obligation whose sanctions are merely displaced. Both reject a rigid checklist.",
+        "question": "Qual é o desacordo central?",
+        "choices": [
+          "Se checklists rígidos são desejáveis.",
+          "Se renovação existe.",
+          "Se a discricionariedade continua efetivamente voluntária."
+        ],
+        "answer": 2,
+        "explanation": "A rejeição comum ao checklist não resolve o efeito das consequências sobre a voluntariedade.",
+        "prompt": "Redija em inglês uma análise para membros que distinga a classificação formal dos efeitos práticos e represente ambas as posições com precisão.",
+        "criteria": [
+          "Distingui voluntariedade formal de consequências na renovação.",
+          "Preservei a rejeição comum ao checklist e a divergência sobre discricionariedade."
+        ],
+        "objectives": [
+          {
+            "id": "c2-award-02:transfer:reception",
+            "skill": "reception",
+            "task": "Qual é o desacordo central?",
+            "criteria": [
+              "A rejeição comum ao checklist não resolve o efeito das consequências sobre a voluntariedade."
+            ]
+          },
+          {
+            "id": "c2-award-02:transfer:production",
+            "skill": "production",
+            "task": "Redija em inglês uma análise para membros que distinga a classificação formal dos efeitos práticos e represente ambas as posições com precisão.",
+            "criteria": [
+              "Distingui voluntariedade formal de consequências na renovação.",
+              "Preservei a rejeição comum ao checklist e a divergência sobre discricionariedade."
+            ]
+          }
+        ]
+      },
+      "prerequisites": [
+        "c2-deliberation-01"
+      ],
+      "packIds": [
+        "d5b52a35-638b-41ae-9166-cf6446380295"
+      ],
+      "objectives": [
+        {
+          "id": "c2-award-02:reception",
+          "skill": "reception",
+          "task": "O que a convergência entre avaliadores não estabelece?",
+          "criteria": [
+            "Identifica a informação solicitada sem alterar seu sentido."
+          ]
+        },
+        {
+          "id": "c2-award-02:production",
+          "skill": "production",
+          "task": "Escreva um parecer que interprete o tom e explicite a diferença entre mérito e suficiência para o prêmio.",
+          "criteria": [
+            "Eu atendi ao pedido da tarefa.",
+            "Eu preservei as informações relevantes.",
+            "Minha resposta está compreensível para o destinatário."
+          ]
+        },
+        {
+          "id": "c2-award-02:interaction",
+          "skill": "interaction",
+          "task": "Repare a interpretação sem apagar a crítica nem fabricar equivalência entre as posições.",
+          "criteria": [
+            "Eu corrigi a atribuição indevida de intenção."
+          ]
+        },
+        {
+          "id": "c2-award-02:mediation",
+          "skill": "mediation",
+          "task": "Prepare uma síntese em inglês para o público, sem caricaturar os avaliadores ou eliminar a ambiguidade relevante.",
+          "criteria": [
+            "Eu preservei a divergência de critérios."
+          ]
+        }
+      ]
+    },
+    {
+      "level": "C2",
+      "lesson": {
+        "id": "c2-access-02",
+        "title": "Delimitar um acordo",
+        "preparation": "Leia a situação e separe o que foi dito do que ainda precisa ser combinado.",
+        "text": "A committee agrees that a new access scheme should be reversible. For some members, reversibility means restoring the previous rules; for others, it requires repairing losses incurred while the scheme operates. The chair treats the shared word as a settled safeguard. A community representative asks whether a safeguard whose meaning remains disputed can bear the justificatory weight placed on it.",
+        "question": "Qual problema o uso compartilhado da palavra esconde?",
+        "choices": [
+          "Todos rejeitam salvaguardas.",
+          "Há concepções diferentes de reversibilidade.",
+          "As regras anteriores foram esquecidas."
+        ],
+        "answer": 1,
+        "explanation": "Acordo sobre uma palavra não garante acordo sobre seu alcance nem sobre reparação.",
+        "prompt": "Redija uma nota que distinga as duas concepções e proponha uma decisão limitada sem fingir consenso.",
+        "example": "Agreement on reversibility is provisional while its scope remains unsettled. Restoring a rule and repairing losses are distinct commitments. Any interim scheme should specify which obligation is enforceable and which question remains open.",
+        "criteria": [
+          "Eu atendi ao pedido da tarefa.",
+          "Eu preservei as informações relevantes.",
+          "Minha resposta está compreensível para o destinatário."
+        ],
+        "shadowing": "Agreement on reversibility is provisional while its scope remains unsettled."
+      },
+      "turn": "Could we leave the definition to the implementation team and approve the scheme now?",
+      "interaction": "Responda distinguindo detalhe operacional de desacordo que altera a justificativa da decisão.",
+      "mediation": "Explique a divergência em inglês a dois públicos com interesses distintos, sem reduzir um deles a resistência irracional.",
+      "checks": [
+        "Eu mostrei por que a definição muda a decisão.",
+        "Eu preservei os interesses e o desacordo sem falso consenso."
+      ],
+      "tags": [
+        "governança",
+        "mediação",
+        "precisão"
+      ],
+      "turns": [
+        "Which losses could remain even if the old rules were restored?",
+        "Can you formulate a decision that makes the unresolved definition visible?"
+      ],
+      "transfer": {
+        "id": "c2-access-02:transfer",
+        "domain": "ambiente e decisão coletiva",
+        "text": "A city promises a carbon-neutral festival through offsets. Organisers regard compensation as equivalent to prevention; critics accept that offsets may fund useful projects but reject that equivalence. Neither side disputes the value of measuring emissions.",
+        "question": "Que acordo não resolve a divergência?",
+        "choices": [
+          "Medir emissões é útil.",
+          "Compensar equivale a prevenir.",
+          "Todo projeto é inútil."
+        ],
+        "answer": 0,
+        "explanation": "O acordo sobre mensuração não estabelece equivalência entre compensação e prevenção.",
+        "prompt": "Escreva em inglês uma proposta que identifique o acordo real, a premissa disputada e decisões possíveis sem apresentar compensação como consenso.",
+        "criteria": [
+          "Distingui acordo sobre mensuração da equivalência contestada entre prevenir e compensar.",
+          "Formulei opções de decisão sem apagar a premissa em disputa."
+        ],
+        "objectives": [
+          {
+            "id": "c2-access-02:transfer:reception",
+            "skill": "reception",
+            "task": "Que acordo não resolve a divergência?",
+            "criteria": [
+              "O acordo sobre mensuração não estabelece equivalência entre compensação e prevenção."
+            ]
+          },
+          {
+            "id": "c2-access-02:transfer:production",
+            "skill": "production",
+            "task": "Escreva em inglês uma proposta que identifique o acordo real, a premissa disputada e decisões possíveis sem apresentar compensação como consenso.",
+            "criteria": [
+              "Distingui acordo sobre mensuração da equivalência contestada entre prevenir e compensar.",
+              "Formulei opções de decisão sem apagar a premissa em disputa."
+            ]
+          }
+        ]
+      },
+      "prerequisites": [
+        "c2-award-02"
+      ],
+      "packIds": [
+        "8cb19fdc-39f9-4265-afa6-d72bcab721b8"
+      ],
+      "objectives": [
+        {
+          "id": "c2-access-02:reception",
+          "skill": "reception",
+          "task": "Qual problema o uso compartilhado da palavra esconde?",
+          "criteria": [
+            "Identifica a informação solicitada sem alterar seu sentido."
+          ]
+        },
+        {
+          "id": "c2-access-02:production",
+          "skill": "production",
+          "task": "Redija uma nota que distinga as duas concepções e proponha uma decisão limitada sem fingir consenso.",
+          "criteria": [
+            "Eu atendi ao pedido da tarefa.",
+            "Eu preservei as informações relevantes.",
+            "Minha resposta está compreensível para o destinatário."
+          ]
+        },
+        {
+          "id": "c2-access-02:interaction",
+          "skill": "interaction",
+          "task": "Responda distinguindo detalhe operacional de desacordo que altera a justificativa da decisão.",
+          "criteria": [
+            "Eu mostrei por que a definição muda a decisão."
+          ]
+        },
+        {
+          "id": "c2-access-02:mediation",
+          "skill": "mediation",
+          "task": "Explique a divergência em inglês a dois públicos com interesses distintos, sem reduzir um deles a resistência irracional.",
+          "criteria": [
+            "Eu preservei os interesses e o desacordo sem falso consenso."
+          ]
+        }
+      ]
+    }
+  ]
+}

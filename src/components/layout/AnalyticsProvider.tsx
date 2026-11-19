@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { identifyUser, initAnalytics, resetAnalytics } from '@/lib/analytics'
+import { identifyUser, initAnalytics, isAnalyticsEnabled, resetAnalytics } from '@/lib/analytics'
 
 /**
  * Boots analytics and keeps the identified user in sync with the Supabase session.
@@ -12,24 +11,48 @@ import { identifyUser, initAnalytics, resetAnalytics } from '@/lib/analytics'
  */
 export default function AnalyticsProvider() {
   useEffect(() => {
+    if (!isAnalyticsEnabled()) return
     initAnalytics()
 
-    const supabase = createClient()
+    let disposed = false
+    let unsubscribe: (() => void) | undefined
+    let authRevision = 0
+    let identifiedUser: string | undefined
 
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) identifyUser(data.user.id)
+    const identify = (id: string) => {
+      if (identifiedUser === id) return
+      identifiedUser = id
+      identifyUser(id)
+    }
+
+    void import('@/lib/supabase/client').then(({ createClient }) => {
+      if (disposed) return
+      const supabase = createClient()
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_OUT') {
+          authRevision++
+          identifiedUser = undefined
+          resetAnalytics()
+        } else if (session?.user) {
+          authRevision++
+          identify(session.user.id)
+        }
+      })
+      unsubscribe = () => subscription.unsubscribe()
+
+      const revision = authRevision
+      return supabase.auth.getUser().then(({ data }) => {
+        if (!disposed && revision === authRevision && data.user) identify(data.user.id)
+      })
+    }).catch(() => {
+      // Analytics must not block the application if the optional client cannot load.
     })
 
-    const { data: subscription } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
-        // Otherwise the next person on a shared device inherits the previous distinct_id.
-        resetAnalytics()
-        return
-      }
-      if (session?.user) identifyUser(session.user.id)
-    })
-
-    return () => subscription.subscription.unsubscribe()
+    return () => {
+      disposed = true
+      unsubscribe?.()
+    }
   }, [])
 
   return null

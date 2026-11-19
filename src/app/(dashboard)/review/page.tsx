@@ -1,3 +1,4 @@
+import { parseReviewCardIds } from '@/features/review/lib/reviewCardIds'
 import { after } from 'next/server'
 import { ensureDailyPlanForUser } from '@/features/study/lib/ensureDailyPlan'
 import { redirect } from 'next/navigation'
@@ -73,17 +74,6 @@ function buildInitialStats(cards: DueCard[], sessionLimit: number) {
   }
 }
 
-function parseReviewCardIds(value: string | undefined) {
-  if (!value) return []
-
-  return [...new Set(
-    value
-      .split(',')
-      .map((cardId) => cardId.trim())
-      .filter((cardId) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(cardId))
-  )].slice(0, 50)
-}
-
 export default async function ReviewPage({
   searchParams,
 }: {
@@ -143,6 +133,7 @@ export default async function ReviewPage({
   const Client = params?.mode === 'guided' ? GuidedReviewClient : ReviewClient
   return (
     <Client
+      userId={user.id}
       initialDueCards={initialDueCards}
       initialStats={buildInitialStats(initialDueCards, queue.sessionLimit || 0)}
       packCardsByPackId={packCardsByPackId}

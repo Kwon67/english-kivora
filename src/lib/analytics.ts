@@ -1,6 +1,6 @@
 'use client'
 
-import posthog from 'posthog-js'
+import { resolveAnalyticsEndpoint } from './analyticsEndpoint'
 
 /**
  * Product analytics, deliberately small.
@@ -33,45 +33,66 @@ export type AnalyticsEvent = (typeof ANALYTICS_EVENT)[keyof typeof ANALYTICS_EVE
 /** Only scalars, so nothing a learner typed can leak into a property by accident. */
 export type AnalyticsProps = Record<string, string | number | boolean | null | undefined>
 
-let started = false
+type AnalyticsClient = typeof import('posthog-js').default
+type Operation = (client: AnalyticsClient) => void
+
+const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
+const endpoint = resolveAnalyticsEndpoint(process.env.NEXT_PUBLIC_POSTHOG_HOST)
+const pending: Operation[] = []
+let client: AnalyticsClient | undefined
+let loading: Promise<void> | undefined
 
 export function isAnalyticsEnabled() {
-  return Boolean(process.env.NEXT_PUBLIC_POSTHOG_KEY)
+  return Boolean(key && endpoint)
 }
 
 export function initAnalytics() {
-  if (started || typeof window === 'undefined') return
-  const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
-  if (!key) return // No key configured: every call below becomes a no-op.
+  if (!key || !endpoint || client || loading || typeof window === 'undefined') return
 
-  posthog.init(key, {
-    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
-    capture_pageview: true,
-    capture_pageleave: true,
-    // Off on purpose: autocapture records clicks and form interactions indiscriminately, which
-    // is how a learner's typed answers end up on a third-party server.
-    autocapture: false,
-    disable_session_recording: true,
-    mask_all_text: false,
-    mask_all_element_attributes: false,
-    persistence: 'localStorage+cookie',
+  loading = import('posthog-js').then(({ default: posthog }) => {
+    posthog.init(key, {
+      api_host: endpoint.apiHost,
+      capture_pageview: true,
+      capture_pageleave: true,
+      autocapture: false,
+      disable_session_recording: true,
+      mask_all_text: false,
+      mask_all_element_attributes: false,
+      persistence: 'localStorage+cookie',
+    })
+
+    client = posthog
+    for (const operation of pending.splice(0)) operation(posthog)
+  }).catch(() => {
+    // Retain pending operations so a later event can retry a failed chunk request.
+  }).finally(() => {
+    loading = undefined
   })
+}
 
-  started = true
+function dispatch(operation: Operation) {
+  if (!isAnalyticsEnabled() || typeof window === 'undefined') return
+
+  if (client) {
+    operation(client)
+    return
+  }
+
+  // Bound the queue if the browser stays offline for an extended period.
+  if (pending.length === 100) pending.shift()
+  pending.push(operation)
+  initAnalytics()
 }
 
 export function trackEvent(event: AnalyticsEvent, props?: AnalyticsProps) {
-  if (!started) return
-  posthog.capture(event, props)
+  dispatch(posthog => { posthog.capture(event, props) })
 }
 
 /** Ties events to a user by id only. Never pass email, username or any free text. */
 export function identifyUser(userId: string, props?: AnalyticsProps) {
-  if (!started) return
-  posthog.identify(userId, props)
+  dispatch(posthog => { posthog.identify(userId, props) })
 }
 
 export function resetAnalytics() {
-  if (!started) return
-  posthog.reset()
+  dispatch(posthog => { posthog.reset() })
 }

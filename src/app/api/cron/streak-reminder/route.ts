@@ -122,7 +122,7 @@ export async function GET(request: Request) {
           continue
         }
 
-        console.error('Erro ao enviar lembrete de streak', { userId: row.user_id, endpoint: row.endpoint, sendError })
+        console.error('Erro ao enviar lembrete de streak', { subscriptionId: row.id, statusCode })
       }
     }
   }
