@@ -193,6 +193,9 @@
 .page :is(button,summary) { cursor:pointer; }
 .page section[id], .demoWrap[id] { scroll-margin-top:96px; }
 .page h1,.page h2,.page h3 { font-family:inherit; font-weight:550; }
+.page main :is(h1,h2) { position:relative; }
+.page [data-title-ink] { display:block; }
+.titleRevealLayer { position:absolute; inset:0; pointer-events:none; }
 .page h2 { font-size:clamp(48px,5.8vw,90px); line-height:.99; letter-spacing:-.075em; text-wrap:balance; }
 .page a { color:inherit; text-decoration:none; }
 .page p { text-wrap:pretty; }
@@ -321,7 +324,7 @@
   padding:64px max(var(--gutter),calc((100vw - 1344px)/2)); background:var(--ink); color:var(--paper); }
 .blitzBand > div:first-child { grid-column:1 / 7; }
 .blitzBand h2 { color:var(--paper); margin-top:24px; }
-.blitzBand h2 span { color:var(--yellow); }
+.blitzBand .blitzDot { color:var(--yellow); }
 .blitzMark { position:absolute; top:22%; left:44%; width:clamp(70px,8vw,130px); transform:rotate(8deg); }
 .blitzMark span { display:none; }
 .blitzCopy { grid-column:1 / 7; max-width:42ch; grid-row:2; }

@@ -84,17 +84,30 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
         loops.set(element, { animation: animation.pause(), visible: false }); observer.observe(element)
       }
       document.addEventListener('visibilitychange', sync)
+      const restoreTitles = new Set<() => void>()
       const revealTitle = (title: HTMLElement) => {
-        // Splitting balanced text changes its line boxes. Reserve the original
-        // height so an anchor below the heading stays put throughout the reveal.
-        gsap.set(title, { minHeight: getComputedStyle(title).height })
-        SplitText.create(title, {
-          type: 'lines', mask: 'lines', tag: 'span', autoSplit: true,
+        const ink = title.querySelector<HTMLElement>('[data-title-ink]')
+        if (!ink) return
+        // Keep the real heading in flow, including across font loads and resizes.
+        // Only the temporary visual copy is split into animated lines.
+        const layer = ink.cloneNode(true) as HTMLElement
+        layer.className = styles.titleRevealLayer
+        layer.setAttribute('aria-hidden', 'true')
+        title.append(layer)
+        ink.style.opacity = '0'
+        const restore = () => {
+          ink.style.removeProperty('opacity')
+          layer.remove()
+          restoreTitles.delete(restore)
+        }
+        restoreTitles.add(restore)
+        SplitText.create(layer, {
+          type: 'lines', mask: 'lines', tag: 'span', aria: 'none', autoSplit: true,
           onSplit(split) {
             return gsap.from(split.lines, {
               yPercent: 104, rotation: 1.5, duration: duration.title, stagger: .08, ease: ease.title,
-              scrollTrigger: { trigger: title, start: 'top 97%', once: true }, clearProps: 'transform',
-              onComplete: () => { split.revert(); title.style.removeProperty('min-height') },
+              scrollTrigger: { trigger: title, start: 'top 97%', once: true },
+              onComplete: () => { split.revert(); restore() },
             })
           },
         })
@@ -151,10 +164,10 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
         ScrollTrigger.addEventListener('scrollEnd', settle)
         return () => {
           ScrollTrigger.removeEventListener('scrollEnd', settle)
-          titles.disconnect(); observer.disconnect(); document.removeEventListener('visibilitychange', sync)
+          restoreTitles.forEach(restore => restore()); titles.disconnect(); observer.disconnect(); document.removeEventListener('visibilitychange', sync)
         }
       }
-      return () => { titles.disconnect(); observer.disconnect(); document.removeEventListener('visibilitychange', sync) }
+      return () => { restoreTitles.forEach(restore => restore()); titles.disconnect(); observer.disconnect(); document.removeEventListener('visibilitychange', sync) }
     })
     return () => { media.revert(); document.documentElement.classList.remove('kivora-landing-scroll') }
   }, { scope: root })
