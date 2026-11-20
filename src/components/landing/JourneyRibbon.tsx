@@ -144,7 +144,12 @@ export default function JourneyRibbon() {
     const journey = root.current?.parentElement
     if (!journey) return
     const media = gsap.matchMedia()
-    media.add({ mobile: '(max-width: 767px)', desktop: '(min-width: 768px)', reduce: '(prefers-reduced-motion: reduce)' }, context => {
+    media.add({
+      mobile: '(max-width: 767px)',
+      desktop: '(min-width: 768px)',
+      touch: '(pointer: coarse)',
+      reduce: '(prefers-reduced-motion: reduce)',
+    }, context => {
       const mobile = Boolean(context.conditions?.mobile)
       const reduced = Boolean(context.conditions?.reduce)
       const svg = root.current?.querySelector<SVGSVGElement>(mobile ? '[data-ribbon-mobile]' : '[data-ribbon-desktop]')
@@ -153,7 +158,7 @@ export default function JourneyRibbon() {
       const maskContent = svg?.querySelector<SVGGElement>('[data-mask-content]')
       if (!svg || !ink || !maskBase || !maskContent) return
       const sections = Array.from(journey.querySelectorAll<HTMLElement>('main > section, footer'))
-      const progress = { value: 0 }
+      const playhead = { value: 0 }
       let height = 0, initialSpan = 0, length = 0, frame = 0
       let resizeTimer: ReturnType<typeof setTimeout> | undefined
       let clipRoot: SVGGElement | undefined
@@ -184,7 +189,7 @@ export default function JourneyRibbon() {
 
       const draw = () => {
         if (reduced) return
-        const virtualScroll = oldStart + progress.value * (fullEnd - oldStart)
+        const virtualScroll = oldStart + playhead.value * (fullEnd - oldStart)
         const spatial = lengthAtY(lookup, virtualScroll + focusOffset - journeyTop)
         // Blend into the hidden tail as the footer enters the viewport.
         const footer = Math.min(1, Math.max(0, (virtualScroll - footerStart) / Math.max(1, fullEnd - footerStart)))
@@ -347,15 +352,27 @@ export default function JourneyRibbon() {
         return true
       }
       measure()
-      const syncScroll = () => {
+      const syncAfterRefresh = (trigger: ScrollTrigger) => {
         updateScrollBounds()
-        progress.value = Math.min(1, Math.max(0, (window.scrollY - oldStart) / Math.max(1, fullEnd - oldStart)))
+        // Align the tween immediately to the restored position after layout changes.
+        const position = (window.scrollY - oldStart) / Math.max(1, fullEnd - oldStart)
+        trigger.animation?.progress(gsap.utils.clamp(0, 1, position), true)
         draw()
       }
-      const tween = reduced ? null : gsap.fromTo(progress, { value: 0 }, { value: 1, immediateRender: false, ease: 'none', onUpdate: draw, scrollTrigger: { trigger: journey, start: 'top 80%', end: 'bottom bottom', scrub: true, invalidateOnRefresh: true, onRefresh: syncScroll } })
-      // Negative trigger starts already have progress at page load. Initialize
-      // that state explicitly so first render and returning to the top agree.
-      syncScroll()
+      const tween = reduced ? null : gsap.fromTo(playhead, { value: 0 }, {
+        value: 1,
+        immediateRender: false,
+        ease: 'none',
+        onUpdate: draw,
+        scrollTrigger: {
+          trigger: journey,
+          start: 'top 80%',
+          end: 'bottom bottom',
+          scrub: context.conditions?.touch ? 0.12 : true,
+          invalidateOnRefresh: true,
+          onRefresh: syncAfterRefresh,
+        },
+      })
       const resize = new ResizeObserver(() => {
         // FAQ and practice height animations notify every frame. Rebuild once
         // after they settle, while preserving their animated layout transition.
