@@ -313,10 +313,9 @@
 .conversationCopy { background:var(--pink); }
 .memoryCopy,.conversationCopy { min-height:inherit; }
 .wordTag { right:6%; bottom:2%; }
+.memoryArtWrap .wordTag { position:relative; right:auto; bottom:auto; display:flex; width:max-content; margin:2px 6% 0 auto; }
 .conversationBubble { position:absolute; top:2%; left:15%; background:var(--paper); border:1px solid var(--line); padding:12px 18px; border-radius:16px 16px 16px 2px; }
 .conversationBubble small { display:block; font-size:10px; margin-top:4px; }
-.memoryProp,.conversationProp { position:absolute; width:56px; right:1%; top:9%; pointer-events:none; }
-.conversationProp { right:auto; left:3%; top:7%; }
 @media(min-width:900px) and (min-height:650px) and (prefers-reduced-motion:no-preference) {
   .memorySection,.conversationSection { min-height:135svh; }
   .storyStage { position:sticky; top:76px; min-height:calc(100svh - 90px); }

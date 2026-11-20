@@ -1,9 +1,11 @@
 import Image from 'next/image'
+import type { ReactNode } from 'react'
 import SpotIllustration, { type SpotMotif } from '@/components/illustrations/SpotIllustration'
 import JourneyRive from './JourneyRive'
 import styles from './JourneyArt.module.css'
+import ornamentsByScene from './journeyOrnaments.json'
 
-type SceneProps = { className?: string; riveSrc?: string }
+type SceneProps = { className?: string; riveSrc?: string; footer?: ReactNode }
 export function JourneySpark() {
   return <span className={styles.spark} data-journey-glyph aria-hidden="true" />
 }
@@ -16,7 +18,7 @@ const descriptions = {
 
 /** Generated and anatomically reviewed artwork stays intact. Moving the frame
  * preserves every limb and grip; smaller decorative layers move independently. */
-function GeneratedScene({ name, className = '', riveSrc }: SceneProps & { name: keyof typeof descriptions }) {
+function GeneratedScene({ name, className = '', riveSrc, footer }: SceneProps & { name: keyof typeof descriptions }) {
   const base = `/images/journey-2026/${name}`
   const sizes = '(max-width: 767px) 85vw, (min-width: 1450px) 700px, 48vw'
   const mobileHero = name === 'discovery' && <source media="(max-width: 767px)" type="image/avif"
@@ -31,19 +33,28 @@ function GeneratedScene({ name, className = '', riveSrc }: SceneProps & { name: 
     {picture}
     <div aria-hidden="true" data-plant className={styles.plant}>{picture}</div>
   </div> : picture
-  return <div className={`${styles.scene} ${className}`} data-art-scene={name} role="img" aria-label={descriptions[name]}>
+  const art = <>
+    {layers}
+    <div className={styles.ornaments} data-depth-ornaments aria-hidden="true">
+      {ornamentsByScene[name].map(({ motif, x, y, size, originX, originY }) => <SpotIllustration
+        key={motif} eager motif={motif as SpotMotif}
+        style={{
+          left: `${x / 9}%`, top: `${y / 6}%`, width: `${size / 9}%`,
+          transform: `translate(${-100 * originX}%, ${-100 * originY}%)`,
+        }}
+      />)}
+    </div>
+  </>
+
+  return <div className={`${styles.scene} ${className}`} data-art-scene={name}>
     {name === 'discovery' && <link rel="preload" as="image" type="image/avif" media="(max-width: 767px)"
       imageSrcSet={`${base}-512.avif 512w, ${base}-640.avif 640w`} imageSizes={sizes} fetchPriority="high" />}
-    <div className={styles.illustration} data-art-motion="illustration">
-      {riveSrc ? <JourneyRive key={riveSrc} src={riveSrc}>{layers}</JourneyRive> : layers}
+    <div className={styles.illustration} data-art-motion="illustration" role="img" aria-label={descriptions[name]}>
+      <div className={styles.artContent} data-cursor>
+        {riveSrc ? <JourneyRive key={riveSrc} src={riveSrc} stateMachine="Scene">{art}</JourneyRive> : art}
+      </div>
     </div>
-    <div className={styles.ornaments} data-cursor data-depth-ornaments aria-hidden="true">
-      <SpotIllustration eager motif="plane" className={styles.planeDetail} />
-      <SpotIllustration eager motif="sun" className={styles.sunDetail} />
-      <SpotIllustration eager motif="burst" className={styles.burstDetail} />
-      <SpotIllustration eager motif="dots" className={styles.dotsDetail} />
-      <SpotIllustration eager motif="ticks" className={styles.ticksDetail} />
-    </div>
+    {footer}
   </div>
 }
 

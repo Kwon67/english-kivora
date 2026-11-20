@@ -72,15 +72,15 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
         </section>
 
       <section id="revisoes" className={styles.memorySection} aria-labelledby="memory-title"><div className={styles.storyStage} data-pointer-area>
-        <div className={styles.memoryArtWrap} data-scene-travel><MemoryScene riveSrc={riveAssets.memory} /><span className={styles.wordTag} data-float lang="en">remember <ArrowUpRight size={20} strokeWidth={1.8} aria-hidden="true" /></span></div>
+        <div className={styles.memoryArtWrap} data-scene-travel><MemoryScene riveSrc={riveAssets.memory} footer={<span className={styles.wordTag} data-float lang="en">remember <ArrowUpRight size={20} strokeWidth={1.8} aria-hidden="true" /></span>} /></div>
         <div className={styles.storyCardShell}><div className={styles.memoryCopy} data-tilt data-story-card><Eyebrow number="03">O QUE VOCÊ APRENDE FICA</Eyebrow><h2 id="memory-title"><span data-title-ink>Uma memória<br />que <span data-mark className={styles.highlightYellow}>floresce.</span></span></h2><p>A revisão espaçada usa suas respostas para trazer cada palavra de volta na hora certa.</p><Link href="/register" transitionTypes={['kivora-auth']} className={styles.textLink}>Cultivar meu vocabulário <ArrowUpRight size={22} aria-hidden="true" /></Link></div></div>
-        <JourneyMotif kind="sunflower" className={styles.memoryProp} /></div>
+        </div>
       </section>
 
       <section id="conversacao" className={styles.conversationSection} aria-labelledby="conversation-title"><div className={styles.storyStage} data-pointer-area>
         <div className={styles.storyCardShell}><div className={styles.conversationCopy} data-tilt data-story-card><Eyebrow number="04">DO SEU MUNDO PARA O MUNDO</Eyebrow><h2 id="conversation-title"><span data-title-ink>Uma conversa.<br /><span data-mark className={styles.blueText}>Tantas portas.</span></span></h2><p>Um café. Uma viagem. Uma nova oportunidade. Pratique situações reais por voz ou texto com o tutor de IA.</p><Action>Dar voz ao meu inglês</Action></div></div>
         <div className={styles.conversationVisual} data-scene-travel><ConversationScene riveSrc={riveAssets.conversation} /><div className={styles.conversationBubble} data-float><span lang="en" data-type>“I’d like a coffee, please.”</span><small>Seu próximo pedido pode ser em inglês.</small></div></div>
-        <JourneyMotif kind="chat" className={styles.conversationProp} /></div>
+        </div>
       </section>
 
       <section className={styles.blitzBand} data-reveal aria-labelledby="blitz-title"><div><Eyebrow>POUCOS MINUTOS. MUITA ENERGIA.</Eyebrow><h2 id="blitz-title"><span data-title-ink>O seu inglês<br />entra no jogo<span className={styles.blitzDot}>.</span></span></h2></div><div className={styles.blitzMark} data-float aria-hidden="true"><SpotIllustration motif="bolt" /></div><div className={styles.blitzCopy}><p>Desafios rápidos, combos e ranking semanal. Uma dose de diversão para manter a prática viva.</p><Link href="/register" transitionTypes={['kivora-auth']} className={styles.lightLink}>Conhecer o Blitz <ArrowUpRight size={24} aria-hidden="true" /></Link></div>

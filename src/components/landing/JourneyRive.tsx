@@ -38,6 +38,6 @@ export default function JourneyRive({ src, stateMachine, children }: { src: stri
   }, [visible, reduced, load, ref])
   return <div ref={ref} className={styles.riveScene} data-rive-ready={ready && !reduced}>
     {children}
-    <div data-cursor className={styles.riveOverlay}>{load && !reduced && <RiveCanvas src={src} stateMachine={stateMachine} active={visible} onReady={setReady} />}</div>
+    <div className={styles.riveOverlay}>{load && !reduced && <RiveCanvas src={src} stateMachine={stateMachine} active={visible} onReady={setReady} />}</div>
   </div>
 }

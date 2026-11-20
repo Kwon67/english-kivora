@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { RuntimeLoader, useRive } from '@rive-app/react-canvas'
+import { EventType, RuntimeLoader, useRive } from '@rive-app/react-canvas'
 
 RuntimeLoader.setWasmUrl(new URL('@rive-app/canvas/rive.wasm', import.meta.url).href)
 RuntimeLoader.setWasmFallbackUrl(new URL('@rive-app/canvas/rive_fallback.wasm', import.meta.url).href)
@@ -9,7 +9,7 @@ RuntimeLoader.setWasmFallbackUrl(new URL('@rive-app/canvas/rive_fallback.wasm', 
 export default function RiveCanvas({ src, active, stateMachine, onReady }: {
   src: string; active: boolean; stateMachine?: string; onReady: (ready: boolean) => void
 }) {
-  const { rive, setCanvasRef, canvas } = useRive({ src, autoplay: true, stateMachines: stateMachine }, {
+  const { rive, setCanvasRef, canvas } = useRive({ src, autoplay: true, stateMachine }, {
     shouldResizeCanvasToContainer: false, shouldUseIntersectionObserver: false,
   })
   useEffect(() => {
@@ -18,8 +18,19 @@ export default function RiveCanvas({ src, active, stateMachine, onReady }: {
     resize()
     const observer = new ResizeObserver(resize)
     observer.observe(canvas)
-    onReady(true)
-    return () => { observer.disconnect(); onReady(false) }
+    let frame = 0
+    const advanced = () => {
+      rive.off(EventType.Advance, advanced)
+      // The runtime draws after advancing. Keep the still through that frame.
+      frame = requestAnimationFrame(() => onReady(true))
+    }
+    rive.on(EventType.Advance, advanced)
+    return () => {
+      observer.disconnect()
+      rive.off(EventType.Advance, advanced)
+      cancelAnimationFrame(frame)
+      onReady(false)
+    }
   }, [canvas, rive, onReady])
   useEffect(() => {
     if (active) rive?.startRendering()
