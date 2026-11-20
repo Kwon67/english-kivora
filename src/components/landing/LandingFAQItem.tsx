@@ -26,7 +26,7 @@ export default function AnimatedFAQ({ items, initial }: FAQProps & { initial: bo
           event.preventDefault()
           setOpened(old => old.map((open, i) => i === index ? !open : open))
         }}><Question text={question} index={index} /></summary>
-        {opened[index] && <m.div initial={reduce ? false : { opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}><p>{answer}</p></m.div>}
+        {opened[index] && <m.div data-faq-answer initial={reduce ? false : { opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}><p>{answer}</p></m.div>}
       </m.details>)}</LayoutGroup>
   </MotionConfig></LazyMotion>
 }

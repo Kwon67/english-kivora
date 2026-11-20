@@ -25,16 +25,42 @@ test('movimento reduzido mantém o caminho completo após abrir FAQ e girar a te
   const path = page.locator('[data-ribbon-path]')
   const check = async () => {
     await expect(path).toHaveCSS('stroke-dasharray', 'none')
-    const covers = await path.evaluate(el => {
+    const covers = () => path.evaluate(el => {
       const svg = el.closest('svg')!, main = el.closest('main')!
-      return Math.abs(svg.clientHeight - main.offsetHeight) <= 1
+      const faq = main.querySelector('#faq')!
+      return Math.abs(svg.clientWidth - main.clientWidth) <= 1
+        && svg.getBoundingClientRect().bottom >= faq.getBoundingClientRect().bottom
     })
-    expect(covers).toBe(true)
+    await expect.poll(covers).toBe(true)
   }
   for (const viewport of [{ width: 390, height: 844 }, { width: 844, height: 390 }]) {
     await page.setViewportSize(viewport)
     await check()
     await page.locator('details summary').first().click()
     await check()
+  }
+})
+
+test('abrir e fechar respostas preserva a curva do caminho', async ({ page }) => {
+  const path = page.locator('[data-ribbon-path]')
+  const faq = page.locator('#faq')
+  await faq.evaluate(element => element.scrollIntoView({ block: 'start', behavior: 'instant' }))
+  await page.evaluate(() => document.fonts.ready.then(() => undefined))
+  const scale = () => path.evaluate(element => (element as unknown as SVGPathElement).getScreenCTM()!.d)
+  const closedScale = await scale()
+  const summaries = await faq.locator('summary').all()
+
+  for (const summary of summaries) {
+    await summary.click()
+    await expect(summary.locator('..')).toHaveAttribute('open', '')
+    await expect.poll(scale).toBeCloseTo(closedScale, 5)
+  }
+  const ribbonBottom = await path.evaluate(element => element.closest('svg')!.getBoundingClientRect().bottom)
+  const faqBox = (await faq.boundingBox())!
+  expect(ribbonBottom).toBeGreaterThan(faqBox.y + faqBox.height)
+  for (const summary of summaries.reverse()) {
+    await summary.click()
+    await expect(summary.locator('..')).not.toHaveAttribute('open')
+    await expect.poll(scale).toBeCloseTo(closedScale, 5)
   }
 })

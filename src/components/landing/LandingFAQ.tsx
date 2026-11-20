@@ -35,6 +35,6 @@ export default function LandingFAQ({ items }: FAQProps) {
   }, [])
   return <div ref={ref} className={styles.faqList}>
     {enhanced ? <enhanced.List items={items} initial={enhanced.initial} /> : items.map(([question, answer], i) =>
-      <details className={styles.faqItem} key={question}><summary><Question text={question} index={i} /></summary><div><p>{answer}</p></div></details>)}
+      <details className={styles.faqItem} key={question}><summary><Question text={question} index={i} /></summary><div data-faq-answer><p>{answer}</p></div></details>)}
   </div>
 }

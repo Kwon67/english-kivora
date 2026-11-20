@@ -200,7 +200,7 @@
 .page a { color:inherit; text-decoration:none; }
 .page p { text-wrap:pretty; }
 .page main { position:relative; isolation:isolate; }
-.ribbon { position:absolute; inset:0; width:100%; height:100%; z-index:-1; pointer-events:none; color:var(--paper); overflow:hidden; }
+.ribbon { position:absolute; inset:0; width:100%; height:calc(100% - var(--faq-open-space,0px)); z-index:-1; pointer-events:none; color:var(--paper); overflow:hidden; }
 .journey { position:relative; }
 .hero,.pathSection,.practiceSection,.storyStage,.pricingSection,.faqSection,.footerExplore {
   display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:var(--gap); width:var(--frame); margin-inline:auto;
