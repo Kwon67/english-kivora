@@ -8,9 +8,9 @@ for(const engine of ['chromium','webkit']){
  await page.goto('http://localhost:3100/');await page.waitForTimeout(2500)
  // Reconstruct the former raster rendering even when run on the optimized source.
  const restore = await showRibbonReference(page)
- for(const mode of ['static-reference','canvas','canvas-no-blur']) {
- if(mode==='canvas')await restore()
- if(mode==='canvas-no-blur')await page.addStyleTag({content:'nav {backdrop-filter:none!important}'})
+ for(const mode of ['static-reference','static-svg','static-svg-no-blur']) {
+ if(mode==='static-svg')await restore()
+ if(mode==='static-svg-no-blur')await page.addStyleTag({content:'nav {backdrop-filter:none!important}'})
  const cdp=engine==='chromium'?await page.context().newCDPSession(page):null
  if(cdp)await cdp.send('Tracing.start',{categories:'devtools.timeline',transferMode:'ReturnAsStream'})
  const result=await page.evaluate(async()=>{const frames=[];let last;const start=performance.now();document.documentElement.style.scrollBehavior='auto';await new Promise(done=>{const tick=t=>{if(last)frames.push(t-last);last=t;const p=Math.min(1,(t-start)/5000);scrollTo(0,(document.documentElement.scrollHeight-innerHeight)*(p<.5?p*2:2-p*2));if(p<1)requestAnimationFrame(tick);else done()};requestAnimationFrame(tick)});frames.sort((a,b)=>a-b);return {frames:frames.length,p95:frames[Math.floor(frames.length*.95)],over34:frames.filter(t=>t>34).length}})

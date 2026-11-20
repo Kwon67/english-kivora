@@ -2662,9 +2662,3 @@
   .navActions { gap:10px; }
   .footerExplore { grid-template-columns:1fr; }
 }
-
-@media (pointer:coarse) {
-  .ribbon { display:none; }
-  .ribbonRail { position:absolute; inset:0; z-index:-1; pointer-events:none; }
-  .ribbonCanvas { position:sticky; top:0; display:block; width:100%; height:100vh; height:100lvh; }
-}

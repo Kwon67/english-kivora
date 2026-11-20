@@ -1,4 +1,3 @@
-import { canvasPixels } from '../scripts/ribbon-canvas-probe.mjs'
 import { expect, test, type Locator, type Page } from '@playwright/test'
 
 function usesSmoothScroll(page: Page) {
@@ -65,17 +64,19 @@ test('movimento reduzido preserva teclado e FAQ nativos', async ({ page }) => {
   await expect(item).not.toHaveAttribute('open', '')
 })
 
-test('a fita ganha segmentos visíveis ao avançar pela página', async ({ page }) => {
+test('a fita está completa no toque e progride com ponteiro fino', async ({ page }) => {
   if (await page.evaluate(() => matchMedia('(pointer: coarse)').matches)) {
-    await expect(page.locator('[data-ribbon-canvas]')).toHaveCount(1)
-    const initial = await page.evaluate(canvasPixels)
-    await page.evaluate(() => scrollTo({ top: 300, behavior: 'instant' }))
-    await expect.poll(() => page.evaluate(canvasPixels)).not.toBe(initial)
-    await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }))
-    await expect.poll(() => page.evaluate(canvasPixels)).toBe(initial)
+    const svg = page.locator('svg:is([data-ribbon-desktop], [data-ribbon-mobile]):visible')
+    const ink = svg.locator('[data-ribbon-clip] [data-ribbon-path]')
+    await expect(ink).toHaveAttribute('d', /^M.+C/)
+    const fullPath = await ink.getAttribute('d')
+    await expect(svg).toHaveCSS('position', 'absolute')
+    await expect(ink).toHaveCSS('stroke-dasharray', 'none')
+    await page.locator('#faq').evaluate(el => el.scrollIntoView())
+    await expect(ink).toHaveAttribute('d', fullPath!)
+    await expect(ink).toHaveCSS('visibility', 'visible')
     return
   }
-  await expect(page.locator('[data-ribbon-canvas]')).toHaveCount(0)
   const visibleInk = page.locator('svg:is([data-ribbon-desktop], [data-ribbon-mobile]):visible path[visibility="visible"]')
   await expect.poll(() => visibleInk.count()).toBeGreaterThan(0)
   const initial = await visibleInk.count()

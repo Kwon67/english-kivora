@@ -1,4 +1,4 @@
-import { readRibbonState } from './ribbon-state.mjs'
+import { auditStaticRibbonScroll, readRibbonState } from './ribbon-state.mjs'
 import { chromium, webkit } from '@playwright/test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
@@ -34,6 +34,10 @@ for (const engine of (process.env.MOTION_ENGINES?.split(',') || ['chromium', 'we
   await page.waitForTimeout(600)
   assert.notEqual(await wave.evaluate(el => getComputedStyle(el).transform), firstWave, 'The reviewed illustration moves intact without deforming its limbs')
   const ribbon = () => page.evaluate(readRibbonState)
+  if (mobile) {
+    const state = await page.evaluate(auditStaticRibbonScroll)
+    assert(state.position === 'absolute' && state.clips > 0 && state.canvas === 0 && state.mutations === 0)
+  }
   const initialPath = (await ribbon()).d
   assert(initialPath.startsWith(mobile ? 'M410 240C325 220 385 430 325 500S270 555 240 570' : 'M1460 100C1050 80 1270 420 1115 510S1140 720 815 720'), 'Approved path prefix retained')
   const positions = [0, .2, .4, .6, .8, 1]

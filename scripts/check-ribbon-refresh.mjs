@@ -1,4 +1,4 @@
-import { readRibbonState, showRibbonReference } from './ribbon-state.mjs'
+import { auditStaticRibbonScroll, readRibbonState, showRibbonReference } from './ribbon-state.mjs'
 import {chromium,webkit} from '@playwright/test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
@@ -12,6 +12,7 @@ for(const engine of ['chromium','webkit'])for(const mobile of [false,true]){
  const baseline=JSON.parse(await fs.readFile('output/landing-performance/before/results.json','utf8')).find(r=>r.name===`${engine}-${mobile?'mobile':'desktop'}`)
  const read=()=>page.evaluate(readRibbonState)
  assert.equal((await read()).d,baseline.geometry.d,'Exact original path')
+ if(mobile){const state=await page.evaluate(auditStaticRibbonScroll);assert(state.position==='absolute'&&state.clips>0&&state.canvas===0&&state.mutations===0)}
  const devicePixel = 1 / await page.evaluate(() => devicePixelRatio)
  const down=[]
  for(const p of [0,.2,.4,.6,.8,1]){await page.evaluate(p=>{document.documentElement.style.scrollBehavior='auto';scrollTo(0,(document.documentElement.scrollHeight-innerHeight)*p)},p);await page.waitForTimeout(1000);const r=await read();assert.equal(r.hidden,0);down.push(r.offset)}
@@ -42,7 +43,7 @@ for(const engine of ['chromium','webkit'])for(const mobile of [false,true]){
  }
  }
  await page.evaluate(()=>scrollTo(0,0))
- await page.emulateMedia({reducedMotion:'no-preference'});await page.waitForTimeout(1200);assert((await read()).offset>0)
+ await page.emulateMedia({reducedMotion:'no-preference'});await page.waitForTimeout(1200);assert(mobile ? (await read()).offset === 0 : (await read()).offset > 0)
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);assert.deepEqual(errors,[])
  reports.push({engine,mobile,pathUnchanged:true,down,up,faq:true,resize:true,reducedMotion:true,visual,errors});console.log(`${engine} ${mobile?'mobile':'desktop'} passed`)
  await browser.close()
