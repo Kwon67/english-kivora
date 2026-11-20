@@ -83,6 +83,33 @@ test('guided flashcard has no zero denominator and restores its phase', async ({
   await expect(page.getByRole('button', { name: 'Mostrar resposta', exact: true })).toHaveCount(0)
 })
 
+test('canceling a guided swipe leaves the card available for exactly one grade', async ({ page, request, browserName, hasTouch }) => {
+  test.skip(browserName !== 'chromium' || !hasTouch, 'CDP touch input on a touch viewport')
+  await page.goto('/guided')
+  await page.getByRole('button', { name: 'Mostrar resposta', exact: true }).click()
+  await page.getByRole('button', { name: 'Continuar', exact: true }).click()
+  const heading = page.locator('[style*="touch-action"] h2')
+  await heading.scrollIntoViewIfNeeded()
+  const bounds = await heading.boundingBox()
+  if (!bounds) throw new Error('Guided review card has no bounds')
+  const x = Math.round(bounds.x + bounds.width / 2)
+  const y = Math.round(bounds.y + bounds.height / 2)
+  const input = await page.context().newCDPSession(page)
+  for (const [distance, end] of [[110, 'touchCancel'], [50, 'touchEnd']] as const) {
+    await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y, id: 1 }] })
+    for (let step = 1; step <= 5; step++) {
+      await input.send('Input.dispatchTouchEvent', {
+        type: 'touchMove', touchPoints: [{ x: x + distance * step / 5, y, id: 1 }],
+      })
+    }
+    await input.send('Input.dispatchTouchEvent', { type: end, touchPoints: [] })
+  }
+  await expect.poll(async () => {
+    const state = await (await request.get('/api/product-fixture')).json()
+    return state.reviews.map((review: { quality: number }) => review.quality)
+  }).toEqual([4])
+})
+
 test('empty review offers one useful contextual next action', async ({ page, request }) => {
   await request.post('/api/product-fixture', { data: { empty: true } })
   await page.goto('/review')

@@ -693,7 +693,13 @@ export default function ReviewClient({
   )
 
   const bindSwipe = useDrag(
-    ({ down, last, movement: [movementX, movementY], event, first }) => {
+    ({ down, last, movement: [movementX, movementY], event, first, canceled }) => {
+      if (canceled || event?.type === 'touchcancel' || event?.type === 'pointercancel') {
+        swipeStartedOnSelectableRef.current = false
+        swipePeakXRef.current = 0
+        setReviewSwipeVisual('neutral')
+        return
+      }
       if (first) {
         swipeStartedOnSelectableRef.current = isReviewSelectableElement(event?.target ?? null)
         swipePeakXRef.current = 0
