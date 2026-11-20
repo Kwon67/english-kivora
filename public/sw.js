@@ -9,11 +9,11 @@ const TTS_MAX_ENTRIES = 60
 const PRECACHE_URLS = [
   OFFLINE_URL,
   '/manifest.webmanifest',
-  '/icon-192.png',
-  '/icon-512.png',
+  '/icon-192.png?v=2',
+  '/icon-512.png?v=2',
   '/notification-badge-96.png',
-  '/apple-touch-icon.png',
-  '/favicon.svg',
+  '/apple-touch-icon.png?v=2',
+  '/favicon.svg?v=2',
 ]
 
 function isSameOrigin(url) {
@@ -175,7 +175,7 @@ self.addEventListener('push', (event) => {
   const notificationOptions = {
     body,
     tag,
-    icon: typeof data.icon === 'string' ? data.icon : '/icon-192.png',
+    icon: typeof data.icon === 'string' ? data.icon : '/icon-192.png?v=2',
     badge: typeof data.badge === 'string' ? data.badge : '/notification-badge-96.png',
     data: {
       url,
