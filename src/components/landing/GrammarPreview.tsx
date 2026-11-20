@@ -1,6 +1,8 @@
 'use client'
 
+import { useLandingLite } from './useLandingLite'
 import FeedbackConfetti from './FeedbackConfetti'
+import { playLandingSound } from './LandingSound'
 import { useRef, useState } from 'react'
 import { ArrowRight, Check, Lightbulb, RotateCcw } from 'lucide-react'
 import { gsap, useGSAP } from '@/lib/gsap'
@@ -22,11 +24,13 @@ export default function GrammarPreview() {
   const firstOption = useRef<HTMLButtonElement>(null)
   const question = questions[index]
   const correct = selected === question.answer
+  const lite = useLandingLite()
   useGSAP(() => {
+    if (lite) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     if (confirmed) gsap.from('[data-exercise-feedback]', { y: 8, duration: duration.feedback, ease: ease.out, clearProps: 'transform' })
     else gsap.from('[data-exercise-question]', { y: 12, duration: duration.question, ease: ease.out, clearProps: 'transform' })
-  }, { scope: root, dependencies: [index, confirmed], revertOnUpdate: true })
+  }, { scope: root, dependencies: [index, confirmed, lite], revertOnUpdate: true })
 
   return <div ref={root} className={styles.exercise}>
     <div className={styles.sessionTop}><span>PRÁTICA DE GRAMÁTICA</span><span>{index + 1} / {questions.length}</span></div>
@@ -35,8 +39,8 @@ export default function GrammarPreview() {
     <div className={`${styles.options} ${styles.shortOptions}`} aria-label="Alternativas" lang="en">{question.choices.map((option, i) => <button ref={i === 0 ? firstOption : undefined} key={option} className={styles.option} aria-pressed={selected === option} disabled={confirmed} data-result={confirmed ? option === question.answer ? 'correct' : option === selected ? 'wrong' : 'muted' : undefined} onClick={() => setSelected(option)}><span>{option}</span>{selected === option && <span className={styles.selection}><Check size={15} aria-hidden="true" /></span>}</button>)}</div>
     <PracticeBooks className={styles.art} />
     {confirmed && <div data-exercise-feedback className={styles.feedback} data-correct={correct} role="status">{correct && <FeedbackConfetti />}{correct ? <Check size={19} aria-hidden="true" /> : <Lightbulb size={19} aria-hidden="true" />}<p><strong>{correct ? 'Muito bem! ' : 'Vamos entender? '}</strong>{question.explanation}</p></div>}
-    <button className={styles.confirm} disabled={!selected} onClick={() => {
-      if (!confirmed) setConfirmed(true)
+    <button className={styles.confirm} disabled={!selected} data-sound-feedback={confirmed ? undefined : true} onClick={() => {
+      if (!confirmed) { playLandingSound(correct ? 'correct' : 'wrong'); setConfirmed(true) }
       else {
         if (correct) setIndex((index + 1) % questions.length)
         setSelected(null); setConfirmed(false)

@@ -189,7 +189,7 @@
 }
 .page *, .page *::before, .page *::after { box-sizing:border-box; }
 .page :is(h1,h2,h3,p) { margin:0; }
-.page :is(a,button,summary):focus-visible { outline:3px solid #2361a4; outline-offset:4px; }
+.page :is(a,button,summary):focus-visible { outline:3px solid #477c2d; outline-offset:4px; }
 .page :is(button,summary) { cursor:pointer; }
 .page section[id], .demoWrap[id] { scroll-margin-top:96px; }
 .page h1,.page h2,.page h3 { font-family:inherit; font-weight:550; }

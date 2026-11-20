@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { Flip, gsap, useGSAP } from '@/lib/gsap'
+import { useLandingLite } from './useLandingLite'
 import { duration, ease } from '@/lib/motion-tokens'
 import Link from 'next/link'
 import { ArrowRight, Check, Compass } from 'lucide-react'
@@ -23,6 +24,7 @@ export default function LevelExplorer() {
   const rail = useRef<HTMLDivElement>(null)
   const selectedChip = useRef<HTMLElement | null>(null)
   const fromSwipe = useRef(false)
+  const lite = useLandingLite()
   function activate(next: number, center = true) {
     const button = rail.current?.querySelectorAll<HTMLButtonElement>('button')[next]
     if (!button) return
@@ -33,10 +35,11 @@ export default function LevelExplorer() {
     if (center && rail.current && rail.current.scrollWidth > rail.current.clientWidth) {
       const track = rail.current
       track.scrollTo({ left: track.scrollLeft + button.getBoundingClientRect().left - track.getBoundingClientRect().left
-        - (track.clientWidth - button.offsetWidth) / 2, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })
+        - (track.clientWidth - button.offsetWidth) / 2, behavior: lite || matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })
     }
   }
   useGSAP(() => {
+    if (lite) return
     const media = gsap.matchMedia()
     media.add('(prefers-reduced-motion: no-preference)', () => {
       const card = panel.current
@@ -47,7 +50,7 @@ export default function LevelExplorer() {
       if (fit) gsap.from(card, { ...fit, duration: duration.panel, ease: ease.reveal, clearProps: 'transform' })
     })
     return () => media.revert()
-  }, { scope: panel, dependencies: [index], revertOnUpdate: true })
+  }, { scope: panel, dependencies: [index, lite], revertOnUpdate: true })
   const current = levels[index]
   return <div className={styles.pathExplorer}>
     <div ref={rail} className={styles.levels} aria-label="Explore os níveis de inglês"
@@ -73,7 +76,7 @@ export default function LevelExplorer() {
     <div ref={panel} id="level-example" className={styles.levelExample} data-tone={current.tone} aria-live="polite" aria-atomic="true">
       <div className={styles.levelStamp} aria-hidden="true"><Compass size={24} /><strong>{current.level}</strong></div>
       <div><p className={styles.exampleLabel}>{current.label}</p><h3 lang="en">“{current.phrase}”</h3><p>{current.goal}</p></div>
-      <Link href="/register" className={styles.roundLink} aria-label={`Começar a aprender inglês: ${current.level}`}><ArrowRight size={23} /></Link>
+      <Link href="/register" transitionTypes={['kivora-auth']} className={styles.roundLink} aria-label={`Começar a aprender inglês: ${current.level}`}><ArrowRight size={23} /></Link>
     </div>
     <p className={styles.pathNote}><Check size={16} aria-hidden="true" /> Seu ponto de partida respeita o que você já sabe.</p>
   </div>

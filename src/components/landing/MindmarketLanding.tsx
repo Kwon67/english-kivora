@@ -8,6 +8,7 @@ import PracticePreview from './PracticePreview'
 import styles from './MindmarketLanding.module.css'
 import JourneyRibbon from './JourneyRibbon'
 import JourneyMotion from './JourneyMotion'
+import LandingIntro from './LandingIntro'
 import { ConversationScene, DiscoveryScene, JourneyMotif, MemoryScene } from './JourneyArt'
 
 const links = [
@@ -32,7 +33,7 @@ function Spark({ className = '' }: { className?: string }) {
 }
 
 function Action({ href = '/register', children, className = '', magnetic }: { href?: string; children: React.ReactNode; className?: string; magnetic?: boolean }) {
-  return <Link href={href} data-magnetic={magnetic ? true : undefined} className={`${styles.action} ${className}`}><span>{children}</span><span className={styles.actionIcon}><ArrowUpRight size={22} strokeWidth={1.8} aria-hidden="true" /></span></Link>
+  return <Link href={href} transitionTypes={href === '/register' ? ['kivora-auth'] : undefined} data-magnetic={magnetic ? true : undefined} className={`${styles.action} ${className}`}><span>{children}</span><span className={styles.actionIcon}><ArrowUpRight size={22} strokeWidth={1.8} aria-hidden="true" /></span></Link>
 }
 
 function Eyebrow({ number, children }: { number?: string; children: React.ReactNode }) {
@@ -41,6 +42,7 @@ function Eyebrow({ number, children }: { number?: string; children: React.ReactN
 
 export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<Record<'discovery' | 'memory' | 'conversation', string>> }) {
   return <JourneyMotion>
+    <LandingIntro />
     <LandingNavigation links={links} />
     <div className={styles.journey} data-ribbon-journey>
     <main id="main-content">
@@ -74,7 +76,7 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
 
       <section id="revisoes" className={styles.memorySection} aria-labelledby="memory-title"><div className={styles.storyStage} data-pointer-area>
         <div className={styles.memoryArtWrap} data-scene-travel><MemoryScene riveSrc={riveAssets.memory} /><span className={styles.wordTag} data-float lang="en">remember <ArrowUpRight size={20} strokeWidth={1.8} aria-hidden="true" /></span></div>
-        <div className={styles.storyCardShell}><div className={styles.memoryCopy} data-tilt data-story-card><Eyebrow number="03">O QUE VOCÊ APRENDE FICA</Eyebrow><h2 id="memory-title"><span data-title-ink>Uma memória<br />que <span data-mark className={styles.highlightYellow}>floresce.</span></span></h2><p>A revisão espaçada usa suas respostas para trazer cada palavra de volta na hora certa.</p><Link href="/register" className={styles.textLink}>Cultivar meu vocabulário <ArrowUpRight size={22} aria-hidden="true" /></Link></div></div>
+        <div className={styles.storyCardShell}><div className={styles.memoryCopy} data-tilt data-story-card><Eyebrow number="03">O QUE VOCÊ APRENDE FICA</Eyebrow><h2 id="memory-title"><span data-title-ink>Uma memória<br />que <span data-mark className={styles.highlightYellow}>floresce.</span></span></h2><p>A revisão espaçada usa suas respostas para trazer cada palavra de volta na hora certa.</p><Link href="/register" transitionTypes={['kivora-auth']} className={styles.textLink}>Cultivar meu vocabulário <ArrowUpRight size={22} aria-hidden="true" /></Link></div></div>
         <JourneyMotif kind="spark" className={styles.memoryProp} /></div>
       </section>
 
@@ -84,7 +86,7 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
         <JourneyMotif kind="chat" className={styles.conversationProp} /></div>
       </section>
 
-      <section className={styles.blitzBand} data-reveal aria-labelledby="blitz-title"><div><Eyebrow>POUCOS MINUTOS. MUITA ENERGIA.</Eyebrow><h2 id="blitz-title"><span data-title-ink>O seu inglês<br />entra no jogo<span className={styles.blitzDot}>.</span></span></h2></div><div className={styles.blitzMark} data-float aria-hidden="true"><svg viewBox="0 0 190 210"><path d="M105 8 20 119h67l-7 83 91-122h-67z" fill="#f5e211" stroke="#2c2e2a" strokeWidth="3"/><path d="m15 43 19 11M156 27l-10 19M168 158l-19-9M30 179l17-13" stroke="#fffdf5" strokeWidth="3" strokeLinecap="round"/></svg><span>BLITZ!</span></div><div className={styles.blitzCopy}><p>Desafios rápidos, combos e ranking semanal. Uma dose de diversão para manter a prática viva.</p><Link href="/register" className={styles.lightLink}>Conhecer o Blitz <ArrowUpRight size={24} aria-hidden="true" /></Link></div>
+      <section className={styles.blitzBand} data-reveal aria-labelledby="blitz-title"><div><Eyebrow>POUCOS MINUTOS. MUITA ENERGIA.</Eyebrow><h2 id="blitz-title"><span data-title-ink>O seu inglês<br />entra no jogo<span className={styles.blitzDot}>.</span></span></h2></div><div className={styles.blitzMark} data-float aria-hidden="true"><svg viewBox="0 0 190 210"><path d="M105 8 20 119h67l-7 83 91-122h-67z" fill="#f5e211" stroke="#2c2e2a" strokeWidth="3"/><path d="m15 43 19 11M156 27l-10 19M168 158l-19-9M30 179l17-13" stroke="#fffdf5" strokeWidth="3" strokeLinecap="round"/></svg><span>BLITZ!</span></div><div className={styles.blitzCopy}><p>Desafios rápidos, combos e ranking semanal. Uma dose de diversão para manter a prática viva.</p><Link href="/register" transitionTypes={['kivora-auth']} className={styles.lightLink}>Conhecer o Blitz <ArrowUpRight size={24} aria-hidden="true" /></Link></div>
         <div className={styles.ranking} data-ranking>
           <p>Ranking simulado <span>PTS</span></p>
           <ol>{[['Lia', '320'], ['Você', '280'], ['Caio', '240']].map(([name, score]) =>
@@ -112,7 +114,7 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
       <nav aria-label="Explore a Kivora">
         {links.map(link => <Link key={link.href} href={link.href}>{link.label}<ArrowUpRight size={18} aria-hidden="true" /></Link>)}
       </nav>
-    </div><div className={styles.footerBottom}><span>© {new Date().getFullYear()} Kivora English</span><div><Link href="/privacy" prefetch={false}>Privacidade</Link><Link href="/terms" prefetch={false}>Termos de uso</Link><Link href="/login">Entrar</Link></div><span>Feito para quem tem curiosidade.</span></div></footer>
+    </div><div className={styles.footerBottom}><span>© {new Date().getFullYear()} Kivora English</span><div><Link href="/privacy" prefetch={false}>Privacidade</Link><Link href="/terms" prefetch={false}>Termos de uso</Link><Link href="/login" transitionTypes={['kivora-auth']}>Entrar</Link></div><span>Feito para quem tem curiosidade.</span></div></footer>
     </div>
     <div className={styles.mobileDock}><Action>Começar grátis</Action></div>
   </JourneyMotion>

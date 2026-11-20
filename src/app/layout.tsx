@@ -3,6 +3,7 @@ import Script from 'next/script';
 import { DM_Mono, Inter } from 'next/font/google';
 import { Toaster } from 'sonner';
 import AnalyticsProvider from '@/components/layout/AnalyticsProvider';
+import SitePointer from '@/components/layout/SitePointer';
 import PWAExperience from '@/features/pwa/components/PWAExperience';
 import { BRAND_PRIMARY } from '@/lib/brandColors';
 import './globals.css';
@@ -10,6 +11,8 @@ import './globals.css';
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
+  preload: true,
+  adjustFontFallback: true,
   variable: '--font-kivora',
 });
 
@@ -17,6 +20,8 @@ const dmMono = DM_Mono({
   weight: ['400', '500'],
   subsets: ['latin'],
   display: 'swap',
+  preload: true,
+  adjustFontFallback: true,
   variable: '--font-kivora-mono',
 });
 
@@ -50,11 +55,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' }
+      { url: '/favicon.svg?v=2', type: 'image/svg+xml' },
+      { url: '/icon-192.png?v=2', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png?v=2', sizes: '512x512', type: 'image/png' }
     ],
-    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }]
+    apple: [{ url: '/apple-touch-icon.png?v=2', sizes: '180x180', type: 'image/png' }]
   },
   formatDetection: {
     telephone: false,
@@ -110,6 +115,7 @@ export default async function RootLayout({
 	          Ir para o conteúdo principal
 	        </a>
 	          {children}
+	          <SitePointer />
 	          <AnalyticsProvider />
 	          <PWAExperience publicVapidKey={publicVapidKey} />
 	          <Toaster

@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useLandingLite } from '../useLandingLite'
 
 export default function useSceneVisibility() {
+  const lite = useLandingLite()
   const ref = useRef<HTMLDivElement>(null)
   const [state, setState] = useState({ entered: false, visible: false, reduced: true })
   useEffect(() => {
@@ -23,5 +25,5 @@ export default function useSceneVisibility() {
       document.removeEventListener('visibilitychange', update)
     }
   }, [])
-  return { ref, ...state }
+  return { ref, ...state, reduced: lite || state.reduced, lite }
 }

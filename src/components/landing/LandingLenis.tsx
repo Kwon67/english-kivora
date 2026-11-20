@@ -11,7 +11,7 @@ function Ticker({ engineRef }: { engineRef: RefObject<Lenis | null> }) {
     if (!lenis) return
     engineRef.current = lenis
     if (document.querySelector('#kivora-mobile-menu[open]')) lenis.stop()
-    const tick = (seconds: number) => lenis.raf(seconds * 1000)
+    const tick = (seconds: number) => { if (!document.hidden) lenis.raf(seconds * 1000) }
     const cancel = () => { if (!lenis.isStopped) { lenis.stop(); lenis.start() } }
     const unsubscribe = lenis.on('scroll', ScrollTrigger.update)
     window.addEventListener('popstate', cancel)

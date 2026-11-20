@@ -9,9 +9,9 @@ const SceneCanvas = dynamic(() => import('./SceneCanvas'), { ssr: false })
 export default function LandingScene({ src, label, style, fallback, children }: {
   src?: string; label: string; style: CSSProperties; fallback?: ReactNode; children?: ReactNode
 }) {
-  const { ref, entered, visible, reduced } = useSceneVisibility()
+  const { ref, entered, visible, reduced, lite } = useSceneVisibility()
   return <div ref={ref} style={style} role="img" aria-label={label}>
-    {entered ? <SceneCanvas src={src} fallback={fallback} frameloop={!visible ? 'never' : reduced ? 'demand' : 'always'}>
+    {entered && !lite ? <SceneCanvas src={src} fallback={fallback} frameloop={!visible ? 'never' : reduced ? 'demand' : 'always'}>
       {children}
     </SceneCanvas> : fallback}
   </div>

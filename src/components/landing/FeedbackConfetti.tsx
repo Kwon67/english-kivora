@@ -1,12 +1,15 @@
 'use client'
 
 import { useRef } from 'react'
+import { useLandingLite } from './useLandingLite'
 import { gsap, useGSAP } from '@/lib/gsap'
 
 const colors = ['#8ed462', '#ebc1ff', '#f5e211', '#ff705d', '#209fff', '#2c2e2a']
 export default function FeedbackConfetti() {
   const ref = useRef<HTMLSpanElement>(null)
+  const lite = useLandingLite()
   useGSAP(() => {
+    if (lite) return
     const media = gsap.matchMedia()
     media.add('(prefers-reduced-motion: no-preference)', () => {
       Array.from(ref.current!.children).forEach((piece, i) => {
@@ -17,7 +20,8 @@ export default function FeedbackConfetti() {
       })
     })
     return () => media.revert()
-  }, { scope: ref })
+  }, { scope: ref, dependencies: [lite], revertOnUpdate: true })
+  if (lite) return null
   return <span ref={ref} aria-hidden="true" style={{ position: 'relative', width: 0, height: 0 }}>
     {colors.map(color => <i key={color} style={{ backgroundColor: color, position: 'absolute', height: 6, width: 4, opacity: 0 }} />)}
   </span>

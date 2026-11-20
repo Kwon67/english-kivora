@@ -1,0 +1,45 @@
+.intro { display:none; }
+.intro[data-intro] {
+  position:fixed; inset:0; z-index:150; display:grid; place-items:center;
+  pointer-events:none; background:#8ed462; color:#2c2e2a;
+  animation:intro-open 390ms 1050ms cubic-bezier(.65,0,.22,1) both;
+}
+.intro[data-intro="opening"] { animation:intro-ready 390ms cubic-bezier(.65,0,.22,1) both; }
+.introBrand { display:grid; justify-items:center; gap:16px; transform:scale(1.35); }
+.introHello {
+  width:6ch; overflow:hidden; white-space:nowrap; border-right:1px solid currentColor;
+  font:500 13px/1.45 var(--font-kivora-mono),monospace;
+  animation:intro-type 420ms steps(6,end) both;
+}
+@keyframes intro-type { from { width:0; } }
+@keyframes intro-open { to { transform:translateY(-101%); visibility:hidden; } }
+@keyframes intro-ready { to { transform:translateY(-101%); visibility:hidden; } }
+
+.sound {
+  position:fixed; left:max(var(--gutter),env(safe-area-inset-left));
+  bottom:max(10px,env(safe-area-inset-bottom)); z-index:19;
+  display:grid; place-items:center; width:44px; height:44px;
+  background:var(--paper,#fffef8); color:var(--ink,#2c2e2a); border:1px solid var(--line); border-radius:50%;
+}
+.sound[aria-pressed=true] { background:var(--green,#8ed462); }
+
+.pointer { display:none; }
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
+  .pointer[data-visible] {
+    display:flex; align-items:center; justify-content:center; position:fixed; z-index:30;
+    inset:0 auto auto 0; width:14px; height:14px; border:1px solid var(--ink,#2c2e2a); border-radius:99px;
+    background:var(--green,#8ed462); color:var(--ink,#2c2e2a); pointer-events:none;
+    translate:calc(var(--cursor-x) - 7px) calc(var(--cursor-y) - 7px);
+  }
+  .pointer[data-label]::after {
+    content:attr(data-label); position:absolute; left:5px; top:15px; white-space:nowrap;
+    padding:5px 9px; border-radius:99px; background:var(--ink,#2c2e2a); color:var(--paper,#fffef8);
+    font:500 11px/1.2 var(--font-kivora-mono),monospace;
+    animation:cursor-label 160ms ease-out both;
+  }
+  .pointer[data-label] { scale:1.22; }
+  .pointer[data-edge-x]::after { left:auto; right:5px; }
+  .pointer[data-edge-y]::after { top:auto; bottom:15px; }
+  @keyframes cursor-label { from { opacity:0; transform:scale(.9); } }
+}
+@media (prefers-reduced-motion:reduce) { .intro[data-intro] { display:none; } }

@@ -1,6 +1,8 @@
 'use client'
 
+import { useLandingLite } from './useLandingLite'
 import FeedbackConfetti from './FeedbackConfetti'
+import { playLandingSound } from './LandingSound'
 import { useRef, useState } from 'react'
 import { ArrowRight, Check, Lightbulb, RotateCcw } from 'lucide-react'
 import { gsap, useGSAP } from '@/lib/gsap'
@@ -59,13 +61,15 @@ export default function PracticePreview() {
   const panel = useRef<HTMLDivElement>(null)
   const correct = selected.every((item, index) => item === correctOrder[index]) && selected.length === 3
 
+  const lite = useLandingLite()
   useGSAP(() => {
+    if (lite) return
     const media = gsap.matchMedia()
     media.add('(prefers-reduced-motion: no-preference)', () => {
       gsap.from(panel.current, { y: 24, opacity: 0, duration: duration.panel, ease: ease.reveal, clearProps: 'transform,opacity' })
     })
     return () => media.revert()
-  }, { scope: panel, dependencies: [mode, revealed, checked], revertOnUpdate: true })
+  }, { scope: panel, dependencies: [mode, revealed, checked, lite], revertOnUpdate: true })
 
   return <div className={styles.lab}>
     <div className={styles.labTabs} aria-label="Escolha uma prática">
@@ -83,7 +87,7 @@ export default function PracticePreview() {
         </div>
         <div className={styles.wordBank} lang="en">{parts.map((part, index) => <button key={part} disabled={selected.includes(index)} onClick={() => { setSelected([...selected, index]); setChecked(false) }}>{part}<span aria-hidden="true">+</span></button>)}</div>
         <div className={styles.labFeedback} aria-live="polite" data-correct={checked && correct}>{checked && correct && <FeedbackConfetti />}{checked ? correct ? <><Check size={20} /><span>Isso! <strong>Can I have</strong> abre um pedido educado. Você já pode usar essa frase.</span></> : <><Lightbulb size={20} /><span>Comece com “Can I have”, depois acrescente o pedido. Toque em uma parte para reorganizar.</span></> : <span>Você aprende usando a língua, uma decisão por vez.</span>}</div>
-        <div className={styles.labActions}><button className={styles.primary} disabled={selected.length !== 3 || checked && correct} onClick={() => setChecked(true)}>Verificar frase <Check size={18} /></button><button className={styles.reset} aria-label="Recomeçar frase" onClick={() => { setSelected([]); setChecked(false) }}><RotateCcw size={19} /></button></div>
+        <div className={styles.labActions}><button className={styles.primary} disabled={selected.length !== 3 || checked && correct} data-sound-feedback onClick={() => { playLandingSound(correct ? 'correct' : 'wrong'); setChecked(true) }}>Verificar frase <Check size={18} /></button><button className={styles.reset} aria-label="Recomeçar frase" onClick={() => { setSelected([]); setChecked(false) }}><RotateCcw size={19} /></button></div>
       </> : <>
         <h3 lang="en">a little closer</h3>
         <p>Tente lembrar o significado antes de revelar.</p>

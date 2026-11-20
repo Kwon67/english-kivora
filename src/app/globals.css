@@ -2145,3 +2145,38 @@ html.kivora-landing-scroll {
   background: transparent;
   border: 1px solid var(--kivora-outline);
 }
+
+::selection { background:#ebc1ff; color:#2c2e2a; }
+:where(a,button,input,textarea,select,summary,[tabindex]):focus-visible {
+  outline:2px solid #477c2d;
+  outline-offset:4px;
+}
+@media (hover:hover) and (pointer:fine) {
+  html { scrollbar-width:thin; scrollbar-color:#477c2d66 transparent; }
+}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
+  html[data-kivora-pointer], html[data-kivora-pointer] :is(a,button,summary,[role="button"]):not(dialog *) { cursor:none; }
+  a:not([aria-label]):hover { text-decoration:underline; text-decoration-thickness:1px; animation:kivora-underline 160ms ease-out both; }
+}
+@media (pointer:coarse) and (prefers-reduced-motion:no-preference) {
+  :where(a,button:not(:disabled),summary):active { scale:.97; }
+}
+@keyframes kivora-underline {
+  from { text-decoration-color:transparent; text-underline-offset:.23em; }
+  to { text-decoration-color:currentColor; text-underline-offset:.36em; }
+}
+
+@media (prefers-reduced-motion:no-preference) {
+  html:not(.kivora-landing-lite)::view-transition-group(.kivora-auth-exit) {
+    background:#8ed462;
+    animation:kivora-auth-curtain 470ms cubic-bezier(.65,0,.24,1) both;
+  }
+  html:not(.kivora-landing-lite)::view-transition-old(.kivora-auth-exit) {
+    animation:kivora-auth-cover 260ms cubic-bezier(.65,0,.24,1) both;
+  }
+}
+@keyframes kivora-auth-cover { to { opacity:0; transform:translateY(-32px); } }
+@keyframes kivora-auth-curtain {
+  0%, 42% { clip-path:inset(0); }
+  100% { clip-path:inset(0 0 100%); }
+}

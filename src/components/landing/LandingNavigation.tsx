@@ -74,7 +74,7 @@ export default function LandingNavigation({ links }: { links: { href: string; la
     event.preventDefault()
     close(() => {
       if (href.startsWith('#') && engine.current && scrollToAnchor(engine.current, href)) return
-      router.push(href)
+      router.push(href, { transitionTypes: href === '/login' || href === '/register' ? ['kivora-auth'] : undefined })
     })
   }
 
@@ -83,7 +83,7 @@ export default function LandingNavigation({ links }: { links: { href: string; la
       <nav aria-label="Navegação principal" className={styles.nav}>
         <Link href="/" aria-label="Kivora English, início" className={styles.brand}><LandingWordmark /></Link>
         <div className={styles.navLinks}>{links.map(link => <Link key={link.href} href={link.href}>{link.label}</Link>)}</div>
-        <div className={styles.navActions}><Link href="/login" className={styles.login}>Entrar <ArrowUpRight size={15} aria-hidden="true" /></Link><Link href="/register" className={styles.navCta}>Começar grátis <ArrowUpRight size={17} aria-hidden="true" /></Link><button ref={trigger} className={styles.menuTrigger} aria-label="Abrir menu" aria-expanded={open} aria-controls="kivora-mobile-menu" onClick={show}><span className={styles.menuGlyph} aria-hidden="true" /></button></div>
+        <div className={styles.navActions}><Link href="/login" transitionTypes={['kivora-auth']} className={styles.login}>Entrar <ArrowUpRight size={15} aria-hidden="true" /></Link><Link href="/register" transitionTypes={['kivora-auth']} className={styles.navCta}>Começar grátis <ArrowUpRight size={17} aria-hidden="true" /></Link><button ref={trigger} className={styles.menuTrigger} aria-label="Abrir menu" aria-expanded={open} aria-controls="kivora-mobile-menu" onClick={show}><span className={styles.menuGlyph} aria-hidden="true" /></button></div>
       </nav>
     </header>
     <dialog data-lenis-prevent ref={dialog} id="kivora-mobile-menu" aria-labelledby="mobile-menu-title" className={styles.mobileMenu} onKeyDown={event => {
@@ -107,7 +107,7 @@ export default function LandingNavigation({ links }: { links: { href: string; la
         <div className={styles.menuTop}><LandingWordmark /><button autoFocus onClick={() => close()} aria-label="Fechar menu"><X size={25} aria-hidden="true" /></button></div>
         <p id="mobile-menu-title" className={styles.eyebrow} data-menu-item>UM MUNDO PARA DESCOBRIR</p>
         <nav aria-label="Navegação no celular" className={styles.mobileLinks}>{links.map((link, index) => <Link data-menu-item key={link.href} href={link.href} onClick={event => navigate(event, link.href)}><small>0{index + 1}</small>{link.label}<ArrowUpRight size={25} aria-hidden="true" /></Link>)}</nav>
-        <div className={styles.menuBottom} data-menu-item><Link href="/login" onClick={event => navigate(event, '/login')}>Já tenho uma conta <ArrowRight size={19} aria-hidden="true" /></Link><Link href="/register" onClick={event => navigate(event, '/register')} className={styles.navCta}>Começar grátis <ArrowUpRight size={21} aria-hidden="true" /></Link></div>
+        <div className={styles.menuBottom} data-menu-item><Link href="/login" transitionTypes={['kivora-auth']} onClick={event => navigate(event, '/login')}>Já tenho uma conta <ArrowRight size={19} aria-hidden="true" /></Link><Link href="/register" transitionTypes={['kivora-auth']} onClick={event => navigate(event, '/register')} className={styles.navCta}>Começar grátis <ArrowUpRight size={21} aria-hidden="true" /></Link></div>
         <p className={styles.menuNote} data-menu-item>Seu próximo <span lang="en">hello</span> começa aqui.</p>
       </div>
     </dialog>

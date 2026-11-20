@@ -7,8 +7,11 @@ import 'lenis/dist/lenis.css'
 import { gsap, ScrollTrigger, SplitText, useGSAP } from '@/lib/gsap'
 import { duration, ease } from '@/lib/motion-tokens'
 import styles from './MindmarketLanding.module.css'
+import LandingSound, { playLandingSound } from './LandingSound'
+import { useLandingLite } from './useLandingLite'
 
 const LandingLenis = dynamic(() => import('./LandingLenis'), { ssr: false })
+let signed = false
 const ScrollContext = createContext<{ current: Lenis | null }>({ current: null })
 export const useLandingScroll = () => useContext(ScrollContext)
 
@@ -29,12 +32,25 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
   const root = useRef<HTMLDivElement>(null)
   const engine = useRef<Lenis | null>(null)
   const [smooth, setSmooth] = useState(false)
+  const lite = useLandingLite()
 
   useGSAP(() => {
+    if (!signed) {
+      signed = true
+      console.info('%c K\\   kivora.\n |<   Inglês para a vida acontecer.\n K/ ', 'color:#2c2e2a;background:#8ed462;font:600 13px monospace')
+    }
     const container = root.current!
     const media = gsap.matchMedia()
     const select = gsap.utils.selector(container)
-    document.documentElement.classList.add('kivora-landing-scroll')
+    const html = document.documentElement
+    html.classList.add('kivora-landing-scroll')
+    html.classList.toggle('kivora-landing-lite', lite)
+    const stop = () => html.classList.remove('kivora-landing-scroll', 'kivora-landing-lite')
+    if (lite) return stop
+
+    const pause = () => gsap.globalTimeline.paused(document.hidden)
+    document.addEventListener('visibilitychange', pause)
+    pause()
     media.add('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)', () => {
       setSmooth(true)
       // Each layer owns one transform. Travel, floating and pointer response
@@ -159,6 +175,7 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
         blitz.from(score.parentElement, { y: 10, opacity: 0, duration: .3 }, index * .13)
           .fromTo(score, { textContent: '000' }, { scrambleText: { text: score.dataset.score!, chars: '0123456789' }, duration: .65 }, index * .13)
       })
+      blitz.call(() => playLandingSound('combo', false))
       const belt = select('[data-word-belt]')[0]
       if (belt) {
         const marquee = gsap.to(belt, { xPercent: -50, duration: duration.belt, repeat: -1, ease: ease.linear,
@@ -177,17 +194,27 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
       }
       return () => { restoreTitles.forEach(restore => restore()); titles.disconnect(); observer.disconnect(); document.removeEventListener('visibilitychange', sync) }
     })
-    return () => { media.revert(); document.documentElement.classList.remove('kivora-landing-scroll') }
-  }, { scope: root })
+    return () => {
+      media.revert()
+      document.removeEventListener('visibilitychange', pause)
+      gsap.globalTimeline.paused(false)
+      stop()
+    }
+  }, { scope: root, dependencies: [lite], revertOnUpdate: true })
 
   return <ScrollContext.Provider value={engine}>
-    {smooth && <LandingLenis engineRef={engine} />}
-    <ViewTransition name="landing" default="none" enter="landing-page" exit="landing-page">
+    {smooth && !lite && <LandingLenis engineRef={engine} />}
+    <ViewTransition name="landing" default="none" exit={lite ? 'none' : { 'kivora-auth': 'kivora-auth-exit', default: 'none' }}>
       <div ref={root} className={styles.page} onClickCapture={event => {
+        if (event.target instanceof Element && !event.target.closest('[data-sound-control], [data-sound-feedback]')
+          && event.target.closest('a[href], button:not(:disabled), summary')) playLandingSound('click')
         if (!engine.current || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return
         const anchor = event.target instanceof Element && event.target.closest<HTMLAnchorElement>('a[href^="#"]')
         if (anchor && !anchor.closest('dialog') && !anchor.target && !anchor.hasAttribute('download') && scrollToAnchor(engine.current, anchor.hash)) event.preventDefault()
-      }}>{children}</div>
+      }}>
+        {children}
+        <LandingSound />
+      </div>
     </ViewTransition>
   </ScrollContext.Provider>
 }
