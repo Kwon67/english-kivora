@@ -153,3 +153,9 @@ A abertura da landing espera a decodificação do poster do hero e as fontes. A 
 O modo leve é selecionado quando há até dois núcleos lógicos, até 2 GB informados em `deviceMemory`, economia de dados ou conexão 3G ou inferior. As cenas, partículas da demo e coreografias mais elaboradas cedem lugar aos estados estáticos. O botão de som lembra a opção em `localStorage`, com sons de interface sintetizados localmente após consentimento. Navegações da landing para cadastro e login carregam o tipo de transição `kivora-auth`.
 
 O sitemap lista exclusivamente cinco URLs. O proxy mantém a sessão nas páginas protegidas e exclui a landing, os arquivos de descoberta e os caminhos de arquivos estáticos públicos. Os ícones da aplicação são versionados no manifesto e no cache do service worker. A imagem Open Graph de 1.200 × 630 reaproveita a ilustração original do hero.
+
+## Ilustrações decorativas
+
+`SpotIllustration` renderiza os ornamentos gerados no ImageGen como WebP com transparência e dimensões declaradas. As imagens seguem a paleta da Kivora. O lápis acompanha a prática e a revisão, o sol sinaliza um dia pronto para praticar, o girassol acompanha o progresso e a lua aparece nas pausas e nas preferências. Os livros são compartilhados pela demo, pela coleção e pelos exercícios. O arquivo de paleta verifica o hash das imagens e da máscara usada para o brilho.
+
+Nas três cenas da landing, as imagens decorativas e os pôsteres permanecem visíveis durante o carregamento do Rive e na versão com movimento reduzido. O canvas acrescenta movimento. Os ícones dos controles e o caminho animado mantêm a função para a qual foram desenhados.

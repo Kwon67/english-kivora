@@ -93,10 +93,52 @@ test('títulos mantêm suas linhas ao recarregar e rolar no celular', async ({ p
       const doodle = heading.nextElementSibling!
       if (heading.getBoundingClientRect().bottom > doodle.getBoundingClientRect().top) issues.add('ilustração do FAQ invadiu a faixa do título')
       const practice = document.getElementById('practice-title')!
-      const plane = practice.closest('section')!.querySelector('[data-journey-prop]')!
-      if (practice.getBoundingClientRect().bottom > plane.getBoundingClientRect().top) issues.add('avião de papel invadiu a faixa do título')
+      const ornament = practice.closest('section')!.querySelector('[data-journey-prop]')!
+      if (practice.getBoundingClientRect().bottom > ornament.getBoundingClientRect().top) issues.add('ornamento da prática invadiu a faixa do título')
       return [...issues]
     }, ids)
     expect(problems, width + ' px').toEqual([])
   }
+})
+
+test('as três ilustrações conservam os detalhes quando o Rive carrega', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'hardwareConcurrency', { value: 8 })
+    Object.defineProperty(navigator, 'deviceMemory', { value: 8 })
+    Object.defineProperty(navigator, 'connection', { value: undefined })
+  })
+  const scenes = ['discovery', 'memory', 'conversation'] as const
+  const gates = new Map(scenes.map(name => [name, Promise.withResolvers<void>()]))
+  for (const [name, gate] of gates) {
+    await page.route(`**/${name}.riv`, async route => {
+      await gate.promise
+      await route.continue()
+    })
+  }
+  await page.goto('/')
+
+  try {
+    for (const [name, gate] of gates) {
+      const scene = page.locator(`[data-art-scene="${name}"]`)
+      const ornaments = scene.locator('[data-depth-ornaments]')
+      const poster = scene.locator('picture img').first()
+      await scene.evaluate(el => el.scrollIntoView({ block: 'center', behavior: 'instant' }))
+      await expect(scene.locator('[data-rive-ready=false]')).toHaveCount(1)
+      await expect(ornaments).toBeVisible()
+      await expect(poster).toHaveCSS('clip-path', 'none')
+      await expect.poll(() => ornaments.locator('img').evaluateAll(images =>
+        images.every(image => image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0))).toBe(true)
+
+      gate.resolve()
+      await expect(scene.locator('[data-rive-ready=true] canvas')).toBeVisible({ timeout: 15_000 })
+      await expect(ornaments).toBeVisible()
+      await expect(poster).toHaveCSS('clip-path', 'none')
+    }
+  } finally {
+    for (const gate of gates.values()) gate.resolve()
+  }
+
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await expect(page.locator('[data-art-scene] canvas')).toHaveCount(0)
+  for (const ornaments of await page.locator('[data-depth-ornaments]').all()) await expect(ornaments).toBeVisible()
 })

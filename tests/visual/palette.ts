@@ -11,7 +11,7 @@ export async function readPaint(page: Page) {
     const canvas = document.createElement('canvas').getContext('2d', { willReadFrequently: true })!
     const normalized = new Map<string, string>()
     const colors = /(?:rgba?|hsla?|hwb|(?:ok)?l(?:ab|ch)|color)\([^()]*\)/gi
-    const properties = ['color', 'background-color', 'background-image', 'border-top-color', 'border-right-color',
+    const properties = ['color', 'background-color', 'background-image', 'mask-image', 'border-top-color', 'border-right-color',
       'border-bottom-color', 'border-left-color', 'outline-color', 'text-decoration-color', 'box-shadow',
       'text-shadow', 'fill', 'stroke', 'stop-color', 'filter', 'caret-color', 'accent-color', 'column-rule-color',
       'flood-color', 'lighting-color', '-webkit-text-fill-color', '-webkit-text-stroke-color']
@@ -24,11 +24,11 @@ export async function readPaint(page: Page) {
           if (property === 'outline-color' && style.outlineStyle === 'none') continue
           if (property.startsWith('border-') && style.getPropertyValue(property.replace('color', 'style')) === 'none') continue
           const value = style.getPropertyValue(property)
-          if (property === 'background-image') {
+          if (property === 'background-image' || property === 'mask-image') {
             for (const match of value.matchAll(/url\(["']?([^"')]+)["']?\)/g)) {
               const asset = new URL(match[1], location.href)
               if (asset.origin !== location.origin || !artwork.includes(asset.pathname)) {
-                throw Error('Imagem de fundo fora da referência de paleta: ' + asset.href)
+                throw Error('Imagem CSS fora da referência de paleta: ' + asset.href)
               }
             }
           }
