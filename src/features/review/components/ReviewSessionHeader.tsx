@@ -1,7 +1,10 @@
 'use client'
 
 import { ChevronDown, PanelRightOpen, X } from 'lucide-react'
-import { m } from 'motion/react'
+import { useRef } from 'react'
+import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
+import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 import {
   reviewCloseBtn,
   reviewHero,
@@ -31,6 +34,15 @@ export default function ReviewSessionHeader({
   onToggleDetails,
   onClose,
 }: ReviewSessionHeaderProps) {
+  const chevron = useRef<HTMLSpanElement>(null)
+  const bar = useRef<HTMLDivElement>(null)
+  const reduced = useHydratedReducedMotion()
+  useGSAP(() => {
+    gsap.to(chevron.current, { rotation: detailsOpen ? 180 : 0, duration: reduced ? 0 : 0.2, overwrite: true })
+  }, { scope: chevron, dependencies: [detailsOpen, reduced] })
+  useGSAP(() => {
+    gsap.to(bar.current, { width: `${Math.max(8, sessionProgress)}%`, duration: reduced ? 0 : 0.5, ease: 'power2.out', overwrite: true })
+  }, { scope: bar, dependencies: [sessionProgress, reduced] })
   return (
     <header className={`${reviewHero} p-3 sm:p-4`}>
       <div className="relative z-10 space-y-3">
@@ -55,9 +67,9 @@ export default function ReviewSessionHeader({
             >
               <PanelRightOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={1.5} />
               Detalhes
-              <m.span animate={{ rotate: detailsOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+              <span ref={chevron}>
                 <ChevronDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={1.5} />
-              </m.span>
+              </span>
             </button>
             <button type="button" onClick={onClose} className={reviewCloseBtn} aria-label="Fechar revisão">
               <X className="h-4 w-4" strokeWidth={1.5} />
@@ -73,10 +85,7 @@ export default function ReviewSessionHeader({
           </div>
           <div className={reviewRetentionStripTrack}>
             <div className={reviewRetentionStripBar}>
-              <m.div
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.max(8, sessionProgress)}%` }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
+              <div ref={bar} style={{ width: 0 }}
                 className="h-full rounded-full bg-brand-dark"
               />
             </div>
