@@ -17,6 +17,7 @@ const levels = [
 ] as const
 
 export default function LevelExplorer() {
+  "use memo"
   const [index, setIndex] = useState(0)
   const panel = useRef<HTMLDivElement>(null)
   useGSAP(() => {
