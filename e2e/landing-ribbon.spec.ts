@@ -46,7 +46,7 @@ test('abrir e fechar respostas preserva a curva do caminho', async ({ page, hasT
   const faq = page.locator('#faq')
   const firstSummary = await faq.locator('summary').first().elementHandle()
   if (hasTouch) {
-    // Start a gesture on the native control before the observer loads Motion.
+    // Start a gesture on the native control before the observer loads the animated list.
     await firstSummary.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'touch', isPrimary: true })
   }
   await faq.evaluate(element => element.scrollIntoView({ block: 'start', behavior: 'instant' }))
