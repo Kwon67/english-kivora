@@ -1,5 +1,5 @@
 import { Target, CheckCircle2, Flame, Headphones, Mic, Zap } from 'lucide-react'
-import { DecoGlobe } from '@/components/ui/DecorativeSvgs'
+import SpotIllustration from '@/components/illustrations/SpotIllustration'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { homeCardClass, homeSectionTitleClass } from '@/lib/homeStyles'
 
@@ -25,7 +25,7 @@ export default function DailyQuestsWidget({ quests }: { quests: Quest[] }) {
 
   return (
     <section className="content-visibility-section relative space-y-4">
-      <DecoGlobe className="absolute -top-1 right-0 h-8 w-8 opacity-20" />
+      <SpotIllustration motif="sun" className="absolute top-0 right-0 h-10 w-10" />
       <div>
         <SectionBadge label="Consistência" />
         <h2 className={`mt-3 ${homeSectionTitleClass}`}>Missões Diárias</h2>

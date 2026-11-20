@@ -1,4 +1,6 @@
 'use client'
+
+import SpotIllustration from '@/components/illustrations/SpotIllustration'
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
@@ -132,9 +134,9 @@ export default function ReviewClient({ userId, initialDueCards, initialStats, pa
     return () => window.removeEventListener('keydown', listener)
   })
   if (initialLoadStatus !== 'ok' && !active) return <ProductMotion className="study-desk"><div className="study-finish"><RotateCcw size={32} /><h1>Não foi possível<br />abrir a revisão.</h1><button className="product-primary" onClick={() => window.location.reload()}>Tentar novamente</button><Link href="/library">Abrir coleção</Link></div></ProductMotion>
-  if (!active && pending.length) return <ProductMotion className="study-desk"><div className="study-finish" role="status"><span className="product-kicker">PAUSA PARA FIXAR</span><h1>Mais uma chance<br />em instantes.</h1><p>Próxima revisão prevista para {new Date(Math.min(...pending.map(item => item.dueAt))).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}. Ela volta automaticamente enquanto esta página estiver aberta.</p><Link className="product-text-link" href="/library">Abrir coleção <ArrowRight size={16} /></Link></div><PracticeRoutes /></ProductMotion>
+  if (!active && pending.length) return <ProductMotion className="study-desk"><div className="study-finish" role="status"><SpotIllustration motif="moon" className="mx-auto h-10 w-10" /><span className="product-kicker">PAUSA PARA FIXAR</span><h1>Mais uma chance<br />em instantes.</h1><p>Próxima revisão prevista para {new Date(Math.min(...pending.map(item => item.dueAt))).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}. Ela volta automaticamente enquanto esta página estiver aberta.</p><Link className="product-text-link" href="/library">Abrir coleção <ArrowRight size={16} /></Link></div><PracticeRoutes /></ProductMotion>
   if (!active) return <div className="study-desk study-desk--review">
-    <StudioHero label={completed ? 'Sessão concluída' : 'Revisão em dia'} title={completed ? 'Bom trabalho.' : 'Tudo em dia.'}
+    <StudioHero ornament={completed ? 'sunflower' : 'sun'} label={completed ? 'Sessão concluída' : 'Revisão em dia'} title={completed ? 'Bom trabalho.' : 'Tudo em dia.'}
       description={completed ? `${completed} ${completed === 1 ? 'resposta salva' : 'respostas salvas'}.` : 'Sua revisão está em dia. Experimente usar o inglês em uma situação nova.'}>
       <Link href="/today">Praticar em contexto <ArrowRight size={16} /></Link>
       <Link href="/library">Abrir coleção</Link>
@@ -142,7 +144,7 @@ export default function ReviewClient({ userId, initialDueCards, initialStats, pa
     </StudioHero><PracticeRoutes />
   </div>
   return <div ref={reviewRoot} className="study-desk study-desk--review" data-testid="review-page">
-    <StudioHero title="Revisão" compact>
+    <StudioHero title="Revisão" ornament="pencil" compact>
       <Link href="/add"><Plus size={16} />Adicionar palavra</Link>
     </StudioHero>
     <div className="study-session-line"><span>{sessionTitle || 'Sua sessão de hoje'}</span><span aria-live="polite">{completed} / {total} respostas</span><Link href="/library" aria-label="Pausar revisão" aria-disabled={saving} onClick={e => { if (saving) e.preventDefault() }}><X size={19} /></Link></div>

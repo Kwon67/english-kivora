@@ -4,6 +4,7 @@ import styles from '@/features/profile/components/Settings.module.css'
 export default function SettingsHeader() {
   return (
     <WorkspaceHeading
+      ornament="moon"
       title="Configurações"
       description="Gerencie sua conta, notificações e dados."
       actions={

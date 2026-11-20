@@ -1,3 +1,4 @@
+import SpotIllustration from '@/components/illustrations/SpotIllustration'
 import Link from 'next/link'
 import { ArrowRight, BookOpen, Check, Headphones, MessageCircle, Mic, RotateCcw, Sparkles, TrendingUp } from 'lucide-react'
 import ConversationIllustration from '@/components/illustrations/ConversationIllustration'
@@ -38,7 +39,11 @@ export default function LearningSections() {
       <LearningMotion className={styles.recallGrid}>
         <div className={styles.memoryVisual} data-entrance>
           <div className={styles.memoryWord}><span>NA SUA COLEÇÃO</span><strong lang="en">make it happen</strong><p>fazer acontecer</p><BookOpen size={23} aria-hidden="true" /></div>
-          <svg className={styles.memoryTrail} viewBox="0 0 440 170" fill="none" aria-hidden="true"><path d="M25 122C65 122 44 35 114 35S164 128 229 128s76-93 184-93" stroke="#b1c2b7" strokeWidth="2" strokeDasharray="5 7" /><path data-draw-path d="M25 122C65 122 44 35 114 35S164 128 229 128s76-93 184-93" stroke="var(--brand-green)" strokeWidth="3" /><circle cx="25" cy="122" r="10" fill="#F3D778" stroke="var(--brand-green)" /><circle cx="114" cy="35" r="13" fill="var(--brand-sage)" stroke="var(--brand-green)" /><circle cx="229" cy="128" r="16" fill="#789684" stroke="var(--brand-green)" /><circle cx="413" cy="35" r="20" fill="var(--brand-green)" /><path d="m403 35 7 7 13-14" stroke="white" strokeWidth="3" strokeLinecap="round" /></svg>
+          <div className={styles.memoryTrail} aria-hidden="true">
+            <SpotIllustration motif="pencil" />
+            <SpotIllustration motif="sun" />
+            <SpotIllustration motif="sunflower" />
+          </div>
           <div className={styles.memoryStages}><span>Descobrir</span><span>Relembrar</span><span>Consolidar</span></div>
           <p className={styles.visualCaption}>Um exemplo de percurso. O intervalo acompanha suas respostas.</p>
         </div>
@@ -55,13 +60,9 @@ export default function LearningSections() {
 
     <section className={styles.progressSection}>
       <LearningMotion className={styles.progressGrid}>
-        <div className={styles.planVisual} data-entrance><div className={styles.planHeading}><CompassIcon /><span>SEU PRÓXIMO PASSO</span></div><h3>Um pouco de cada vez.<br />Um caminho só seu.</h3><ul><li data-tone="review"><span><RotateCcw size={19} /></span><div><strong>Relembre o que importa</strong><small>Palavras que precisam de atenção</small></div><Check size={18} /></li><li data-tone="listening"><span><Headphones size={19} /></span><div><strong>Descubra algo novo</strong><small>Uma lição no seu nível</small></div><ArrowRight size={18} /></li><li data-tone="tutor"><span><MessageCircle size={19} /></span><div><strong>Leve para uma conversa</strong><small>Inglês aplicado a situações reais</small></div><ArrowRight size={18} /></li></ul><span className={styles.visualCaption}>Uma rotina possível. Seu plano considera nível, objetivos e dificuldades.</span></div>
+        <div className={styles.planVisual} data-entrance><div className={styles.planHeading}><SpotIllustration motif="plane" className="size-8" /><span>SEU PRÓXIMO PASSO</span></div><h3>Um pouco de cada vez.<br />Um caminho só seu.</h3><ul><li data-tone="review"><span><RotateCcw size={19} /></span><div><strong>Relembre o que importa</strong><small>Palavras que precisam de atenção</small></div><Check size={18} /></li><li data-tone="listening"><span><Headphones size={19} /></span><div><strong>Descubra algo novo</strong><small>Uma lição no seu nível</small></div><ArrowRight size={18} /></li><li data-tone="tutor"><span><MessageCircle size={19} /></span><div><strong>Leve para uma conversa</strong><small>Inglês aplicado a situações reais</small></div><ArrowRight size={18} /></li></ul><span className={styles.visualCaption}>Uma rotina possível. Seu plano considera nível, objetivos e dificuldades.</span></div>
         <div><Heading number="05" label="SEU ESFORÇO TEM DIREÇÃO" title={<>Pequenos passos.<br /><em>Progresso de verdade.</em></>}>Seu plano conecta nível, interesses e pontos que precisam de atenção. Acompanhe suas revisões, explore suas dificuldades e veja sua evolução ao longo do tempo.</Heading><div className={styles.progressPromise}><TrendingUp size={25} aria-hidden="true" /><p>Mais que uma sequência de dias.<br /><strong>Saiba o que praticar a seguir.</strong></p></div><Link href="/register" className={styles.textLink}>Encontrar meu ponto de partida <ArrowRight size={18} aria-hidden="true" /></Link></div>
       </LearningMotion>
     </section>
   </>
-}
-
-function CompassIcon() {
-  return <svg viewBox="0 0 32 32" width="32" height="32" fill="none" aria-hidden="true"><circle cx="16" cy="16" r="14" stroke="currentColor" strokeWidth="1.5" /><path d="m20 10-3 9-7 3 3-9Z" fill="var(--brand-yellow)" stroke="currentColor" strokeWidth="1.5" /></svg>
 }

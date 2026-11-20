@@ -28,13 +28,6 @@ export default function LearningMotion({ children, className, hero = false }: { 
       // Never hide the server-rendered headline or delay the largest contentful paint.
       animate('[data-entrance]', { y: hero ? 28 : 20, stagger: .09, clearProps: 'transform' }, 0)
 
-      element.querySelectorAll<SVGPathElement>('[data-draw-path]').forEach(path => {
-        const length = path.getTotalLength()
-        gsap.fromTo(path, { strokeDasharray: length, strokeDashoffset: length }, {
-          strokeDashoffset: 0, duration: 1.7, ease: 'power2.inOut', clearProps: 'strokeDasharray,strokeDashoffset',
-          scrollTrigger: { trigger: path, start: 'top 88%', once: true },
-        })
-      })
       if (hero && conditions.desktop) {
         gsap.to(select('[data-scroll-art]'), { y: 12, ease: 'none', scrollTrigger: { trigger: element, start: 'top top', end: 'bottom top', scrub: .8 } })
       }

@@ -4,6 +4,7 @@ import { m } from 'motion/react'
 import Link from 'next/link'
 import { ArrowRight, Check, Lock, Sparkles } from 'lucide-react'
 import SectionBadge from '@/components/ui/SectionBadge'
+import SpotIllustration from '@/components/illustrations/SpotIllustration'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { landingRadius } from '@/lib/landingStyles'
 import {
@@ -52,7 +53,10 @@ export default function FirstDayGuide({ plan, firstName }: FirstDayGuideProps) {
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
       className={`${homeCardClass} home-frosted-surface p-6 sm:p-8`}
     >
-      <SectionBadge label="Primeiro dia" />
+      <div className="flex items-center justify-between gap-3">
+        <SectionBadge label="Primeiro dia" />
+        <SpotIllustration motif="sunflower" className="h-9 w-9 shrink-0" />
+      </div>
 
       <h2 className={`mt-4 ${homeSectionTitleClass}`}>
         {displayName ? `${displayName}, seus` : 'Seus'} primeiros {totalMinutes} minutos

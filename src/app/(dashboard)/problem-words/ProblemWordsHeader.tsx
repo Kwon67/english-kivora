@@ -7,6 +7,7 @@ import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 export default function ProblemWordsHeader() {
   return (
     <WorkspaceHeading
+      ornament="pencil"
       title="Dificuldades"
       breadcrumb="Dificuldades"
       description="Revise os termos que você errou nas sessões recentes."

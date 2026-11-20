@@ -1,3 +1,4 @@
+import SpotIllustration from '@/components/illustrations/SpotIllustration'
 import Link from 'next/link'
 import { ArrowDown, ArrowRight, Headphones, MessageCircle, RotateCcw } from 'lucide-react'
 import ConversationIllustration from '@/components/illustrations/ConversationIllustration'
@@ -10,7 +11,7 @@ export default function Hero() {
     <LearningMotion hero className={styles.heroGrid}>
       <div className={styles.heroCopy}>
         <p className={styles.eyebrow} data-entrance><span className={styles.eyebrowDot} /> PEQUENAS DESCOBERTAS. NOVAS POSSIBILIDADES.</p>
-        <h1 className={styles.title} data-entrance>Seu inglês<br />ganha <span>vida.<svg viewBox="0 0 200 20" fill="none" aria-hidden="true"><path d="M5 12C51 1 123 0 194 9M9 17c56-8 117-8 177-4" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /></svg></span></h1>
+        <h1 className={styles.title} data-entrance>Seu inglês<br />ganha <span>vida.<SpotIllustration motif="ticks" /></span></h1>
         <p className={styles.heroDescription} data-entrance>Entenda uma frase. Puxe uma conversa.<br className={styles.desktopBreak} /> Descubra o que você já consegue fazer.</p>
         <div className={styles.heroActions} data-entrance><Link href="/register" className={styles.primary}>Começar grátis <ArrowRight size={19} aria-hidden="true" /></Link><a href="#como-funciona" className={styles.textLink}>Experimente uma prática <ArrowDown size={17} aria-hidden="true" /></a></div>
         <p className={styles.heroNote} data-entrance>Do A1 ao C2. Um próximo passo que faz sentido para você.</p>

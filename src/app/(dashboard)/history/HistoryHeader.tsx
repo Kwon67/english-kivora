@@ -5,6 +5,7 @@ import styles from './History.module.css'
 export default function HistoryHeader({ filterDate }: { filterDate?: string }) {
   return (
     <WorkspaceHeading
+      ornament="sunflower"
       title="Seu histórico"
       description={filterDate ? `Sessões de ${filterDate.split('-').reverse().join('/')}` : 'Acompanhe suas sessões, revisões e evolução.'}
       actions={

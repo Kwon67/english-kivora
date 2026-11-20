@@ -1,5 +1,7 @@
 'use client'
 
+import SpotIllustration from '@/components/illustrations/SpotIllustration'
+
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { AlertCircle, ArrowRight, ChevronDown, Flame, Heart, Sparkles, Trophy, Zap } from 'lucide-react'
@@ -98,7 +100,7 @@ export default function BlitzLanding({
       <section className={`${blitzHeroArena} blitz-entry-hero`} aria-labelledby="blitz-entry-title">
         <div className="blitz-entry-content">
           <header>
-            <h1 id="blitz-entry-title">Blitz <Zap aria-hidden="true" /></h1>
+            <h1 id="blitz-entry-title">Blitz <SpotIllustration motif="bolt" className="inline-block size-9 align-middle sm:size-12" /></h1>
             <p className="blitz-lead">Pratique inglês em rodadas rápidas. Faixa {faixaLabel}.</p>
           </header>
 

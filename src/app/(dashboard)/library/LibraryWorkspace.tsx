@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ArrowRight, BookOpen, ChevronDown, Plus, Search, SlidersHorizontal } from 'lucide-react'
 import type { UserPackSummary } from '@/features/profile/components/UserPacksManager'
 import ProductMotion from '@/features/words/ProductMotion'
+import SpotIllustration from '@/components/illustrations/SpotIllustration'
 
 const Tools = dynamic(() => import('@/features/profile/components/UserPacksManager'), {
   loading: () => <p role="status">Abrindo ferramentas…</p>,
@@ -41,7 +42,7 @@ export default function LibraryWorkspace({
   return (
     <ProductMotion className="collection-workspace" subtle>
       <header className="collection-heading">
-        <h1>Minha coleção</h1>
+        <h1>Minha coleção <SpotIllustration motif="books" className="ml-1 inline-block w-12 align-middle sm:w-14" /></h1>
         {!loadError && <p>{wordCount(totalCards)} em {packs.length} {packs.length === 1 ? 'grupo' : 'grupos'}</p>}
       </header>
 

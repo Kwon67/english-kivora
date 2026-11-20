@@ -6,7 +6,7 @@
 .eyebrowDot { width:8px; height:8px; border-radius:50%; background:var(--brand-green); flex:none; }
 .hero h1.title { font-family:var(--font-display); font-size:clamp(58px,6.1vw,86px); font-weight:400; line-height:1.03; letter-spacing:-.045em; margin:25px 0 30px; }
 .title > span { display:inline-block; position:relative; color:var(--kivora-success); }
-.title > span svg { position:absolute; width:100%; height:18px; left:0; bottom:-10px; color:var(--brand-green); }
+.title > span img { position:absolute; width:34px; height:auto; right:-27px; bottom:0; }
 .heroDescription { font-size:clamp(17px,1.55vw,20px); color:var(--kivora-muted); line-height:1.65; max-width:37ch; }
 .heroActions { display:flex; align-items:center; flex-wrap:wrap; gap:16px 24px; margin-top:30px; }
 .primary { display:inline-flex; justify-content:center; align-items:center; gap:22px; min-height:54px; padding:14px 24px; border:1px solid transparent; border-radius:13px; background:var(--brand-violet); color:white; font-weight:600; font-size:15px; box-shadow:0 3px 0 #49319a; transition:background .18s,transform .18s,box-shadow .18s; }
@@ -116,7 +116,8 @@
 .memoryWord strong { display:block; font-family:var(--font-display); font-size:34px; font-weight:400; margin-top:20px; }
 .memoryWord p { color:var(--kivora-muted); font-size:14px; margin:6px 0 18px; }
 .memoryWord > svg { color:var(--brand-green); }
-.memoryTrail { display:block; width:100%; margin-top:28px; overflow:visible; padding:0 8px; }
+.memoryTrail { display:grid; grid-template-columns:repeat(3,1fr); justify-items:center; gap:12px; margin-top:28px; padding:0 8px; }
+.memoryTrail img { width:clamp(34px,8vw,84px); height:auto; }
 .memoryStages { display:flex; justify-content:space-between; gap:14px; padding:5px 0 18px; font-size:12px; color:var(--kivora-success); }
 .visualCaption { display:block; color:var(--kivora-muted); font-size:11px; line-height:1.6; }
 .featureTags { display:flex; flex-wrap:wrap; gap:8px; margin-top:24px; }
@@ -156,7 +157,7 @@
 .invitation p:last-child { font-size:14px; color:var(--kivora-success); }
 .invitationAction { display:flex; flex-direction:column; align-items:center; gap:16px; flex:none; }
 .invitationAction > span { font-size:10px; color:var(--kivora-success); }
-.invitationDoodle { position:absolute; width:220px; top:-50px; right:130px; color:#b1c2b7; z-index:-1; transform:rotate(-20deg); }
+.invitationDoodle { position:absolute; width:140px; height:auto; top:-24px; right:130px; z-index:-1; transform:rotate(-20deg); }
 
 @media(min-width:1600px) { .hero { padding-top:72px; } .heroGrid { gap:80px; } }
 @media(max-width:1100px) {

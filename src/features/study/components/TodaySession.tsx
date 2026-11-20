@@ -73,6 +73,7 @@ export default function TodaySession({ userId, level, initialDraft = null, persi
   return <div className="study-desk study-desk--today" data-testid="today-session">
     {draft.step === 0 ? <StudioHero
       label={`Hoje · Faixa ${band}`}
+      ornament="pencil"
       title={lesson.title}
       description={lesson.preparation}
       headingId="today-step-heading"

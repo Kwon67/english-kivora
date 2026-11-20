@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import BrandMark from '@/components/ui/BrandMark'
 import MotionSurface from '@/components/motion/MotionSurface'
 import ConversationIllustration from '@/components/illustrations/ConversationIllustration'
+import SpotIllustration from '@/components/illustrations/SpotIllustration'
 
 type Props = {
   title: string
@@ -29,7 +30,11 @@ export default function AuthShell({
         </Link>
       </div>
       <div className="premium-auth-grid">
-        <aside className="auth-learning-story" aria-label="Aprender com a Kivora"><ConversationIllustration /><h2>Um novo jeito de<br />encontrar sua voz.</h2></aside>
+        <aside className="auth-learning-story relative" aria-label="Aprender com a Kivora">
+          <ConversationIllustration />
+          <SpotIllustration motif="chat" className="pointer-events-none absolute right-7 top-6 h-11 w-11" />
+          <h2>Um novo jeito de<br />encontrar sua voz.</h2>
+        </aside>
         <MotionSurface className="premium-auth-form">
           <p className="premium-kicker">{eyebrow}</p>
           <h1>{title}</h1>

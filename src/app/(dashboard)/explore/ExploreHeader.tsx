@@ -18,6 +18,7 @@ export default function ExploreHeader({
 }) {
   return (
     <WorkspaceHeading
+      ornament="plane"
       title="Catálogo de lições"
       breadcrumb="Explorar"
       description="Encontre lições por nível ou tema."

@@ -1,16 +1,11 @@
 import Image from 'next/image'
+import SpotIllustration, { type SpotMotif } from '@/components/illustrations/SpotIllustration'
 import JourneyRive from './JourneyRive'
 import styles from './JourneyArt.module.css'
 
 type SceneProps = { className?: string; riveSrc?: string }
-const ink = '#2c2e2a'
-
-function Spark({ x, y, color = '#f5e211' }: { x: number; y: number; color?: string }) {
-  return <g transform={`translate(${x} ${y})`}><g data-art-motion="turn"><path d="m0-23 7 15 17-6-8 15 14 11-18 2-1 18-11-14-16 9 6-18-16-7 18-5z" fill={color} /></g></g>
-}
-
-function Plane({ x, y, rotate = 0 }: { x: number; y: number; rotate?: number }) {
-  return <g transform={`translate(${x} ${y}) rotate(${rotate})`}><g data-art-motion="drift"><path d="m-50 4 99-28-34 67-20-30-25 10 5-23z" fill="#fffef8" /><path d="m-50 4 45-4 54-24L-5 13m0-13v13l20 30" fill="none" stroke={ink} strokeWidth="1.6" strokeLinejoin="round" /></g></g>
+export function JourneySpark() {
+  return <span className={styles.spark} data-journey-glyph aria-hidden="true" />
 }
 
 const descriptions = {
@@ -42,13 +37,13 @@ function GeneratedScene({ name, className = '', riveSrc }: SceneProps & { name: 
     <div className={styles.illustration} data-art-motion="illustration">
       {riveSrc ? <JourneyRive key={riveSrc} src={riveSrc}>{layers}</JourneyRive> : layers}
     </div>
-    <svg className={styles.ornaments} data-cursor data-depth-ornaments viewBox="0 0 900 600" fill="none" aria-hidden="true" focusable="false">
-      <Plane x={name === 'memory' ? 760 : 80} y={name === 'conversation' ? 125 : 165} rotate={-14} />
-      <Spark x={name === 'memory' ? 610 : 450} y={name === 'conversation' ? 35 : 45} />
-      <Spark x={845} y={410} color="#ebc1ff" />
-      <g transform="translate(90 435)"><g data-art-motion="drift"><circle r="16" fill="#209fff" /><circle cx="29" cy="-22" r="6" fill="#ff705d" /><path d="M-28 27q22 13 44-2" stroke="#2c2e2a" strokeWidth="3" strokeLinecap="round" /></g></g>
-      <g transform="translate(790 105)"><g data-art-motion="turn"><path d="M-15 0h30M0-15v30" stroke="#ff705d" strokeWidth="6" strokeLinecap="round" /></g></g>
-    </svg>
+    <div className={styles.ornaments} data-cursor data-depth-ornaments aria-hidden="true">
+      <SpotIllustration eager motif="plane" className={styles.planeDetail} />
+      <SpotIllustration eager motif="sun" className={styles.sunDetail} />
+      <SpotIllustration eager motif="burst" className={styles.burstDetail} />
+      <SpotIllustration eager motif="dots" className={styles.dotsDetail} />
+      <SpotIllustration eager motif="ticks" className={styles.ticksDetail} />
+    </div>
   </div>
 }
 
@@ -56,6 +51,8 @@ export function DiscoveryScene(props: SceneProps) { return <GeneratedScene name=
 export function MemoryScene(props: SceneProps) { return <GeneratedScene name="memory" {...props} /> }
 export function ConversationScene(props: SceneProps) { return <GeneratedScene name="conversation" {...props} /> }
 
-export function JourneyMotif({ kind, className = '' }: SceneProps & { kind: 'plane' | 'spark' | 'chat' }) {
-  return <div className={`${styles.motif} ${className}`} data-cursor data-journey-prop aria-hidden="true"><svg viewBox="0 0 120 120" fill="none" focusable="false">{kind === 'plane' ? <Plane x={60} y={60} rotate={-12} /> : kind === 'spark' ? <g transform="translate(60 60) scale(2)"><Spark x={0} y={0} color="#ebc1ff" /></g> : <><path d="M18 23h70c14 0 22 8 22 22v22c0 14-8 22-22 22H58L32 109V89H18C4 89 0 81 0 67V45c0-14 4-22 18-22Z" fill="#209fff" /><circle cx="28" cy="56" r="5" fill="#fffef8" /><circle cx="54" cy="56" r="5" fill="#fffef8" /><circle cx="80" cy="56" r="5" fill="#fffef8" /></>}</svg></div>
+export function JourneyMotif({ kind, className = '' }: { kind: SpotMotif; className?: string }) {
+  return <div className={`${styles.motif} ${className}`} data-cursor data-journey-prop aria-hidden="true">
+    <SpotIllustration eager motif={kind} />
+  </div>
 }

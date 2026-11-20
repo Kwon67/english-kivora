@@ -1,23 +1,28 @@
 .scene { width:100%; position:relative; }
 .illustration { width:100%; padding:12px 22px; }
 .illustration picture,.illustration img { display:block; width:100%; height:auto; aspect-ratio:3/2; object-fit:contain; }
-.scene>.ornaments { position:absolute; inset:0; display:block; width:100%; height:100%; overflow:visible; pointer-events:none; }
+.ornaments { position:absolute; inset:0; pointer-events:none; }
+.ornaments > * { position:absolute; height:auto; }
+.planeDetail { top:18%; left:2%; width:12%; }
+.scene[data-art-scene="memory"] .planeDetail { top:18%; left:6%; }
+.scene[data-art-scene="conversation"] .planeDetail { top:12%; }
+.sunDetail { top:4%; left:51%; width:7%; }
+.scene[data-art-scene="memory"] .sunDetail { top:9%; left:66%; }
+.burstDetail { right:1%; top:61%; width:8%; }
+.dotsDetail { left:5%; top:64%; width:9%; }
+.ticksDetail { right:5%; top:12%; width:9%; }
+.spark {
+  display:block; width:100%; aspect-ratio:1; flex:none; background:currentColor;
+  mask:url('/images/journey-details/spark.webp') center / contain no-repeat;
+}
 .motif { position:absolute; width:clamp(54px,7vw,110px); aspect-ratio:1; pointer-events:none; }
-.motif>svg { display:block; width:100%; height:auto; }
+.motif>img { display:block; width:100%; height:auto; }
 @media(max-width:767px) { .illustration { padding:20px 28px; } }
 
 .riveScene { position:relative; }
 .riveScene canvas { position:absolute; inset:0; width:100%; height:100%; visibility:hidden; pointer-events:none; }
+/* The canvas adds motion without replacing the poster or the SVG ornaments. */
 .riveScene[data-rive-ready="true"] canvas { visibility:visible; }
-.scene:has(.riveScene[data-rive-ready="true"]) > .ornaments { visibility:hidden; }
-
-/* The artwork includes four static droplets for the reduced-motion version. */
-.scene[data-art-scene="memory"] .riveScene[data-rive-ready="true"] img {
-  clip-path:polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0,
-    58% 51.7%, 60.65% 51.7%, 60.65% 58.85%, 57.55% 58.85%,
-    57.55% 53.5%, 58% 53.5%, 58% 51.7%, 0 0);
-}
-
 .plantLayers { position:relative; }
 .plant { position:absolute; inset:0; pointer-events:none; }
 .plant picture { clip-path:polygon(55.6% 59%,60% 59%,61% 56%,63% 53%,67.8% 52.5%,67.8% 61%,70% 62%,70% 69%,63% 70%,63% 74%,61.6% 74%,61.6% 68%,55.6% 66%); }

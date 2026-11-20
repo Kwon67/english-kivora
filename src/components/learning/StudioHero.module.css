@@ -12,10 +12,16 @@
 .copy { min-width: 0; }
 
 .kicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 13px;
   font-weight: 600;
   line-height: 1.4;
 }
+
+.kickerArt { width: 26px; height: 26px; flex: none; }
+.headingArt { display: inline-block; width: .9em; height: .9em; margin-inline-start: .25em; vertical-align: middle; }
 
 .hero h1.headline {
   margin: 8px 0;
