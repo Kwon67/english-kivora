@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: '.',
-  testMatch: 'landing-scroll.spec.ts',
+  testMatch: ['landing-scroll.spec.ts', 'landing-ribbon.spec.ts'],
   workers: 1,
   outputDir: '../output/landing-hz/playwright',
   use: {
@@ -14,5 +14,7 @@ export default defineConfig({
     { name: 'desktop', use: { browserName: 'chromium', viewport: { width: 1440, height: 900 },
       launchOptions: { executablePath: process.env.KIVORA_CHROME_EXECUTABLE } } },
     { name: 'touch', use: { ...devices['iPhone 13'], browserName: 'webkit' } },
+    { name: 'chromium-touch', use: { ...devices['Pixel 7'], browserName: 'chromium',
+      launchOptions: { executablePath: process.env.KIVORA_CHROME_EXECUTABLE } } },
   ],
 })

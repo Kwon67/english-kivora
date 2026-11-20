@@ -28,7 +28,6 @@ function layoutPosition(element: HTMLElement, ancestor: HTMLElement) {
 type Point = { x: number; y: number }
 
 type Cubic = { start: Point; first: Point; second: Point; end: Point }
-type FlatCurve = { points: Point[]; distances: number[]; length: number }
 type Arrival = { y: number; length: number; area: number }
 
 // The approved prefix uses only absolute M/C/S commands (including implicit S
@@ -53,7 +52,7 @@ function prefixCurves(path: string): Cubic[] {
 const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y)
 const midpoint = (a: Point, b: Point): Point => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 })
 
-function flattenCurve(curve: Cubic): FlatCurve {
+function flattenCurve(curve: Cubic): Point[] {
   const points = [curve.start]
   const split = ({ start, first, second, end }: Cubic, depth: number) => {
     const polygon = distance(start, first) + distance(first, second) + distance(second, end)
@@ -64,28 +63,28 @@ function flattenCurve(curve: Cubic): FlatCurve {
     split({ start: center, first: e, second: c, end }, depth + 1)
   }
   split(curve, 0)
-  const distances = [0]
-  for (let index = 1; index < points.length; index++) distances.push(distances[index - 1] + distance(points[index - 1], points[index]))
-  return { points, distances, length: distances[distances.length - 1] }
+  return points
 }
 
-function arrivalLookup(curves: Cubic[], cache: Map<string, FlatCurve>, scaleX: number, scaleY: number, nativeLength: number) {
-  const nextCache = new Map<string, FlatCurve>()
-  const samples: { y: number; length: number; travel: number }[] = []
-  let accumulated = 0, travel = 0
+function arrivalLookup(curves: Cubic[], cache: Map<string, Point[]>, scaleX: number, scaleY: number) {
+  const nextCache = new Map<string, Point[]>()
+  const samples: { y: number; travel: number }[] = []
+  const segmentEnds: number[] = []
+  let travel = 0
   let previous: Point | undefined
   curves.forEach(curve => {
     const key = [curve.start, curve.first, curve.second, curve.end].flatMap(point => [point.x, point.y]).join(',')
-    const flat = cache.get(key) ?? flattenCurve(curve)
-    nextCache.set(key, flat)
-    flat.points.forEach((point, index) => {
+    const points = cache.get(key) ?? flattenCurve(curve)
+    nextCache.set(key, points)
+    points.forEach((point, index) => {
       if (samples.length && index === 0) return
       const pixel = { x: point.x * scaleX, y: point.y * scaleY }
       if (previous) travel += distance(previous, pixel)
-      samples.push({ y: pixel.y, length: accumulated + flat.distances[index], travel })
+      samples.push({ y: pixel.y, travel })
       previous = pixel
     })
-    accumulated += flat.length
+    // A non-scaling stroke paints its dashes in CSS pixels, including on curved joins.
+    segmentEnds.push(travel)
   })
   // Weighted isotonic regression with a finite minimum slope. Backtracking or
   // nearly horizontal curves get a continuous arrival interval, never a jump
@@ -105,13 +104,13 @@ function arrivalLookup(curves: Cubic[], cache: Map<string, FlatCurve>, scaleX: n
   const lookup: Arrival[] = new Array(samples.length)
   blocks.forEach(block => {
     for (let index = block.first; index <= block.last; index++) {
-      lookup[index] = { y: block.mean + slope * samples[index].travel, length: samples[index].length / accumulated * nativeLength, area: 0 }
+      lookup[index] = { y: block.mean + slope * samples[index].travel, length: samples[index].travel, area: 0 }
     }
   })
   for (let i = 1; i < lookup.length; i++) {
     lookup[i].area = lookup[i - 1].area + (lookup[i].y - lookup[i - 1].y) * (lookup[i].length + lookup[i - 1].length) / 2
   }
-  return { lookup, cache: nextCache }
+  return { lookup, segmentEnds, cache: nextCache }
 }
 
 // Integral of the piecewise-linear arrival map. A spatial box average gives
@@ -164,10 +163,9 @@ export default function JourneyRibbon() {
       let clipRoot: SVGGElement | undefined
       const clips: SVGClipPathElement[] = []
       let segments: { setOffset: ReturnType<typeof gsap.quickSetter>; path: SVGPathElement; length: number; end: number; visible: boolean; partial: boolean }[] = []
-      let renderedLength = 0
       let oldStart = 0, fullEnd = 0, journeyTop = 0, focusOffset = 0, footerStart = 0
       let lookup: Arrival[] = []
-      let curveCache = new Map<string, FlatCurve>()
+      let curveCache = new Map<string, Point[]>()
       let layoutKey = ''
       const prefix = mobile ? MOBILE_START : DESKTOP_START
       const originalCurves = prefixCurves(prefix)
@@ -195,10 +193,9 @@ export default function JourneyRibbon() {
         const footer = Math.min(1, Math.max(0, (virtualScroll - footerStart) / Math.max(1, fullEnd - footerStart)))
         const blend = footer * footer * (3 - 2 * footer)
         const drawn = spatial + (length - spatial) * blend
-        const distanceDrawn = drawn / length * renderedLength
         for (const segment of segments) {
           const { path, length: segmentLength, end } = segment
-          const remaining = end - distanceDrawn
+          const remaining = end - drawn
           const visible = remaining < segmentLength
           if (visible !== segment.visible) {
             path.setAttribute('visibility', visible ? 'visible' : 'hidden')
@@ -206,7 +203,8 @@ export default function JourneyRibbon() {
           }
           const partial = visible && remaining > 0
           if (partial !== segment.partial) {
-            if (partial) path.style.strokeDasharray = String(segmentLength)
+            // A longer gap prevents a second round cap at the far end on subpixel rounding.
+            if (partial) path.style.strokeDasharray = `${segmentLength}px ${2 * segmentLength}px`
             else {
               path.style.removeProperty('stroke-dasharray')
               path.style.removeProperty('stroke-dashoffset')
@@ -224,6 +222,7 @@ export default function JourneyRibbon() {
         footerStart = Math.max(journeyTop + layoutPosition(sections[9], journey).y - window.innerHeight, fullEnd - window.innerHeight * .35)
       }
       const measure = () => {
+        const svgBox = svg.getBoundingClientRect()
         const width = journey.clientWidth
         height = journey.offsetHeight
         const dimensions = (element: HTMLElement) => ({
@@ -233,7 +232,7 @@ export default function JourneyRibbon() {
         })
         const sectionBoxes = sections.map(dimensions)
         const clearanceBoxes = clearance.map(({ element }) => dimensions(element))
-        const nextKey = [width, height, ...[...sectionBoxes, ...clearanceBoxes].flatMap(
+        const nextKey = [svgBox.width, svgBox.height, width, height, ...[...sectionBoxes, ...clearanceBoxes].flatMap(
           box => [box.x, box.y, box.width, box.height],
         )].join(',')
         if (nextKey === layoutKey) return false
@@ -268,11 +267,14 @@ export default function JourneyRibbon() {
         const strokeWidth = mobile ? Math.min(220, width * .54) : Math.min(385, width * .27)
         ink.setAttribute('stroke-width', String(strokeWidth))
         ink.setAttribute('d', prefix + extension)
-        length = ink.getTotalLength()
+        let segmentEnds: number[] = []
         if (reduced) ink.style.removeProperty('stroke-dasharray')
-        if (!reduced) {
-          const mapped = arrivalLookup(curves, curveCache, scaleX, scaleY, length)
-          lookup = mapped.lookup; curveCache = mapped.cache
+        else {
+          const mapped = arrivalLookup(curves, curveCache, svgBox.width / viewWidth, svgBox.height / viewHeight)
+          lookup = mapped.lookup
+          curveCache = mapped.cache
+          segmentEnds = mapped.segmentEnds
+          length = segmentEnds[segmentEnds.length - 1]
         }
         // Opaque cards naturally sit above the negative-z ribbon. Lower text
         // is kept as one clear foreground block, not chopped into sentence gaps.
@@ -324,8 +326,7 @@ export default function JourneyRibbon() {
           parent.append(path)
         }
         ink.removeAttribute('mask')
-        renderedLength = 0
-        segments = reduced ? [] : curves.map(({ start, first, second, end }) => {
+        segments = reduced ? [] : curves.map(({ start, first, second, end }, index) => {
           const path = document.createElementNS(SVG_NS, 'path')
           path.setAttribute('class', styles.ribbonInk)
           path.setAttribute('fill', 'none')
@@ -341,9 +342,9 @@ export default function JourneyRibbon() {
           const minY = Math.min(...points.map(p => p.y)) - padY
           const maxY = Math.max(...points.map(p => p.y)) + padY
           appendClipped(path, clearances.filter(({ x, y, w, h }) => x < maxX && x + w > minX && y < maxY && y + h > minY))
-          const segmentLength = path.getTotalLength()
-          renderedLength += segmentLength
-          return { path, setOffset: gsap.quickSetter(path, 'strokeDashoffset', 'px'), length: segmentLength, end: renderedLength, visible: false, partial: false }
+          const endDistance = segmentEnds[index]
+          const segmentLength = endDistance - (segmentEnds[index - 1] ?? 0)
+          return { path, setOffset: gsap.quickSetter(path, 'strokeDashoffset', 'px'), length: segmentLength, end: endDistance, visible: false, partial: false }
         })
         if (reduced) appendClipped(ink, clearances)
         else ink.setAttribute('visibility', 'hidden')
