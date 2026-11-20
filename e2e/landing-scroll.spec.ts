@@ -101,7 +101,7 @@ test('títulos mantêm suas linhas ao recarregar e rolar no celular', async ({ p
   }
 })
 
-test('as três ilustrações conservam os detalhes quando o Rive carrega', async ({ page }) => {
+test('as três cenas trocam os ornamentos estáticos pela mesma arte em movimento', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'hardwareConcurrency', { value: 8 })
     Object.defineProperty(navigator, 'deviceMemory', { value: 8 })
@@ -110,7 +110,7 @@ test('as três ilustrações conservam os detalhes quando o Rive carrega', async
   const scenes = ['discovery', 'memory', 'conversation'] as const
   const gates = new Map(scenes.map(name => [name, Promise.withResolvers<void>()]))
   for (const [name, gate] of gates) {
-    await page.route(`**/${name}.riv`, async route => {
+    await page.route(`**/${name}-illustrated.riv`, async route => {
       await gate.promise
       await route.continue()
     })
@@ -129,10 +129,46 @@ test('as três ilustrações conservam os detalhes quando o Rive carrega', async
       await expect.poll(() => ornaments.locator('img').evaluateAll(images =>
         images.every(image => image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0))).toBe(true)
 
+      if (name === 'memory') {
+        const sunflower = await ornaments.locator('img[src*="/sunflower-grounded."]').boundingBox()
+        const ground = await ornaments.boundingBox()
+        const label = await page.getByText('remember', { exact: true }).boundingBox()
+        expect(sunflower).not.toBeNull()
+        expect(ground).not.toBeNull()
+        expect(label).not.toBeNull()
+        expect(Math.abs(sunflower!.y + sunflower!.height - (ground!.y + ground!.height))).toBeLessThan(6)
+        expect(sunflower!.y + sunflower!.height).toBeLessThan(label!.y)
+        await expect(scene.locator('img[src*="/dots."]')).toHaveCount(0)
+      }
+
       gate.resolve()
-      await expect(scene.locator('[data-rive-ready=true] canvas')).toBeVisible({ timeout: 15_000 })
-      await expect(ornaments).toBeVisible()
-      await expect(poster).toHaveCSS('clip-path', 'none')
+      const canvas = scene.locator('[data-rive-ready=true] canvas')
+      await expect(canvas).toBeVisible({ timeout: 15_000 })
+      await expect(ornaments).toBeHidden()
+      await expect(poster).toBeVisible()
+      const frame = () => canvas.evaluate((element, memory) => {
+        const surface = element as HTMLCanvasElement
+        const context = surface.getContext('2d')!
+        const left = memory ? Math.floor(surface.width * .82) : 0
+        const top = memory ? Math.floor(surface.height * .62) : 0
+        const pixels = context.getImageData(left, top, surface.width - left, surface.height - top).data
+        let yellow = 0, grass = 0, hash = 0
+        for (let i = 0; i < pixels.length; i += 4) {
+          if (pixels[i + 3] < 200) continue
+          const [r, g, b] = [pixels[i], pixels[i + 1], pixels[i + 2]]
+          if (r > 220 && g > 190 && b < 70) yellow++
+          if (r > 100 && r < 180 && g > 190 && b < 140) grass++
+          hash = (hash * 31 + i + r + g + b) | 0
+        }
+        return { yellow, grass, hash }
+      }, name === 'memory')
+      await expect.poll(async () => (await frame()).hash).not.toBe(0)
+      const initial = await frame()
+      await expect.poll(async () => (await frame()).hash).not.toBe(initial.hash)
+      if (name === 'memory') {
+        expect(initial.yellow).toBeGreaterThan(0)
+        expect(initial.grass).toBeGreaterThan(0)
+      }
     }
   } finally {
     for (const gate of gates.values()) gate.resolve()
