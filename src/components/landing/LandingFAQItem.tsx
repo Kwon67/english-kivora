@@ -32,17 +32,10 @@ export default function LandingFAQItem({ question, answer, index }: { question: 
       return
     }
     const opening = desiredOpen.current
-    if (opening && !details.open) {
-      details.open = true
-      gsap.set(content, { height: 0, opacity: 0, overflow: 'hidden' })
-    }
-    animation.current = gsap.to(content, {
-      height: opening ? content.scrollHeight : 0,
-      opacity: opening ? 1 : 0,
-      overflow: 'hidden',
-      duration: .4,
-      ease: 'power2.inOut',
-      onComplete: () => { details.open = opening; gsap.set(content, { clearProps: 'height,opacity,overflow' }) },
+    if (opening) details.open = true
+    animation.current = gsap.fromTo(content, { opacity: opening ? 0 : 1 }, {
+      opacity: opening ? 1 : 0, duration: .22, ease: 'power2.out',
+      onComplete: () => { details.open = opening; gsap.set(content, { clearProps: 'opacity' }) },
     })
   })
   return <details ref={root} className={styles.faqItem}><summary onClick={toggle}><span><small>0{index + 1}</small>{question}</span><Plus size={23} aria-hidden="true" /></summary><div ref={panel}><p>{answer}</p></div></details>

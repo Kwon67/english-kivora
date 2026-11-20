@@ -1,43 +1,74 @@
 'use client'
 
-import { useRef, type ReactNode } from 'react'
+import { createContext, useContext, useRef, type ReactNode } from 'react'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin'
-import 'locomotive-scroll/dist/locomotive-scroll.css'
+import type Lenis from 'lenis'
+import 'lenis/dist/lenis.css'
 import styles from './MindmarketLanding.module.css'
 
 gsap.registerPlugin(useGSAP, ScrollTrigger, DrawSVGPlugin)
 
+const ScrollContext = createContext<{ current: Lenis | null }>({ current: null })
+export const useLandingScroll = () => useContext(ScrollContext)
+
+function scrollToAnchor(lenis: Lenis, hash: string) {
+  const target = document.getElementById(hash.slice(1))
+  if (!target) return false
+  if (location.hash !== hash) history.pushState(null, '', hash)
+  if (!target.hasAttribute('tabindex') && target.tabIndex < 0) {
+    target.tabIndex = -1
+    target.addEventListener('blur', () => target.removeAttribute('tabindex'), { once: true })
+  }
+  target.focus({ preventScroll: true })
+  // Lenis 1.3.27 reads scroll-margin and scroll-padding for element targets.
+  lenis.scrollTo(target)
+  return true
+}
+export { scrollToAnchor }
+
 /** Scroll owns travel; visible-only timelines own the smaller scene gestures. */
 export default function JourneyMotion({ children }: { children: ReactNode }) {
   const root = useRef<HTMLDivElement>(null)
+  const engine = useRef<Lenis | null>(null)
   useGSAP(() => {
     const media = gsap.matchMedia()
+    const html = document.documentElement
+    html.classList.add('kivora-landing-scroll')
+    let mounted = true
+    void document.fonts.ready.then(() => { if (mounted) ScrollTrigger.refresh() })
     media.add('(prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine)', () => {
       let active = true
-      let scrolling: import('locomotive-scroll').default | undefined
-      void import('locomotive-scroll').then(({ default: LocomotiveScroll }) => {
+      let dispose: (() => void) | undefined
+      void import('lenis').then(({ default: Lenis }) => {
         if (!active) return
-        scrolling = new LocomotiveScroll({
-          lenisOptions: {
-            autoRaf: false,
-            syncTouch: false,
-            prevent: node => node instanceof Element && node.closest('dialog') !== null,
-          },
-          initCustomTicker: render => { gsap.ticker.add(render) },
-          destroyCustomTicker: render => { gsap.ticker.remove(render) },
-        })
-      }).catch(() => {
-        // Native scrolling remains available if the optional chunk fails.
-      })
-      return () => {
-        active = false
-        scrolling?.destroy()
-      }
+        const lenis = new Lenis({ autoRaf: false, syncTouch: false })
+        engine.current = lenis
+        if (root.current?.querySelector('dialog[open]')) lenis.stop()
+        const tick = (seconds: number) => lenis.raf(seconds * 1000)
+        const unsubscribe = lenis.on('scroll', ScrollTrigger.update)
+        const cancelTravel = () => {
+          if (!lenis.isStopped) { lenis.stop(); lenis.start() }
+        }
+        window.addEventListener('popstate', cancelTravel)
+        gsap.ticker.lagSmoothing(0)
+        gsap.ticker.add(tick)
+        dispose = () => {
+          window.removeEventListener('popstate', cancelTravel)
+          gsap.ticker.remove(tick)
+          unsubscribe()
+          lenis.destroy()
+          engine.current = null
+          gsap.ticker.lagSmoothing(500, 33)
+        }
+      }).catch(() => { /* Native scrolling handles an unavailable optional chunk. */ })
+      return () => { active = false; dispose?.() }
     })
-    media.add('(prefers-reduced-motion: no-preference)', () => {
+    media.add({ motion: '(prefers-reduced-motion: no-preference)', compact: '(max-width: 47.99rem)' }, ({ conditions }) => {
+      if (!conditions?.motion) return
+      const compact = conditions.compact
       const container = root.current
       if (!container) return
       const select = gsap.utils.selector(container)
@@ -89,7 +120,7 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
           .from(scene, { opacity: .3, duration: .2, clearProps: 'opacity' }, 0)
       })
       const hero = container.querySelector('[data-hero-parallax]')
-      if (hero) gsap.to(hero, { y: () => Math.min(110, window.innerHeight * .13), force3D: true, ease: 'none', scrollTrigger: { trigger: container.querySelector('main > section'), start: 'top top', end: 'bottom top', scrub: .3, invalidateOnRefresh: true } })
+      if (hero && !compact) gsap.to(hero, { y: () => Math.min(110, window.innerHeight * .13), force3D: true, ease: 'none', scrollTrigger: { trigger: container.querySelector('main > section'), start: 'top top', end: 'bottom top', scrub: .3, invalidateOnRefresh: true } })
 
       select('[data-scene-travel]').forEach((element: HTMLElement, index: number) => {
         gsap.fromTo(element, { y: 42, rotation: index % 2 ? 2 : -2 }, {
@@ -109,7 +140,7 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
           scrollTrigger: { trigger: element.closest('section'), start: 'top bottom', end: 'bottom top', scrub: true },
         })
       })
-      select('[data-depth-ornaments]').forEach((element: HTMLElement, index: number) => {
+      if (!compact) select('[data-depth-ornaments]').forEach((element: HTMLElement, index: number) => {
         gsap.fromTo(element, { y: 25, rotation: index % 2 ? -3 : 3 }, {
           y: -25, rotation: index % 2 ? 3 : -3, force3D: true, ease: 'none',
           scrollTrigger: { trigger: element.parentElement, start: 'top bottom', end: 'bottom top', scrub: .3 },
@@ -145,7 +176,12 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
         loops.forEach(({ animation }) => animation.kill())
       }
     })
-    return () => media.revert()
+    return () => { mounted = false; media.revert(); html.classList.remove('kivora-landing-scroll') }
   }, { scope: root })
-  return <div ref={root} className={styles.page}>{children}</div>
+  return <ScrollContext.Provider value={engine}><div ref={root} className={styles.page} onClickCapture={event => {
+    if (!engine.current || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return
+    const anchor = event.target instanceof Element && event.target.closest<HTMLAnchorElement>('a[href^="#"]')
+    if (!anchor || anchor.closest('dialog') || anchor.target || anchor.hasAttribute('download')) return
+    if (scrollToAnchor(engine.current, anchor.hash)) event.preventDefault()
+  }}>{children}</div></ScrollContext.Provider>
 }

@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, ArrowUpRight, X } from 'lucide-react'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
+import { scrollToAnchor, useLandingScroll } from './JourneyMotion'
 import LandingWordmark from './LandingWordmark'
 import styles from './MindmarketLanding.module.css'
 
@@ -17,6 +18,8 @@ export default function LandingNavigation({ links }: { links: { href: string; la
   const animation = useRef<gsap.core.Timeline | null>(null)
   const closing = useRef(false)
   const [open, setOpen] = useState(false)
+  const engine = useLandingScroll()
+  const afterClose = useRef<(() => void) | undefined>(undefined)
   const router = useRouter()
   const { contextSafe } = useGSAP(() => {
     const query = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -31,10 +34,10 @@ export default function LandingNavigation({ links }: { links: { href: string; la
     closing.current = true
     animation.current?.kill()
     const finish = () => {
+      afterClose.current = after
       element.close()
       closing.current = false
       gsap.set(element, { clearProps: 'transform,opacity,--menu-veil' })
-      after?.()
     }
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return }
     animation.current = gsap.timeline({ onComplete: finish })
@@ -46,6 +49,7 @@ export default function LandingNavigation({ links }: { links: { href: string; la
     if (!element) return
     animation.current?.kill()
     closing.current = false
+    engine.current?.stop()
     element.showModal()
     setOpen(true)
     const items = element.querySelectorAll('[data-menu-item]')
@@ -69,7 +73,10 @@ export default function LandingNavigation({ links }: { links: { href: string; la
   function navigate(event: React.MouseEvent<HTMLAnchorElement>, href: string) {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return
     event.preventDefault()
-    close(() => router.push(href))
+    close(() => {
+      if (href.startsWith('#') && engine.current && scrollToAnchor(engine.current, href)) return
+      router.push(href)
+    })
   }
 
   return <>
@@ -80,7 +87,7 @@ export default function LandingNavigation({ links }: { links: { href: string; la
         <div className={styles.navActions}><Link href="/login" className={styles.login}>Entrar <ArrowUpRight size={15} aria-hidden="true" /></Link><Link href="/register" className={styles.navCta}>Começar grátis <ArrowUpRight size={17} aria-hidden="true" /></Link><button ref={trigger} className={styles.menuTrigger} aria-label="Abrir menu" aria-expanded={open} aria-controls="kivora-mobile-menu" onClick={show}><span className={styles.menuGlyph} aria-hidden="true" /></button></div>
       </nav>
     </header>
-    <dialog ref={dialog} id="kivora-mobile-menu" aria-labelledby="mobile-menu-title" className={styles.mobileMenu} onKeyDown={event => {
+    <dialog data-lenis-prevent ref={dialog} id="kivora-mobile-menu" aria-labelledby="mobile-menu-title" className={styles.mobileMenu} onKeyDown={event => {
       if (event.key !== 'Tab') return
       // Safari may omit links from its default Tab order; keep the modal cycle explicit.
       const items = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('button:not([disabled]), a[href]')).filter(item => item.tabIndex >= 0 && item.getClientRects().length > 0)
@@ -88,7 +95,15 @@ export default function LandingNavigation({ links }: { links: { href: string; la
       if (!items.length) return
       const index = items.indexOf(document.activeElement as HTMLElement)
       items[(index + (event.shiftKey ? -1 : 1) + items.length) % items.length]?.focus()
-    }} onCancel={event => { event.preventDefault(); close() }} onClose={() => { animation.current?.kill(); setOpen(false); trigger.current?.focus({ preventScroll: true }) }} onClick={event => { if (event.target === dialog.current) close() }}>
+    }} onCancel={event => { event.preventDefault(); close() }} onClose={() => {
+      animation.current?.kill()
+      setOpen(false)
+      trigger.current?.focus({ preventScroll: true })
+      engine.current?.start()
+      const navigateAfterClose = afterClose.current
+      afterClose.current = undefined
+      navigateAfterClose?.()
+    }} onClick={event => { if (event.target === dialog.current) close() }}>
       <div className={styles.menuInner}>
         <div className={styles.menuTop}><LandingWordmark /><button autoFocus onClick={() => close()} aria-label="Fechar menu"><X size={25} aria-hidden="true" /></button></div>
         <p id="mobile-menu-title" className={styles.eyebrow} data-menu-item>UM MUNDO PARA DESCOBRIR</p>

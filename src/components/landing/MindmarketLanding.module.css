@@ -2500,8 +2500,12 @@
 .menuTrigger { background:var(--green); border-radius:50%; width:40px; height:40px; }
 @media(hover:hover) and (prefers-reduced-motion:no-preference) {
   .action:hover .actionIcon { transform:rotate(-35deg); }
-  .plan { transition:box-shadow .25s; }
-  .plan:hover { box-shadow:0 12px 0 #2c2e2a10; }
+  .plan { position:relative; }
+  .plan::after {
+    content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+    box-shadow:0 12px 0 #2c2e2a10; opacity:0; transition:opacity .25s;
+  }
+  .plan:hover::after { opacity:1; }
 }
 @media(min-width:1024px) {
   .pricingHeading { position:sticky; top:145px; }

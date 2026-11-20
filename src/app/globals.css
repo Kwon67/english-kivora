@@ -2084,8 +2084,10 @@ html[data-scroll-lock='true'] body {
 }
 
 /* Lenis owns wheel interpolation while the landing is active. */
-html.lenis.lenis-smooth {
-  scroll-behavior:auto!important;
+html.kivora-landing-scroll {
+  scroll-behavior: auto;
+  /* Landing sections already reserve space for their own sticky header. */
+  scroll-padding-top: 0;
 }
 
 .pwa-notice {

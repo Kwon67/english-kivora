@@ -158,7 +158,7 @@ export default function JourneyRibbon() {
       let resizeTimer: ReturnType<typeof setTimeout> | undefined
       let clipRoot: SVGGElement | undefined
       const clips: SVGClipPathElement[] = []
-      let segments: { path: SVGPathElement; length: number; end: number; visible: boolean; partial: boolean }[] = []
+      let segments: { setOffset: ReturnType<typeof gsap.quickSetter>; path: SVGPathElement; length: number; end: number; visible: boolean; partial: boolean }[] = []
       let renderedLength = 0
       let oldStart = 0, fullEnd = 0, journeyTop = 0, focusOffset = 0, footerStart = 0
       let lookup: Arrival[] = []
@@ -208,7 +208,7 @@ export default function JourneyRibbon() {
             }
             segment.partial = partial
           }
-          if (partial) path.style.strokeDashoffset = String(remaining)
+          if (partial) segment.setOffset(remaining)
         }
       }
       const updateScrollBounds = () => {
@@ -338,7 +338,7 @@ export default function JourneyRibbon() {
           appendClipped(path, clearances.filter(({ x, y, w, h }) => x < maxX && x + w > minX && y < maxY && y + h > minY))
           const segmentLength = path.getTotalLength()
           renderedLength += segmentLength
-          return { path, length: segmentLength, end: renderedLength, visible: false, partial: false }
+          return { path, setOffset: gsap.quickSetter(path, 'strokeDashoffset', 'px'), length: segmentLength, end: renderedLength, visible: false, partial: false }
         })
         if (reduced) appendClipped(ink, clearances)
         else ink.setAttribute('visibility', 'hidden')
