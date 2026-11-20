@@ -68,8 +68,8 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
         </section>
 
         <section data-pointer-area id="como-funciona" className={styles.practiceSection} aria-labelledby="practice-title">
-          <div className={styles.storyCardShell}><div className={styles.practiceCopy} data-tilt data-story-card><Eyebrow number="02">APRENDA COLOCANDO EM PRÁTICA</Eyebrow><h2 id="practice-title"><span data-title-ink>Menos decorar.<br />Mais{' '}<span data-mark className={styles.highlightPink}>descobrir.</span></span></h2><p>É usando o inglês que ele começa a fazer sentido.</p><Link href="#practice-demo" className={styles.textLink}>Experimente <ArrowRight size={22} aria-hidden="true" /></Link></div></div>
-          <JourneyMotif kind="plane" className={styles.practiceProp} /><div id="practice-demo" data-tilt className={styles.demoWrap} data-reveal><span className={styles.demoSticker} aria-hidden="true">sua vez!</span><PracticePreview /></div>
+          <div className={styles.storyCardShell}><div className={styles.practiceCopy} data-tilt data-story-card><Eyebrow number="02">APRENDA COLOCANDO EM PRÁTICA</Eyebrow><h2 id="practice-title"><span data-title-ink>Menos decorar.<br />Mais{' '}<span data-mark className={styles.highlightPink}>descobrir.</span></span></h2><p>É usando o inglês que ele começa a fazer sentido.</p><div className={styles.practiceActions}><Link href="#practice-demo" className={styles.textLink}>Experimente <ArrowRight size={22} aria-hidden="true" /></Link><JourneyMotif kind="plane" className={styles.practiceProp} /></div></div></div>
+          <div id="practice-demo" data-tilt className={styles.demoWrap} data-reveal><span className={styles.demoSticker} aria-hidden="true">sua vez!</span><PracticePreview /></div>
         </section>
 
       <section id="revisoes" className={styles.memorySection} aria-labelledby="memory-title"><div className={styles.storyStage} data-pointer-area>

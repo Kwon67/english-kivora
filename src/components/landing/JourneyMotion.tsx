@@ -73,7 +73,11 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
       return () => { cleanups.forEach(clean => clean()); setSmooth(false) }
     })
 
-    media.add('(prefers-reduced-motion: no-preference)', context => {
+    media.add({
+      motion: '(prefers-reduced-motion: no-preference)',
+      splitHeadings: '(min-width: 768px) and (hover: hover) and (pointer: fine)',
+    }, context => {
+      if (!context.conditions?.motion) return
       const loops = new Map<Element, { animation: gsap.core.Animation; visible: boolean }>()
       const sync = () => loops.forEach(loop => loop.animation.paused(!loop.visible || document.hidden))
       const observer = new IntersectionObserver(entries => {
@@ -111,14 +115,18 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
             })
           },
         })
-        if (title.querySelector('[data-mark]')) gsap.fromTo(title, { '--paint': 0 }, {
-          '--paint': 1, duration: duration.reveal, ease: ease.out, scrollTrigger: { trigger: title, start: 'top 82%', once: true },
-        })
       }
       const titles = new IntersectionObserver(entries => {
         for (const entry of entries) if (entry.isIntersecting) {
           titles.unobserve(entry.target)
-          context.add(() => revealTitle(entry.target as HTMLElement))
+          const title = entry.target as HTMLElement
+          context.add(() => {
+            // On touch, swapping balanced text for a split copy can change its visible lines.
+            if (context.conditions?.splitHeadings) revealTitle(title)
+            if (title.querySelector('[data-mark]')) gsap.fromTo(title, { '--paint': 0 }, {
+              '--paint': 1, duration: duration.reveal, ease: ease.out, scrollTrigger: { trigger: title, start: 'top 82%', once: true },
+            })
+          })
         }
       }, { rootMargin: '240px' })
       for (const heading of select('main h1, main h2')) titles.observe(heading)

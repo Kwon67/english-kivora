@@ -63,3 +63,40 @@ test('movimento reduzido preserva teclado e FAQ nativos', async ({ page }) => {
   await page.keyboard.press('Enter')
   await expect(item).not.toHaveAttribute('open', '')
 })
+
+test('títulos mantêm suas linhas ao recarregar e rolar no celular', async ({ page, hasTouch }) => {
+  test.skip(!hasTouch, 'O efeito por linha pertence aos dispositivos com ponteiro fino.')
+  const ids = ['practice-title', 'blitz-title', 'pricing-title', 'faq-title']
+  // At an anchored reload, the section can start in view before hydration.
+  await page.goto('/#como-funciona')
+  await page.reload()
+  await expect(page.locator('html')).toHaveClass(/kivora-landing-scroll/)
+  await page.evaluate(() => document.fonts.ready.then(() => undefined))
+
+  for (const width of [390, 320, 430]) {
+    await page.setViewportSize({ width, height: 844 })
+    const problems = await page.evaluate(async headingIds => {
+      const issues = new Set<string>()
+      const nextFrame = () => new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+      for (const id of headingIds) {
+        const heading = document.getElementById(id)!
+        const ink = heading.querySelector<HTMLElement>('[data-title-ink]')!
+        heading.scrollIntoView({ block: 'center', behavior: 'instant' })
+        const initialHeight = ink.offsetHeight
+        for (let frame = 0; frame < 12; frame++) {
+          await nextFrame()
+          if (heading.children.length !== 1 || getComputedStyle(ink).opacity !== '1') issues.add(id + ' trocou o texto por uma cópia')
+          if (ink.offsetHeight !== initialHeight) issues.add(id + ' mudou a altura durante o scroll')
+        }
+      }
+      const heading = document.getElementById('faq-title')!
+      const doodle = heading.nextElementSibling!
+      if (heading.getBoundingClientRect().bottom > doodle.getBoundingClientRect().top) issues.add('ilustração do FAQ invadiu a faixa do título')
+      const practice = document.getElementById('practice-title')!
+      const plane = practice.closest('section')!.querySelector('[data-journey-prop]')!
+      if (practice.getBoundingClientRect().bottom > plane.getBoundingClientRect().top) issues.add('avião de papel invadiu a faixa do título')
+      return [...issues]
+    }, ids)
+    expect(problems, width + ' px').toEqual([])
+  }
+})
