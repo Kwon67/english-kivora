@@ -7,11 +7,11 @@
 .intro[data-intro="opening"] { animation:intro-ready 390ms cubic-bezier(.65,0,.22,1) both; }
 .introBrand { display:grid; justify-items:center; gap:16px; transform:scale(1.35); }
 .introHello {
-  width:6ch; overflow:hidden; white-space:nowrap; border-right:1px solid currentColor;
+  width:48px; overflow:hidden; white-space:nowrap;
   font:500 13px/1.45 var(--font-kivora-mono),monospace;
   animation:intro-type 420ms steps(6,end) both;
 }
-@keyframes intro-type { from { width:0; } }
+@keyframes intro-type { from { clip-path:inset(0 100% 0 0); } to { clip-path:inset(0); } }
 @keyframes intro-open { to { transform:translateY(-101%); visibility:hidden; } }
 @keyframes intro-ready { to { transform:translateY(-101%); visibility:hidden; } }
 
