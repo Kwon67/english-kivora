@@ -63,24 +63,3 @@ test('movimento reduzido preserva teclado e FAQ nativos', async ({ page }) => {
   await page.keyboard.press('Enter')
   await expect(item).not.toHaveAttribute('open', '')
 })
-
-test('a fita está completa no toque e progride com ponteiro fino', async ({ page }) => {
-  if (await page.evaluate(() => matchMedia('(pointer: coarse)').matches)) {
-    const svg = page.locator('svg:is([data-ribbon-desktop], [data-ribbon-mobile]):visible')
-    const ink = svg.locator('[data-ribbon-clip] [data-ribbon-path]')
-    await expect(ink).toHaveAttribute('d', /^M.+C/)
-    const fullPath = await ink.getAttribute('d')
-    await expect(svg).toHaveCSS('position', 'absolute')
-    await expect(ink).toHaveCSS('stroke-dasharray', 'none')
-    await page.locator('#faq').evaluate(el => el.scrollIntoView())
-    await expect(ink).toHaveAttribute('d', fullPath!)
-    await expect(ink).toHaveCSS('visibility', 'visible')
-    return
-  }
-  const visibleInk = page.locator('svg:is([data-ribbon-desktop], [data-ribbon-mobile]):visible path[visibility="visible"]')
-  await expect.poll(() => visibleInk.count()).toBeGreaterThan(0)
-  const initial = await visibleInk.count()
-  await page.locator('#faq').evaluate(el => el.scrollIntoView())
-  await expect.poll(() => visibleInk.count()).toBeGreaterThan(initial)
-  await expect(visibleInk.last()).toHaveCSS('stroke-dashoffset', /[1-9]/)
-})

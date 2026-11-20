@@ -1,0 +1,57 @@
+{
+  "route": "/",
+  "lighthouse": "13.6.0",
+  "profile": "mobile",
+  "throttling": "simulated",
+  "chromium": "159.0.8154.6",
+  "before": {
+    "commit": "169ed13a",
+    "initialJs": {
+      "scripts": 17,
+      "bytes": 849372,
+      "gzip": 275669
+    },
+    "runs": [
+      {
+        "performance": 85,
+        "lcpMs": 4315.18,
+        "cls": 0
+      },
+      {
+        "performance": 87,
+        "lcpMs": 4064.83,
+        "cls": 0
+      },
+      {
+        "performance": 86,
+        "lcpMs": 4212.3,
+        "cls": 0
+      }
+    ]
+  },
+  "after": {
+    "commit": "89d8d204",
+    "initialJs": {
+      "scripts": 19,
+      "bytes": 905093,
+      "gzip": 297797
+    },
+    "runs": [
+      {
+        "performance": 85,
+        "lcpMs": 4157.81,
+        "cls": 0
+      },
+      {
+        "performance": 86,
+        "lcpMs": 4129.7,
+        "cls": 0
+      },
+      {
+        "performance": 86,
+        "lcpMs": 4112.1,
+        "cls": 0
+      }
+    ]
+  }
+}

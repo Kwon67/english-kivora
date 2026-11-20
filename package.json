@@ -27,7 +27,9 @@
     "audit:catalog": "tsx scripts/audit-catalog.ts",
     "audit:rls": "tsx scripts/audit-rls.ts",
     "test:visual": "playwright test -c tests/visual/playwright.config.ts",
-    "optimize:models": "node scripts/optimize-models.mjs"
+    "optimize:models": "node scripts/optimize-models.mjs",
+    "audit:landing-palette": "playwright test -c tests/visual/playwright.config.ts -g paleta",
+    "measure:landing-js": "node scripts/measure-landing-bundle.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
