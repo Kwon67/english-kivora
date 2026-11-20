@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Locator } from '@playwright/test'
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/')
@@ -41,17 +41,27 @@ test('movimento reduzido mantém o caminho completo após abrir FAQ e girar a te
   }
 })
 
-test('abrir e fechar respostas preserva a curva do caminho', async ({ page }) => {
+test('abrir e fechar respostas preserva a curva do caminho', async ({ page, hasTouch }) => {
   const path = page.locator('[data-ribbon-path]')
   const faq = page.locator('#faq')
+  const firstSummary = await faq.locator('summary').first().elementHandle()
+  if (hasTouch) {
+    // Start a gesture on the native control before the observer loads Motion.
+    await firstSummary.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'touch', isPrimary: true })
+  }
   await faq.evaluate(element => element.scrollIntoView({ block: 'start', behavior: 'instant' }))
   await page.evaluate(() => document.fonts.ready.then(() => undefined))
   const scale = () => path.evaluate(element => (element as unknown as SVGPathElement).getScreenCTM()!.d)
   const closedScale = await scale()
   const summaries = await faq.locator('summary').all()
+  const activate = async (summary: Locator) => {
+    await summary.evaluate(element => element.scrollIntoView({ block: 'center', behavior: 'instant' }))
+    if (hasTouch) await summary.tap()
+    else await summary.click()
+  }
 
   for (const summary of summaries) {
-    await summary.click()
+    await activate(summary)
     await expect(summary.locator('..')).toHaveAttribute('open', '')
     await expect.poll(scale).toBeCloseTo(closedScale, 5)
   }
@@ -59,8 +69,17 @@ test('abrir e fechar respostas preserva a curva do caminho', async ({ page }) =>
   const faqBox = (await faq.boundingBox())!
   expect(ribbonBottom).toBeGreaterThan(faqBox.y + faqBox.height)
   for (const summary of summaries.reverse()) {
-    await summary.click()
+    await activate(summary)
     await expect(summary.locator('..')).not.toHaveAttribute('open')
     await expect.poll(scale).toBeCloseTo(closedScale, 5)
+  }
+  if (hasTouch) {
+    const sameControl = () => firstSummary.evaluate(element => element === document.querySelector('#faq summary'))
+    expect(await sameControl()).toBe(true)
+    await page.evaluate(() => {
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
+      window.scrollTo({ top: 0, behavior: 'instant' })
+    })
+    await expect.poll(sameControl).toBe(false)
   }
 })

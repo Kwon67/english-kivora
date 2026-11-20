@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, type ComponentType } from 'react'
+import { flushSync } from 'react-dom'
 import { Plus } from 'lucide-react'
 import styles from './MindmarketLanding.module.css'
 
@@ -15,23 +16,44 @@ export default function LandingFAQ({ items }: FAQProps) {
   useEffect(() => {
     const element = ref.current!
     let active = true
+    let nearby = false
+    let requested = false
+    let pressed = false
     let install: (() => void) | undefined
+    const onPress = () => { pressed = true }
+    const onBlur = () => queueMicrotask(() => install?.())
     const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return
-      observer.disconnect()
+      if (!entry.isIntersecting) {
+        if (nearby) {
+          nearby = false
+          pressed = false
+          install?.()
+        }
+        return
+      }
+      nearby = true
+      if (requested) return
+      requested = true
       void import('./LandingFAQItem').then(({ default: List }) => {
         install = () => {
-          if (!active || element.contains(document.activeElement)) return
-          setEnhanced({ List, initial: Array.from(element.querySelectorAll('details'), item => item.open) })
-          element.removeEventListener('focusout', onBlur)
+          // Keep the native controls in place if a visitor starts a gesture before Motion loads.
+          if (!active || pressed || element.contains(document.activeElement)) return
+          const initial = Array.from(element.querySelectorAll('details'), item => item.open)
+          disconnect()
+          flushSync(() => setEnhanced({ List, initial }))
         }
         install()
       }).catch(() => { /* Native details remains interactive. */ })
     }, { rootMargin: '320px' })
-    const onBlur = () => queueMicrotask(() => install?.())
+    const disconnect = () => {
+      observer.disconnect()
+      element.removeEventListener('pointerdown', onPress, true)
+      element.removeEventListener('focusout', onBlur)
+    }
+    element.addEventListener('pointerdown', onPress, true)
     element.addEventListener('focusout', onBlur)
     observer.observe(element)
-    return () => { active = false; observer.disconnect(); element.removeEventListener('focusout', onBlur) }
+    return () => { active = false; disconnect() }
   }, [])
   return <div ref={ref} className={styles.faqList}>
     {enhanced ? <enhanced.List items={items} initial={enhanced.initial} /> : items.map(([question, answer], i) =>
