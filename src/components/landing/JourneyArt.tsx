@@ -23,17 +23,26 @@ const descriptions = {
  * preserves every limb and grip; smaller decorative layers move independently. */
 function GeneratedScene({ name, className = '', riveSrc }: SceneProps & { name: keyof typeof descriptions }) {
   const base = `/images/journey-2026/${name}`
-  const sizes = name === 'discovery' ? '(max-width: 767px) 100vw, (max-width: 1023px) 85vw, 950px' : '(max-width: 767px) 100vw, 48vw'
+  const sizes = '(max-width: 767px) 85vw, (min-width: 1450px) 700px, 48vw'
+  const mobileHero = name === 'discovery' && <source media="(max-width: 767px)" type="image/avif"
+    srcSet={`${base}-512.avif 512w, ${base}-640.avif 640w`} sizes={sizes} />
   const picture = <picture>
+    {mobileHero}
     <source type="image/jxl" srcSet={`${base}-768.jxl 768w, ${base}-1536.jxl 1536w`} sizes={sizes} />
     <source type="image/avif" srcSet={`${base}-768.avif 768w, ${base}-1536.avif 1536w`} sizes={sizes} />
     <Image src={`${base}-1536.avif`} alt="" aria-hidden="true" width={1536} height={1024} unoptimized loading={name === "discovery" ? "eager" : "lazy"} fetchPriority={name === "discovery" ? "high" : "auto"} />
   </picture>
+  const layers = name === 'memory' ? <div className={styles.plantLayers}>
+    {picture}
+    <div aria-hidden="true" data-plant className={styles.plant}>{picture}</div>
+  </div> : picture
   return <div className={`${styles.scene} ${className}`} data-art-scene={name} role="img" aria-label={descriptions[name]}>
+    {name === 'discovery' && <link rel="preload" as="image" type="image/avif" media="(max-width: 767px)"
+      imageSrcSet={`${base}-512.avif 512w, ${base}-640.avif 640w`} imageSizes={sizes} fetchPriority="high" />}
     <div className={styles.illustration} data-art-motion="illustration">
-      {riveSrc ? <JourneyRive key={riveSrc} src={riveSrc}>{picture}</JourneyRive> : picture}
+      {riveSrc ? <JourneyRive key={riveSrc} src={riveSrc}>{layers}</JourneyRive> : layers}
     </div>
-    <svg className={styles.ornaments} data-depth-ornaments viewBox="0 0 900 600" fill="none" aria-hidden="true" focusable="false">
+    <svg className={styles.ornaments} data-cursor data-depth-ornaments viewBox="0 0 900 600" fill="none" aria-hidden="true" focusable="false">
       <Plane x={name === 'memory' ? 760 : 80} y={name === 'conversation' ? 125 : 165} rotate={-14} />
       <Spark x={name === 'memory' ? 610 : 450} y={name === 'conversation' ? 35 : 45} />
       <Spark x={845} y={410} color="#ebc1ff" />
@@ -48,5 +57,5 @@ export function MemoryScene(props: SceneProps) { return <GeneratedScene name="me
 export function ConversationScene(props: SceneProps) { return <GeneratedScene name="conversation" {...props} /> }
 
 export function JourneyMotif({ kind, className = '' }: SceneProps & { kind: 'plane' | 'spark' | 'chat' }) {
-  return <div className={`${styles.motif} ${className}`} data-journey-prop aria-hidden="true"><svg viewBox="0 0 120 120" fill="none" focusable="false">{kind === 'plane' ? <Plane x={60} y={60} rotate={-12} /> : kind === 'spark' ? <g transform="translate(60 60) scale(2)"><Spark x={0} y={0} color="#ebc1ff" /></g> : <><path d="M18 23h70c14 0 22 8 22 22v22c0 14-8 22-22 22H58L32 109V89H18C4 89 0 81 0 67V45c0-14 4-22 18-22Z" fill="#209fff" /><circle cx="28" cy="56" r="5" fill="#fffef8" /><circle cx="54" cy="56" r="5" fill="#fffef8" /><circle cx="80" cy="56" r="5" fill="#fffef8" /></>}</svg></div>
+  return <div className={`${styles.motif} ${className}`} data-cursor data-journey-prop aria-hidden="true"><svg viewBox="0 0 120 120" fill="none" focusable="false">{kind === 'plane' ? <Plane x={60} y={60} rotate={-12} /> : kind === 'spark' ? <g transform="translate(60 60) scale(2)"><Spark x={0} y={0} color="#ebc1ff" /></g> : <><path d="M18 23h70c14 0 22 8 22 22v22c0 14-8 22-22 22H58L32 109V89H18C4 89 0 81 0 67V45c0-14 4-22 18-22Z" fill="#209fff" /><circle cx="28" cy="56" r="5" fill="#fffef8" /><circle cx="54" cy="56" r="5" fill="#fffef8" /><circle cx="80" cy="56" r="5" fill="#fffef8" /></>}</svg></div>
 }

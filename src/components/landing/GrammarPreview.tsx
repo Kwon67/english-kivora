@@ -1,9 +1,10 @@
 'use client'
 
+import FeedbackConfetti from './FeedbackConfetti'
 import { useRef, useState } from 'react'
 import { ArrowRight, Check, Lightbulb, RotateCcw } from 'lucide-react'
-import { useGSAP } from '@gsap/react'
-import gsap from 'gsap'
+import { gsap, useGSAP } from '@/lib/gsap'
+import { duration, ease } from '@/lib/motion-tokens'
 import PracticeBooks from '@/components/illustrations/PracticeBooks'
 import styles from '@/features/game/components/ChoiceExercise.module.css'
 
@@ -23,8 +24,8 @@ export default function GrammarPreview() {
   const correct = selected === question.answer
   useGSAP(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    if (confirmed) gsap.from('[data-exercise-feedback]', { y: 8, duration: .3, clearProps: 'transform' })
-    else gsap.from('[data-exercise-question]', { y: 12, duration: .4, clearProps: 'transform' })
+    if (confirmed) gsap.from('[data-exercise-feedback]', { y: 8, duration: duration.feedback, ease: ease.out, clearProps: 'transform' })
+    else gsap.from('[data-exercise-question]', { y: 12, duration: duration.question, ease: ease.out, clearProps: 'transform' })
   }, { scope: root, dependencies: [index, confirmed], revertOnUpdate: true })
 
   return <div ref={root} className={styles.exercise}>
@@ -33,7 +34,7 @@ export default function GrammarPreview() {
     <div data-exercise-question><p className={styles.instruction}>Escolha a opção correta.</p><p className={styles.question} lang="en">{question.before} <span className={styles.questionBlank}>{selected || '\u00a0'}</span> {question.after}</p><p className="mt-3 text-sm text-brand-secondary">{question.translation}</p></div>
     <div className={`${styles.options} ${styles.shortOptions}`} aria-label="Alternativas" lang="en">{question.choices.map((option, i) => <button ref={i === 0 ? firstOption : undefined} key={option} className={styles.option} aria-pressed={selected === option} disabled={confirmed} data-result={confirmed ? option === question.answer ? 'correct' : option === selected ? 'wrong' : 'muted' : undefined} onClick={() => setSelected(option)}><span>{option}</span>{selected === option && <span className={styles.selection}><Check size={15} aria-hidden="true" /></span>}</button>)}</div>
     <PracticeBooks className={styles.art} />
-    {confirmed && <div data-exercise-feedback className={styles.feedback} data-correct={correct} role="status">{correct ? <Check size={19} aria-hidden="true" /> : <Lightbulb size={19} aria-hidden="true" />}<p><strong>{correct ? 'Muito bem! ' : 'Vamos entender? '}</strong>{question.explanation}</p></div>}
+    {confirmed && <div data-exercise-feedback className={styles.feedback} data-correct={correct} role="status">{correct && <FeedbackConfetti />}{correct ? <Check size={19} aria-hidden="true" /> : <Lightbulb size={19} aria-hidden="true" />}<p><strong>{correct ? 'Muito bem! ' : 'Vamos entender? '}</strong>{question.explanation}</p></div>}
     <button className={styles.confirm} disabled={!selected} onClick={() => {
       if (!confirmed) setConfirmed(true)
       else {

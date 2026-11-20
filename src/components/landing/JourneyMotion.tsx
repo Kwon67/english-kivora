@@ -1,20 +1,18 @@
 'use client'
 
-import { createContext, useContext, useRef, type ReactNode } from 'react'
-import { useGSAP } from '@gsap/react'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin'
+import dynamic from 'next/dynamic'
+import { createContext, useContext, useRef, useState, ViewTransition, type ReactNode } from 'react'
 import type Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
+import { gsap, ScrollTrigger, SplitText, useGSAP } from '@/lib/gsap'
+import { duration, ease } from '@/lib/motion-tokens'
 import styles from './MindmarketLanding.module.css'
 
-gsap.registerPlugin(useGSAP, ScrollTrigger, DrawSVGPlugin)
-
+const LandingLenis = dynamic(() => import('./LandingLenis'), { ssr: false })
 const ScrollContext = createContext<{ current: Lenis | null }>({ current: null })
 export const useLandingScroll = () => useContext(ScrollContext)
 
-function scrollToAnchor(lenis: Lenis, hash: string) {
+export function scrollToAnchor(lenis: Lenis, hash: string) {
   const target = document.getElementById(hash.slice(1))
   if (!target) return false
   if (location.hash !== hash) history.pushState(null, '', hash)
@@ -23,165 +21,152 @@ function scrollToAnchor(lenis: Lenis, hash: string) {
     target.addEventListener('blur', () => target.removeAttribute('tabindex'), { once: true })
   }
   target.focus({ preventScroll: true })
-  // Lenis 1.3.27 reads scroll-margin and scroll-padding for element targets.
   lenis.scrollTo(target)
   return true
 }
-export { scrollToAnchor }
 
-/** Scroll owns travel; visible-only timelines own the smaller scene gestures. */
 export default function JourneyMotion({ children }: { children: ReactNode }) {
   const root = useRef<HTMLDivElement>(null)
   const engine = useRef<Lenis | null>(null)
+  const [smooth, setSmooth] = useState(false)
+
   useGSAP(() => {
+    const container = root.current!
     const media = gsap.matchMedia()
-    const html = document.documentElement
-    html.classList.add('kivora-landing-scroll')
-    let mounted = true
-    void document.fonts.ready.then(() => { if (mounted) ScrollTrigger.refresh() })
-    media.add('(prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine)', () => {
-      let active = true
-      let dispose: (() => void) | undefined
-      void import('lenis').then(({ default: Lenis }) => {
-        if (!active) return
-        const lenis = new Lenis({ autoRaf: false, syncTouch: false })
-        engine.current = lenis
-        if (root.current?.querySelector('dialog[open]')) lenis.stop()
-        const tick = (seconds: number) => lenis.raf(seconds * 1000)
-        const unsubscribe = lenis.on('scroll', ScrollTrigger.update)
-        const cancelTravel = () => {
-          if (!lenis.isStopped) { lenis.stop(); lenis.start() }
+    const select = gsap.utils.selector(container)
+    document.documentElement.classList.add('kivora-landing-scroll')
+    media.add('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)', () => {
+      setSmooth(true)
+      // Each layer owns one transform. Travel, floating and pointer response
+      // act on separate nodes so scrolling never fights the cursor.
+      const cleanups: (() => void)[] = []
+      for (const area of select('[data-pointer-area], [data-tilt], [data-magnetic]') as HTMLElement[]) {
+        const isCard = area.hasAttribute('data-tilt')
+        const magnet = area.hasAttribute('data-magnetic')
+        const shine = isCard ? document.createElement('span') : null
+        if (shine) {
+          shine.className = styles.shine
+          shine.setAttribute('aria-hidden', 'true')
+          area.append(shine)
         }
-        window.addEventListener('popstate', cancelTravel)
-        gsap.ticker.lagSmoothing(0)
-        gsap.ticker.add(tick)
-        dispose = () => {
-          window.removeEventListener('popstate', cancelTravel)
-          gsap.ticker.remove(tick)
-          unsubscribe()
-          lenis.destroy()
-          engine.current = null
-          gsap.ticker.lagSmoothing(500, 33)
+        const targets = isCard || magnet ? [area] : Array.from(area.querySelectorAll('[data-cursor]'))
+        const axes = targets.map((el, i) => ({
+          x: gsap.quickTo(el, isCard ? 'rotationY' : 'x', { duration: .42, ease: ease.out }),
+          y: gsap.quickTo(el, isCard ? 'rotationX' : 'y', { duration: .42, ease: ease.out }),
+          strength: isCard ? 1.5 : magnet ? 6 : (i % 2 ? -10 : 14),
+        }))
+        const move = (event: PointerEvent) => {
+          const rect = area.getBoundingClientRect()
+          const x = 2 * (event.clientX - rect.left) / rect.width - 1
+          const y = 2 * (event.clientY - rect.top) / rect.height - 1
+          axes.forEach(axis => { axis.x(x * axis.strength); axis.y((isCard ? -y : y) * axis.strength) })
+          if (isCard) {
+            area.style.setProperty('--shine-x', (x * 50) + '%')
+            area.style.setProperty('--shine-y', (y * 50) + '%')
+          }
         }
-      }).catch(() => { /* Native scrolling handles an unavailable optional chunk. */ })
-      return () => { active = false; dispose?.() }
+        const reset = () => axes.forEach(axis => { axis.x(0); axis.y(0) })
+        area.addEventListener('pointermove', move)
+        area.addEventListener('pointerleave', reset)
+        cleanups.push(() => { area.removeEventListener('pointermove', move); area.removeEventListener('pointerleave', reset); shine?.remove() })
+      }
+      return () => { cleanups.forEach(clean => clean()); setSmooth(false) }
     })
-    media.add({ motion: '(prefers-reduced-motion: no-preference)', compact: '(max-width: 47.99rem)' }, ({ conditions }) => {
-      if (!conditions?.motion) return
-      const compact = conditions.compact
-      const container = root.current
-      if (!container) return
-      const select = gsap.utils.selector(container)
+
+    media.add('(prefers-reduced-motion: no-preference)', context => {
       const loops = new Map<Element, { animation: gsap.core.Animation; visible: boolean }>()
-      const sync = () => loops.forEach(({ animation, visible }) => {
-        const paused = !visible || document.hidden
-        if (animation.paused() !== paused) animation.paused(paused)
-      })
+      const sync = () => loops.forEach(loop => loop.animation.paused(!loop.visible || document.hidden))
       const observer = new IntersectionObserver(entries => {
         entries.forEach(entry => { const loop = loops.get(entry.target); if (loop) loop.visible = entry.isIntersecting })
         sync()
-      }, { threshold: .08 })
-      const watch = (element: Element, animation: gsap.core.Animation) => {
-        loops.set(element, { animation, visible: false })
-        observer.observe(element)
+      })
+      const loop = (element: Element, animation: gsap.core.Animation) => {
+        loops.set(element, { animation: animation.pause(), visible: false }); observer.observe(element)
       }
-
-      select('[data-reveal]').forEach((element: HTMLElement) => {
-        // Focus can arrive between pointerdown and pointerup. Moving a whole
-        // control group at that point changes the click target (notably on
-        // mobile Safari). Keep interactive hit areas fixed throughout entry.
-        const interactive = element.querySelector('a,button,input,select,textarea,summary,[tabindex]') !== null
-        gsap.from(element, {
-          y: interactive ? 0 : 48, opacity: 0, duration: .8, ease: 'power3.out',
-          scrollTrigger: { trigger: element, start: 'top 96%', once: true },
-          clearProps: 'transform,opacity',
-        })
-      })
-      // Keep interactive content available when keyboard navigation skips the scroll entrance.
-      const revealFocus = (event: FocusEvent) => {
-        const element = (event.target as Element)?.closest<HTMLElement>('[data-reveal]')
-        if (!element) return
-        gsap.getTweensOf(element).forEach(tween => tween.progress(1))
-      }
-      container.addEventListener('focusin', revealFocus)
-
-      gsap.from(select('[data-title-line]'), { yPercent: 105, rotation: 3, duration: 1.05, stagger: .1, ease: 'power4.out', clearProps: 'transform' })
-      gsap.from(select('[data-hero-copy] > :not(h1)'), { y: 24, opacity: 0, stagger: .07, duration: .8, delay: .15, ease: 'power3.out', clearProps: 'transform,opacity' })
-      select('[data-art-scene]').forEach((scene: HTMLElement) => {
-        // Reveal the scene as a unit. Its parent handles scroll travel and its
-        // children handle local movement, so none of the transforms compete.
-        const trigger = scene.closest('[data-hero-art], [data-scene-travel]') ?? scene
-        gsap.timeline({ scrollTrigger: { trigger, start: 'top 94%', once: true } })
-          .from(scene, {
-            y: () => Math.min(100, window.innerHeight * .1),
-            scale: .75, force3D: true, duration: 1.75, ease: 'elastic.out(1, 0.3)',
-            clearProps: 'transform',
-          }, 0)
-          .from(scene, { opacity: .3, duration: .2, clearProps: 'opacity' }, 0)
-      })
-      const hero = container.querySelector('[data-hero-parallax]')
-      if (hero && !compact) gsap.to(hero, { y: () => Math.min(110, window.innerHeight * .13), force3D: true, ease: 'none', scrollTrigger: { trigger: container.querySelector('main > section'), start: 'top top', end: 'bottom top', scrub: .3, invalidateOnRefresh: true } })
-
-      select('[data-scene-travel]').forEach((element: HTMLElement, index: number) => {
-        gsap.fromTo(element, { y: 42, rotation: index % 2 ? 2 : -2 }, {
-          y: -54, rotation: index % 2 ? -2 : 2, force3D: true, ease: 'none',
-          scrollTrigger: { trigger: element.parentElement, start: 'top bottom', end: 'bottom top', scrub: .3 },
-        })
-      })
-      select('[data-story-card]').forEach((element: HTMLElement) => {
-        gsap.from(element, {
-          scale: .78, force3D: true, transformOrigin: '50% 65%', ease: 'power2.out',
-          scrollTrigger: { trigger: element.parentElement, start: 'top bottom', end: 'top 49%', scrub: .3 },
-        })
-      })
-      select('[data-journey-prop]').forEach((element: HTMLElement, index: number) => {
-        gsap.fromTo(element, { y: 65, x: index % 2 ? -18 : 18, rotation: -14 }, {
-          y: -90, x: index % 2 ? 18 : -18, rotation: 24, ease: 'none',
-          scrollTrigger: { trigger: element.closest('section'), start: 'top bottom', end: 'bottom top', scrub: true },
-        })
-      })
-      if (!compact) select('[data-depth-ornaments]').forEach((element: HTMLElement, index: number) => {
-        gsap.fromTo(element, { y: 25, rotation: index % 2 ? -3 : 3 }, {
-          y: -25, rotation: index % 2 ? 3 : -3, force3D: true, ease: 'none',
-          scrollTrigger: { trigger: element.parentElement, start: 'top bottom', end: 'bottom top', scrub: .3 },
-        })
-      })
-      select('[data-art-scene]').forEach((scene: HTMLElement) => {
-        const timeline = gsap.timeline({ paused: true, repeat: -1, yoyo: true, defaults: { duration: 2.4, ease: 'sine.inOut' } })
-        const move = (name: string, vars: gsap.TweenVars) => {
-          const targets = scene.querySelectorAll(`[data-art-motion="${name}"]`)
-          if (targets.length) timeline.to(targets, vars, 0)
-        }
-        move('illustration', { y: -7, rotation: .35, transformOrigin: '50% 85%' })
-        move('turn', { rotation: 38, transformOrigin: '50% 50%', stagger: .12 })
-        move('drift', { x: 13, y: -14, rotation: 7, stagger: .15 })
-        watch(scene, timeline)
-      })
-      select('[data-float]').forEach((element: HTMLElement, index: number) => {
-        watch(element, gsap.to(element, { y: index % 2 ? 9 : -9, rotation: index % 2 ? 3 : -3, duration: 3.2, yoyo: true, repeat: -1, ease: 'sine.inOut', paused: true }))
-      })
-      // These loops use a short, duplicated decorative row; no layout is animated.
-      select('[data-word-belt]').forEach((element: HTMLElement) => {
-        watch(element, gsap.to(element, { xPercent: -50, duration: 28, repeat: -1, ease: 'none', paused: true }))
-      })
-      const underline = container.querySelectorAll<SVGPathElement>('[data-draw-line]')
-      underline.forEach((element: SVGPathElement) => {
-        gsap.fromTo(element, { drawSVG: '0%' }, { drawSVG: '100%', duration: 1, ease: 'power2.inOut', scrollTrigger: { trigger: element.closest('h1,h2'), start: 'top 85%', once: true } })
-      })
       document.addEventListener('visibilitychange', sync)
-      return () => {
-        observer.disconnect()
-        container.removeEventListener('focusin', revealFocus)
-        document.removeEventListener('visibilitychange', sync)
-        loops.forEach(({ animation }) => animation.kill())
+      const revealTitle = (title: HTMLElement) => {
+        // Splitting balanced text changes its line boxes. Reserve the original
+        // height so an anchor below the heading stays put throughout the reveal.
+        gsap.set(title, { minHeight: getComputedStyle(title).height })
+        SplitText.create(title, {
+          type: 'lines', mask: 'lines', tag: 'span', autoSplit: true,
+          onSplit(split) {
+            return gsap.from(split.lines, {
+              yPercent: 104, rotation: 1.5, duration: duration.title, stagger: .08, ease: ease.title,
+              scrollTrigger: { trigger: title, start: 'top 97%', once: true }, clearProps: 'transform',
+              onComplete: () => { split.revert(); title.style.removeProperty('min-height') },
+            })
+          },
+        })
+        if (title.querySelector('[data-mark]')) gsap.fromTo(title, { '--paint': 0 }, {
+          '--paint': 1, duration: duration.reveal, ease: ease.out, scrollTrigger: { trigger: title, start: 'top 82%', once: true },
+        })
       }
+      const titles = new IntersectionObserver(entries => {
+        for (const entry of entries) if (entry.isIntersecting) {
+          titles.unobserve(entry.target)
+          context.add(() => revealTitle(entry.target as HTMLElement))
+        }
+      }, { rootMargin: '240px' })
+      for (const heading of select('main h1, main h2')) titles.observe(heading)
+      for (const scene of select('[data-art-scene]')) {
+        gsap.from(scene, { y: 32, scale: .97, duration: 1, ease: ease.reveal, scrollTrigger: { trigger: scene, start: 'top 96%', once: true } })
+        const illustration = scene.querySelector('[data-art-motion="illustration"]')
+        loop(scene, gsap.to(illustration, { y: -7, rotation: .35, duration: duration.illustration, ease: ease.loop, repeat: -1, yoyo: true }))
+      }
+      for (const element of select('[data-scene-travel], [data-hero-parallax]')) {
+        gsap.fromTo(element, { y: 15 }, { y: -22, ease: ease.linear,
+          scrollTrigger: { trigger: element.closest('section'), start: 'top bottom', end: 'bottom top', scrub: .35 } })
+      }
+      for (const element of select('[data-float], [data-spin]')) {
+        const spin = element.hasAttribute('data-spin')
+        loop(element, gsap.to(element, spin ? { rotation: 360, repeat: -1, duration: 32, ease: ease.linear } :
+          { y: -8, rotation: 2, duration: duration.float, ease: ease.loop, repeat: -1, yoyo: true }))
+      }
+      for (const plant of select('[data-plant]')) gsap.from(plant, {
+        scale: .62, transformOrigin: '62% 74%', ease: ease.linear,
+        scrollTrigger: { trigger: '#revisoes', start: 'top 70%', end: 'bottom 65%', scrub: true },
+      })
+      const message = container.querySelector('[data-type]')
+      if (message) {
+        const text = SplitText.create(message, { type: 'chars', aria: 'auto', tag: 'span' })
+        gsap.from(text.chars, { opacity: 0, stagger: .045, duration: .01, scrollTrigger: { trigger: message, start: 'top 90%', once: true } })
+      }
+      const scores = select('[data-score]') as HTMLElement[]
+      const blitz = gsap.timeline({ scrollTrigger: { trigger: '[data-ranking]', start: 'top 89%', once: true } })
+      scores.forEach((score, index) => {
+        blitz.from(score.parentElement, { y: 10, opacity: 0, duration: .3 }, index * .13)
+          .fromTo(score, { textContent: '000' }, { scrambleText: { text: score.dataset.score!, chars: '0123456789' }, duration: .65 }, index * .13)
+      })
+      const belt = select('[data-word-belt]')[0]
+      if (belt) {
+        const marquee = gsap.to(belt, { xPercent: -50, duration: duration.belt, repeat: -1, ease: ease.linear,
+          onReverseComplete: () => { marquee.totalTime(marquee.duration() * 100) } })
+        loop(belt, marquee)
+        const speed = gsap.quickTo(marquee, 'timeScale', { duration: .3 })
+        ScrollTrigger.create({ trigger: belt.parentElement, start: 'top bottom', end: 'bottom top',
+          onUpdate(trigger) { speed(trigger.direction * (1 + Math.min(3, Math.abs(trigger.getVelocity()) / 900))) },
+        })
+        const settle = () => speed(marquee.timeScale() < 0 ? -1 : 1)
+        ScrollTrigger.addEventListener('scrollEnd', settle)
+        return () => {
+          ScrollTrigger.removeEventListener('scrollEnd', settle)
+          titles.disconnect(); observer.disconnect(); document.removeEventListener('visibilitychange', sync)
+        }
+      }
+      return () => { titles.disconnect(); observer.disconnect(); document.removeEventListener('visibilitychange', sync) }
     })
-    return () => { mounted = false; media.revert(); html.classList.remove('kivora-landing-scroll') }
+    return () => { media.revert(); document.documentElement.classList.remove('kivora-landing-scroll') }
   }, { scope: root })
-  return <ScrollContext.Provider value={engine}><div ref={root} className={styles.page} onClickCapture={event => {
-    if (!engine.current || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return
-    const anchor = event.target instanceof Element && event.target.closest<HTMLAnchorElement>('a[href^="#"]')
-    if (!anchor || anchor.closest('dialog') || anchor.target || anchor.hasAttribute('download')) return
-    if (scrollToAnchor(engine.current, anchor.hash)) event.preventDefault()
-  }}>{children}</div></ScrollContext.Provider>
+
+  return <ScrollContext.Provider value={engine}>
+    {smooth && <LandingLenis engineRef={engine} />}
+    <ViewTransition name="landing" default="none" enter="landing-page" exit="landing-page">
+      <div ref={root} className={styles.page} onClickCapture={event => {
+        if (!engine.current || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return
+        const anchor = event.target instanceof Element && event.target.closest<HTMLAnchorElement>('a[href^="#"]')
+        if (anchor && !anchor.closest('dialog') && !anchor.target && !anchor.hasAttribute('download') && scrollToAnchor(engine.current, anchor.hash)) event.preventDefault()
+      }}>{children}</div>
+    </ViewTransition>
+  </ScrollContext.Provider>
 }

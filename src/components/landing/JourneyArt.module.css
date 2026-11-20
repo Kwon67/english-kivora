@@ -17,3 +17,10 @@
     58% 51.7%, 60.65% 51.7%, 60.65% 58.85%, 57.55% 58.85%,
     57.55% 53.5%, 58% 53.5%, 58% 51.7%, 0 0);
 }
+
+.plantLayers { position:relative; }
+.plant { position:absolute; inset:0; pointer-events:none; }
+.plant picture { clip-path:polygon(55.6% 59%,60% 59%,61% 56%,63% 53%,67.8% 52.5%,67.8% 61%,70% 62%,70% 69%,63% 70%,63% 74%,61.6% 74%,61.6% 68%,55.6% 66%); }
+.plantLayers > picture { clip-path:polygon(evenodd,0 0,100% 0,100% 100%,0 100%,0 0,55.6% 59%,60% 59%,61% 56%,63% 53%,67.8% 52.5%,67.8% 61%,70% 62%,70% 69%,63% 70%,63% 74%,61.6% 74%,61.6% 68%,55.6% 66%,55.6% 59%,0 0); }
+
+.riveOverlay { position:absolute; inset:0; pointer-events:none; }

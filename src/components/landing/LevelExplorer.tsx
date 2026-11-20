@@ -1,8 +1,8 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import gsap from 'gsap'
-import { useGSAP } from '@gsap/react'
+import { Flip, gsap, useGSAP } from '@/lib/gsap'
+import { duration, ease } from '@/lib/motion-tokens'
 import Link from 'next/link'
 import { ArrowRight, Check, Compass } from 'lucide-react'
 import styles from './LearningLanding.module.css'
@@ -20,16 +20,56 @@ export default function LevelExplorer() {
   "use memo"
   const [index, setIndex] = useState(0)
   const panel = useRef<HTMLDivElement>(null)
+  const rail = useRef<HTMLDivElement>(null)
+  const selectedChip = useRef<HTMLElement | null>(null)
+  const fromSwipe = useRef(false)
+  function activate(next: number, center = true) {
+    const button = rail.current?.querySelectorAll<HTMLButtonElement>('button')[next]
+    if (!button) return
+    if (next !== index) {
+      selectedChip.current = button.querySelector('span')
+      setIndex(next)
+    }
+    if (center && rail.current && rail.current.scrollWidth > rail.current.clientWidth) {
+      const track = rail.current
+      track.scrollTo({ left: track.scrollLeft + button.getBoundingClientRect().left - track.getBoundingClientRect().left
+        - (track.clientWidth - button.offsetWidth) / 2, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })
+    }
+  }
   useGSAP(() => {
     const media = gsap.matchMedia()
     media.add('(prefers-reduced-motion: no-preference)', () => {
-      gsap.from(panel.current?.children ?? [], { y: 22, opacity: 0, duration: .5, stagger: .07, ease: 'power3.out', clearProps: 'transform,opacity' })
+      const card = panel.current
+      const chip = selectedChip.current
+      if (!card || !chip) return
+      // Expand the selected stop into the example card using transform-only FLIP.
+      const fit = Flip.fit(card, chip, { getVars: true, scale: true })
+      if (fit) gsap.from(card, { ...fit, duration: duration.panel, ease: ease.reveal, clearProps: 'transform' })
     })
     return () => media.revert()
   }, { scope: panel, dependencies: [index], revertOnUpdate: true })
   const current = levels[index]
   return <div className={styles.pathExplorer}>
-    <div className={styles.levels} aria-label="Explore os níveis de inglês">{levels.map((item, i) => <button key={item.level} data-tone={item.tone} aria-pressed={index === i} aria-controls="level-example" onClick={() => setIndex(i)}><span>{item.level}</span><small>{i < 2 ? 'Base' : i < 4 ? 'Autonomia' : 'Proficiência'}</small></button>)}</div>
+    <div ref={rail} className={styles.levels} aria-label="Explore os níveis de inglês"
+      onPointerDown={() => { fromSwipe.current = true }} onScrollEnd={() => {
+        if (!rail.current || !fromSwipe.current) return
+        fromSwipe.current = false
+        const track = rail.current.getBoundingClientRect()
+        const midpoint = track.left + track.width / 2
+        const distances = Array.from(rail.current.children, child => {
+          const rect = child.getBoundingClientRect()
+          return Math.abs(rect.left + rect.width / 2 - midpoint)
+        })
+        activate(distances.indexOf(Math.min(...distances)), false)
+      }}
+      onKeyDown={event => {
+        const active = Array.from(event.currentTarget.children).indexOf(event.target as HTMLElement)
+        const next = { ArrowLeft: Math.max(0, active - 1), ArrowRight: Math.min(5, active + 1), Home: 0, End: 5 }[event.key]
+        if (next === undefined) return
+        event.preventDefault()
+        activate(next)
+        rail.current?.querySelectorAll('button')[next]?.focus({ preventScroll: true })
+      }}>{levels.map((item, i) => <button key={item.level} data-tone={item.tone} aria-pressed={index === i} aria-controls="level-example" onClick={() => { fromSwipe.current = false; activate(i) }}><span>{item.level}</span><small>{i < 2 ? 'Base' : i < 4 ? 'Autonomia' : 'Proficiência'}</small></button>)}</div>
     <div ref={panel} id="level-example" className={styles.levelExample} data-tone={current.tone} aria-live="polite" aria-atomic="true">
       <div className={styles.levelStamp} aria-hidden="true"><Compass size={24} /><strong>{current.level}</strong></div>
       <div><p className={styles.exampleLabel}>{current.label}</p><h3 lang="en">“{current.phrase}”</h3><p>{current.goal}</p></div>

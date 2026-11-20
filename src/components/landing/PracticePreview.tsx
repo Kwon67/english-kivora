@@ -1,9 +1,10 @@
 'use client'
 
+import FeedbackConfetti from './FeedbackConfetti'
 import { useRef, useState } from 'react'
 import { ArrowRight, Check, Lightbulb, RotateCcw } from 'lucide-react'
-import { useGSAP } from '@gsap/react'
-import gsap from 'gsap'
+import { gsap, useGSAP } from '@/lib/gsap'
+import { duration, ease } from '@/lib/motion-tokens'
 import { formatMinutesEstimate, scheduleReview, type SchedulingState } from '@/features/review/lib/learningSteps'
 import { REVIEW_GRADE } from '@/features/review/lib/reviewGrades'
 import styles from './LearningLanding.module.css'
@@ -61,7 +62,7 @@ export default function PracticePreview() {
   useGSAP(() => {
     const media = gsap.matchMedia()
     media.add('(prefers-reduced-motion: no-preference)', () => {
-      gsap.from(panel.current, { y: 24, opacity: 0, duration: .5, ease: 'power3.out', clearProps: 'transform,opacity' })
+      gsap.from(panel.current, { y: 24, opacity: 0, duration: duration.panel, ease: ease.reveal, clearProps: 'transform,opacity' })
     })
     return () => media.revert()
   }, { scope: panel, dependencies: [mode, revealed, checked], revertOnUpdate: true })
@@ -81,7 +82,7 @@ export default function PracticePreview() {
           {selected.length ? selected.map((part, index) => <button key={part} aria-label={`Remover ${parts[part]}`} disabled={checked && correct} onClick={() => { setSelected(selected.filter((_, i) => i !== index)); setChecked(false) }}>{parts[part]}</button>) : <span>Sua frase começa aqui…</span>}
         </div>
         <div className={styles.wordBank} lang="en">{parts.map((part, index) => <button key={part} disabled={selected.includes(index)} onClick={() => { setSelected([...selected, index]); setChecked(false) }}>{part}<span aria-hidden="true">+</span></button>)}</div>
-        <div className={styles.labFeedback} aria-live="polite" data-correct={checked && correct}>{checked ? correct ? <><Check size={20} /><span>Isso! <strong>Can I have</strong> abre um pedido educado. Você já pode usar essa frase.</span></> : <><Lightbulb size={20} /><span>Comece com “Can I have”, depois acrescente o pedido. Toque em uma parte para reorganizar.</span></> : <span>Você aprende usando a língua, uma decisão por vez.</span>}</div>
+        <div className={styles.labFeedback} aria-live="polite" data-correct={checked && correct}>{checked && correct && <FeedbackConfetti />}{checked ? correct ? <><Check size={20} /><span>Isso! <strong>Can I have</strong> abre um pedido educado. Você já pode usar essa frase.</span></> : <><Lightbulb size={20} /><span>Comece com “Can I have”, depois acrescente o pedido. Toque em uma parte para reorganizar.</span></> : <span>Você aprende usando a língua, uma decisão por vez.</span>}</div>
         <div className={styles.labActions}><button className={styles.primary} disabled={selected.length !== 3 || checked && correct} onClick={() => setChecked(true)}>Verificar frase <Check size={18} /></button><button className={styles.reset} aria-label="Recomeçar frase" onClick={() => { setSelected([]); setChecked(false) }}><RotateCcw size={19} /></button></div>
       </> : <>
         <h3 lang="en">a little closer</h3>

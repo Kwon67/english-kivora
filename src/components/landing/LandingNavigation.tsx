@@ -4,13 +4,12 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, ArrowUpRight, X } from 'lucide-react'
-import { useGSAP } from '@gsap/react'
-import gsap from 'gsap'
+import { gsap, useGSAP } from '@/lib/gsap'
+import { duration, ease } from '@/lib/motion-tokens'
 import { scrollToAnchor, useLandingScroll } from './JourneyMotion'
 import LandingWordmark from './LandingWordmark'
 import styles from './MindmarketLanding.module.css'
 
-gsap.registerPlugin(useGSAP)
 
 export default function LandingNavigation({ links }: { links: { href: string; label: string }[] }) {
   const dialog = useRef<HTMLDialogElement>(null)
@@ -41,8 +40,8 @@ export default function LandingNavigation({ links }: { links: { href: string; la
     }
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return }
     animation.current = gsap.timeline({ onComplete: finish })
-      .to(element.querySelectorAll('[data-menu-item]'), { y: -14, opacity: 0, duration: .18, stagger: .018, ease: 'power2.in' }, 0)
-      .to(element, { yPercent: -12, opacity: 0, '--menu-veil': 0, duration: .32, ease: 'power2.inOut' }, .04)
+      .to(element.querySelectorAll('[data-menu-item]'), { y: -14, opacity: 0, duration: duration.itemExit, stagger: .018, ease: ease.in }, 0)
+      .to(element, { yPercent: -12, opacity: 0, '--menu-veil': 0, duration: duration.menuExit, ease: ease.inOut }, .04)
   })
   const show = contextSafe(() => {
     const element = dialog.current
@@ -56,8 +55,8 @@ export default function LandingNavigation({ links }: { links: { href: string; la
     gsap.set([element, ...items], { clearProps: 'transform,opacity' })
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     animation.current = gsap.timeline()
-      .fromTo(element, { yPercent: -100, '--menu-veil': 0 }, { yPercent: 0, '--menu-veil': 1, duration: .66, ease: 'power4.out', clearProps: 'transform' })
-      .fromTo(items, { y: 36, opacity: 0 }, { y: 0, opacity: 1, stagger: .065, duration: .46, ease: 'power3.out', clearProps: 'transform,opacity' }, .18)
+      .fromTo(element, { yPercent: -100, '--menu-veil': 0 }, { yPercent: 0, '--menu-veil': 1, duration: duration.menuEnter, ease: ease.title, clearProps: 'transform' })
+      .fromTo(items, { y: 36, opacity: 0 }, { y: 0, opacity: 1, stagger: .065, duration: duration.itemEnter, ease: ease.reveal, clearProps: 'transform,opacity' }, .18)
   })
 
   useEffect(() => {

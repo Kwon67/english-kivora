@@ -1,42 +1,32 @@
 'use client'
 
-import { useRef } from 'react'
-import { Plus } from 'lucide-react'
-import { useGSAP } from '@gsap/react'
-import gsap from 'gsap'
+import { useEffect, useState } from 'react'
+import { LayoutGroup, LazyMotion, MotionConfig, domAnimation, domMax, m } from 'motion/react'
+import { duration, ease } from '@/lib/motion-tokens'
+import { Question, type FAQProps } from './LandingFAQ'
 import styles from './MindmarketLanding.module.css'
 
-gsap.registerPlugin(useGSAP)
-
-export default function LandingFAQItem({ question, answer, index }: { question: string; answer: string; index: number }) {
-  const root = useRef<HTMLDetailsElement>(null)
-  const panel = useRef<HTMLDivElement>(null)
-  const animation = useRef<gsap.core.Tween | null>(null)
-  const desiredOpen = useRef(false)
-  const { contextSafe } = useGSAP(() => {
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const finish = () => { if (query.matches) animation.current?.progress(1) }
-    query.addEventListener('change', finish)
-    return () => query.removeEventListener('change', finish)
-  }, { scope: root })
-  const toggle = contextSafe((event: React.MouseEvent<HTMLElement>) => {
-    event.preventDefault()
-    const details = root.current
-    const content = panel.current
-    if (!details || !content) return
-    animation.current?.kill()
-    desiredOpen.current = !desiredOpen.current
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      details.open = desiredOpen.current
-      gsap.set(content, { clearProps: 'height,opacity,overflow' })
-      return
-    }
-    const opening = desiredOpen.current
-    if (opening) details.open = true
-    animation.current = gsap.fromTo(content, { opacity: opening ? 0 : 1 }, {
-      opacity: opening ? 1 : 0, duration: .22, ease: 'power2.out',
-      onComplete: () => { details.open = opening; gsap.set(content, { clearProps: 'opacity' }) },
-    })
-  })
-  return <details ref={root} className={styles.faqItem}><summary onClick={toggle}><span><small>0{index + 1}</small>{question}</span><Plus size={23} aria-hidden="true" /></summary><div ref={panel}><p>{answer}</p></div></details>
+// Only the layout projection feature is added to the small animation bundle.
+const features = { ...domAnimation, layout: domMax.layout }
+export default function AnimatedFAQ({ items, initial }: FAQProps & { initial: boolean[] }) {
+  const [opened, setOpened] = useState(initial)
+  const [reduce, setReduce] = useState(true)
+  useEffect(() => {
+    const media = matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => setReduce(media.matches)
+    update()
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
+  return <LazyMotion features={features} strict><MotionConfig reducedMotion="user"
+    transition={{ duration: reduce ? 0 : duration.faq, ease: ease.motionOut }}>
+    <LayoutGroup>{items.map(([question, answer], index) =>
+      <m.details layout={reduce ? false : 'position'} key={question} className={styles.faqItem} open={opened[index]}>
+        <summary onClick={event => {
+          event.preventDefault()
+          setOpened(old => old.map((open, i) => i === index ? !open : open))
+        }}><Question text={question} index={index} /></summary>
+        {opened[index] && <m.div initial={reduce ? false : { opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}><p>{answer}</p></m.div>}
+      </m.details>)}</LayoutGroup>
+  </MotionConfig></LazyMotion>
 }
