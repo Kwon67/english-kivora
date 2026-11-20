@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import { animate, useMotionValue, useReducedMotion } from 'motion/react'
+import { useRef } from 'react'
+import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
 
 interface BlitzCountUpNumberProps {
   value: number
@@ -20,28 +21,20 @@ export default function BlitzCountUpNumber({
   delay = 0,
   className,
 }: BlitzCountUpNumberProps) {
-  const prefersReducedMotion = useReducedMotion()
-  const motionValue = useMotionValue(0)
   const spanRef = useRef<HTMLSpanElement>(null)
-
-  useEffect(() => {
-    if (prefersReducedMotion) {
-      if (spanRef.current) spanRef.current.textContent = String(value)
-      return
-    }
-
-    motionValue.set(0)
-    const controls = animate(motionValue, value, {
-      duration,
-      delay,
-      ease: 'easeOut',
-      onUpdate: (latest) => {
-        if (spanRef.current) spanRef.current.textContent = String(Math.round(latest))
-      },
+  useGSAP(() => {
+    const span = spanRef.current!
+    const media = gsap.matchMedia()
+    media.add('(prefers-reduced-motion: no-preference)', () => {
+      const counter = { score: 0 }
+      gsap.to(counter, { score: value, duration, delay, ease: 'power2.out',
+        onUpdate: () => { span.textContent = String(Math.round(counter.score)) },
+      })
+      return () => { span.textContent = String(value) }
     })
-
-    return () => controls.stop()
-  }, [value, duration, delay, prefersReducedMotion, motionValue])
+    span.textContent = String(value)
+    return () => media.revert()
+  }, { scope: spanRef, dependencies: [value, duration, delay], revertOnUpdate: true })
 
   return (
     <span ref={spanRef} className={className}>

@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { AnimatePresence, m } from 'motion/react'
-import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
+import TransitionSlot from '@/components/motion/TransitionSlot'
 import { Check, X, Zap } from 'lucide-react'
 import MultipleChoice from '@/features/game/components/MultipleChoice'
 import TypingMode from '@/features/game/components/TypingMode'
@@ -88,7 +87,6 @@ export default function BlitzClient({
   const [cardsAnswered, setCardsAnswered] = useState(0)
   const [selectedMode, setCurrentMode] = useState<BlitzGameMode>(DEFAULT_BLITZ_MODE)
   const [cardQueue, setCardQueue] = useState(() => [...cards])
-  const reduceMotion = useHydratedReducedMotion()
   const [roundStartTime, setRoundStartTime] = useState(0)
   const [startedAt, setStartedAt] = useState(0)
   const [roundFeedback, setRoundFeedback] = useState<{ kind: 'correct' | 'wrong'; label: string } | null>(null)
@@ -517,13 +515,10 @@ export default function BlitzClient({
             )}
           </div>
 
-          <AnimatePresence mode="wait">
-            <m.div
+          <TransitionSlot duration={0.2} enterOpacity={0.88} exitOpacity={0.88}>
+            <div
               key={`${currentMode}-${currentCard.id}`}
-              initial={reduceMotion ? false : { opacity: .88 }}
-              animate={{ opacity: 1 }}
-              exit={reduceMotion ? undefined : { opacity: .88 }}
-              transition={{ duration: reduceMotion ? 0 : 0.2 }}
+
               className="blitz-round"
             >
               {currentMode === 'multiple_choice' && (
@@ -572,8 +567,8 @@ export default function BlitzClient({
                   onFinish={handleMatchingFinish}
                 />
               )}
-            </m.div>
-          </AnimatePresence>
+            </div>
+          </TransitionSlot>
         </div>
       )}
 
