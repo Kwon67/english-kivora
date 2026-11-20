@@ -4,6 +4,7 @@ import { useId, useRef } from 'react'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { mountRibbonCanvas, type RibbonClearance, type RibbonCubic } from './journeyRibbonCanvas'
 import styles from './MindmarketLanding.module.css'
 
 gsap.registerPlugin(useGSAP, ScrollTrigger)
@@ -27,7 +28,7 @@ function layoutPosition(element: HTMLElement, ancestor: HTMLElement) {
 
 type Point = { x: number; y: number }
 
-type Cubic = { start: Point; first: Point; second: Point; end: Point }
+type Cubic = RibbonCubic
 type Arrival = { y: number; length: number; area: number }
 
 // The approved prefix uses only absolute M/C/S commands (including implicit S
@@ -136,7 +137,7 @@ function lengthAtY(lookup: Arrival[], y: number) {
 }
 
 
-type Clearance = { x: number; y: number; w: number; h: number; r: number }
+type Clearance = RibbonClearance
 
 function makeClip(id: string, area: Clearance, width: number, height: number) {
   const { x, y, w, h, r } = area
@@ -148,80 +149,6 @@ function makeClip(id: string, area: Clearance, width: number, height: number) {
   shape.setAttribute('d', `M0 0H${width}V${height}H0Z M${x+r} ${y}H${x+w-r}A${r} ${r} 0 0 1 ${x+w} ${y+r}V${y+h-r}A${r} ${r} 0 0 1 ${x+w-r} ${y+h}H${x+r}A${r} ${r} 0 0 1 ${x} ${y+h-r}V${y+r}A${r} ${r} 0 0 1 ${x+r} ${y}Z`)
   clip.append(shape)
   return clip
-}
-
-// Create the decorative layers only for the active coarse-pointer renderer.
-// Fine pointers keep the original DOM, including in a narrow window.
-function mountTouchBands(container: HTMLElement) {
-  const append = (parent: HTMLElement, className: string) => {
-    const child = document.createElement('div')
-    child.className = className
-    parent.append(child)
-    return child
-  }
-  return Array.from({ length: 9 }, (_, i) => {
-    const band = append(container, styles.ribbonBand)
-    band.dataset.ribbonBand = String(i)
-    const preload = append(band, styles.ribbonPreload)
-    const crop = append(preload, styles.ribbonCrop)
-    const gate = append(crop, styles.ribbonGate)
-    gate.dataset.ribbonGate = ''
-    const art = append(gate, styles.ribbonArt)
-    const svg = document.createElementNS(SVG_NS, 'svg')
-    svg.setAttribute('preserveAspectRatio', 'none')
-    svg.setAttribute('focusable', 'false')
-    art.append(svg)
-    return band
-  })
-}
-
-// Each viewport crops the same coordinate system. Keep complete cubic commands
-// across seams so their tangents and the non-scaling stroke agree on both sides.
-function paintBands(bands: HTMLElement[], edges: number[], curves: Cubic[], areas: Clearance[],
-  width: number, height: number, scaleY: number, stroke: number, id: string) {
-  bands.forEach((band, index) => {
-    const top = edges[index], bottom = edges[index + 1]
-    const y = top / scaleY, h = (bottom - top) / scaleY
-    band.style.top = `${top}px`
-    band.style.height = `${bottom - top}px`
-    band.style.setProperty('--band-before', `min(100svh, ${top}px)`)
-    band.style.setProperty('--band-after', `min(100svh, ${edges[edges.length - 1] - bottom}px)`)
-    const svg = band.querySelector('svg')!
-    // Give the compositor a texel gutter on either side of the crop.
-    // The band alone owns the seam; adjacent visible boxes never overlap.
-    const gutter = 1 / scaleY
-    svg.setAttribute('viewBox', `0 ${y - gutter} ${width} ${h + 2 * gutter}`)
-    const defs = document.createElementNS(SVG_NS, 'defs')
-    const group = document.createElementNS(SVG_NS, 'g')
-    let parent = group
-    areas.forEach((area, i) => {
-      if (area.y + area.h <= y || area.y >= y + h) return
-      const clip = makeClip(`${id}-band-${index}-${i}`, area, width, height)
-      defs.append(clip)
-      const child = document.createElementNS(SVG_NS, 'g')
-      child.setAttribute('clip-path', `url(#${clip.id})`)
-      parent.append(child)
-      parent = child
-    })
-    const ink = document.createElementNS(SVG_NS, 'path')
-    const commands: string[] = []
-    let previousEnd: Point | undefined
-    for (const { start, first, second, end } of curves) {
-      const ys = [start.y, first.y, second.y, end.y]
-      const pad = (stroke / 2 + 1) / scaleY
-      if (Math.max(...ys) < y - pad || Math.min(...ys) > y + h + pad) continue
-      if (!previousEnd || previousEnd.x !== start.x || previousEnd.y !== start.y) commands.push(`M${start.x} ${start.y}`)
-      commands.push(`C${first.x} ${first.y} ${second.x} ${second.y} ${end.x} ${end.y}`)
-      previousEnd = end
-    }
-    ink.setAttribute('d', commands.join(' '))
-    ink.setAttribute('class', styles.ribbonInk)
-    ink.setAttribute('fill', 'none')
-    ink.setAttribute('vector-effect', 'non-scaling-stroke')
-    ink.setAttribute('stroke-width', String(stroke))
-    parent.append(ink)
-    svg.replaceChildren(defs, group)
-  })
 }
 
 export default function JourneyRibbon() {
@@ -246,7 +173,8 @@ export default function JourneyRibbon() {
       const maskBase = svg?.querySelector<SVGRectElement>('[data-mask-base]')
       const maskContent = svg?.querySelector<SVGGElement>('[data-mask-content]')
       if (!svg || !ink || !maskBase || !maskContent) return
-      const bands = touch ? mountTouchBands(container) : []
+      const canvas = touch ? mountRibbonCanvas(container, reduced) : null
+      if (touch && !canvas) svg.style.display = 'block'
       const sections = Array.from(journey.querySelectorAll<HTMLElement>('main > section, footer'))
       const playhead = { value: 0 }
       let height = 0, initialSpan = 0, length = 0, frame = 0
@@ -359,7 +287,7 @@ export default function JourneyRibbon() {
         ink.setAttribute('stroke-width', String(strokeWidth))
         ink.setAttribute('d', prefix + extension)
         let segmentEnds: number[] = []
-        if (touch || reduced) ink.style.removeProperty('stroke-dasharray')
+        if (!canvas && (touch || reduced)) ink.style.removeProperty('stroke-dasharray')
         else {
           const mapped = arrivalLookup(curves, curveCache, svgBox.width / viewWidth, svgBox.height / viewHeight)
           lookup = mapped.lookup
@@ -392,11 +320,10 @@ export default function JourneyRibbon() {
           return { x, y, w, h, r }
         })
         if (touch) {
-          const conversationEnd = sectionBoxes[4].y + sectionBoxes[4].height
-          const faq = sectionBoxes[7].y
-          const edges = [0, sectionBoxes[1].y, practice.y, sectionBoxes[3].y, sectionBoxes[4].y,
-            conversationEnd, Math.round((conversationEnd + faq) / 2), faq, sectionBoxes[9].y, height]
-          paintBands(bands, edges, curves, areas, viewWidth, viewHeight, scaleY, strokeWidth, id)
+          canvas?.measure({ curves, areas, ends: segmentEnds, scaleX: svgBox.width / viewWidth,
+            scaleY: svgBox.height / viewHeight, width, height: svgBox.height,
+            journeyTop: svgBox.top + window.scrollY, footerTop: sectionBoxes[9].y, stroke: strokeWidth,
+            color: getComputedStyle(ink).stroke, lengthAtY: y => lengthAtY(lookup, y) })
           return true
         }
         // Keep the reference path for geometry and reduced motion. In motion,
@@ -472,22 +399,37 @@ export default function JourneyRibbon() {
           onRefresh: syncAfterRefresh,
         },
       })
-      const resize = new ResizeObserver(() => {
+      let measuredWidth = touch ? journey.clientWidth : 0
+      const scheduleMeasure = () => {
         // FAQ and practice height animations notify every frame. Rebuild once
         // after they settle, while preserving their animated layout transition.
         clearTimeout(resizeTimer)
         resizeTimer = setTimeout(() => {
           cancelAnimationFrame(frame)
-          frame = requestAnimationFrame(() => { if (measure() && !touch) ScrollTrigger.refresh() })
+          frame = requestAnimationFrame(() => {
+            if (touch) measuredWidth = journey.clientWidth
+            if (measure() && !touch) ScrollTrigger.refresh()
+          })
         }, 100)
+      }
+      const resize = new ResizeObserver(entries => {
+        if (touch) {
+          const box = entries[0]?.borderBoxSize?.[0]
+          if (box && Math.round(box.inlineSize) === measuredWidth && Math.round(box.blockSize) === height) return
+        }
+        scheduleMeasure()
       })
+      const rotate = () => { layoutKey = ''; scheduleMeasure() }
+      if (touch) window.addEventListener('orientationchange', rotate)
       resize.observe(journey)
-      sections.forEach(section => resize.observe(section))
+      if (!touch) sections.forEach(section => resize.observe(section))
       return () => {
         clearTimeout(resizeTimer)
         cancelAnimationFrame(frame)
         resize.disconnect()
-        bands.forEach(band => band.remove())
+        window.removeEventListener('orientationchange', rotate)
+        canvas?.destroy()
+        if (touch && !canvas) svg.style.removeProperty('display')
         tween?.scrollTrigger?.kill()
         tween?.kill()
         svg.append(ink)

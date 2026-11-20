@@ -32,11 +32,11 @@ for(const engine of ['chromium','webkit'])for(const mobile of [false,true]){
  await page.setViewportSize(viewport);await page.waitForTimeout(500)
  for(const position of [0,.45,1]) {
   await page.evaluate(p=>scrollTo(0,(document.documentElement.scrollHeight-innerHeight)*p),position);await page.waitForTimeout(200)
-  const tiled=await page.screenshot()
+  const rendered=await page.screenshot()
   const restore = await showRibbonReference(page)
   const original = await page.screenshot()
   await restore()
-  const a=await sharp(tiled).raw().toBuffer(),b=await sharp(original).raw().toBuffer();let changed=0,max=0
+  const a=await sharp(rendered).raw().toBuffer(),b=await sharp(original).raw().toBuffer();let changed=0,max=0
   for(let i=0;i<a.length;i++){const d=Math.abs(a[i]-b[i]);if(d>8)changed++;max=Math.max(max,d)}
   const ratio=changed/a.length;visual.push({viewport,position,changedChannelRatio:ratio,maxDifference:max});assert(ratio<.001,'Vector rendering must match original full mask')
  }
