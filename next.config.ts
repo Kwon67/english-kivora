@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 
-import { getLandingRiveAssets } from './src/components/landing/landingRiveAssets';
 import { resolveAnalyticsEndpoint } from './src/lib/analyticsEndpoint';
 
-function buildContentSecurityPolicy(enableRive = false) {
+function buildContentSecurityPolicy(landingScenes = false) {
   const isProd = process.env.NODE_ENV === 'production'
   const analyticsOrigin = process.env.NEXT_PUBLIC_POSTHOG_KEY
     ? resolveAnalyticsEndpoint(process.env.NEXT_PUBLIC_POSTHOG_HOST)?.origin
@@ -13,14 +12,14 @@ function buildContentSecurityPolicy(enableRive = false) {
     "default-src 'self'",
     // Next.js still injects small inline bootstrap scripts in production.
     isProd
-      ? `script-src 'self' 'unsafe-inline'${enableRive ? " 'wasm-unsafe-eval'" : ''}`
+      ? `script-src 'self' 'unsafe-inline'${landingScenes ? " 'wasm-unsafe-eval'" : ''}`
       : "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
     "media-src 'self' data: blob: https://*.supabase.co",
     "font-src 'self' data:",
-    `connect-src 'self' https://*.supabase.co wss://*.supabase.co${analyticsOrigin ? ` ${analyticsOrigin}` : ''}`,
-    "worker-src 'self'",
+    `connect-src 'self' https://*.supabase.co wss://*.supabase.co${landingScenes ? ' https://assets.unicorn.studio' : ''}${analyticsOrigin ? ` ${analyticsOrigin}` : ''}`,
+    landingScenes ? "worker-src 'self' blob:" : "worker-src 'self'",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -175,10 +174,10 @@ const nextConfig: NextConfig = {
           { key: 'Cache-Control', value: 'private, no-store' },
         ],
       },
-      ...(Object.keys(getLandingRiveAssets()).length ? [{
+      {
         source: '/',
         headers: [{ key: 'Content-Security-Policy', value: buildContentSecurityPolicy(true) }],
-      }] : []),
+      },
       {
         source: '/sw.js',
         headers: [
