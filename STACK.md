@@ -145,3 +145,11 @@ E2E_PUBLIC_ONLY=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3100 pnpm exec playwright
 # Use a origem HTTPS do servidor local de teste
 PLAYWRIGHT_BASE_URL=https://127.0.0.1:3114 pnpm exec playwright test -c e2e/landing-scroll.config.ts
 ```
+
+## Acabamento e descoberta pública
+
+A abertura da landing espera a decodificação do poster do hero e as fontes. A abertura da cortina começa em até 1,05 s e termina em até 1,44 s. A preferência de movimento, a âncora de entrada e o modo leve pulam a cortina. A presença da marca fica registrada em `sessionStorage`. A arte atual do hero usa ilustrações em camadas. O canvas opcional mantém um poster quando o modo leve está ativo.
+
+O modo leve é selecionado quando há até dois núcleos lógicos, até 2 GB informados em `deviceMemory`, economia de dados ou conexão 3G ou inferior. As cenas, partículas da demo e coreografias mais elaboradas cedem lugar aos estados estáticos. O botão de som lembra a opção em `localStorage`, com sons de interface sintetizados localmente após consentimento. Navegações da landing para cadastro e login carregam o tipo de transição `kivora-auth`.
+
+O sitemap lista exclusivamente cinco URLs. O proxy mantém a sessão nas páginas protegidas e exclui a landing, os arquivos de descoberta e os caminhos de arquivos estáticos públicos. Os ícones da aplicação são versionados no manifesto e no cache do service worker. A imagem Open Graph de 1.200 × 630 reaproveita a ilustração original do hero.

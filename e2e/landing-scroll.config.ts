@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: '.',
-  testMatch: ['landing-scroll.spec.ts', 'landing-ribbon.spec.ts'],
+  testMatch: ['landing-scroll.spec.ts', 'landing-ribbon.spec.ts', 'landing-polish.spec.ts'],
   workers: 1,
   outputDir: '../output/landing-hz/playwright',
   use: {
