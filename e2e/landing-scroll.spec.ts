@@ -65,6 +65,14 @@ test('movimento reduzido preserva teclado e FAQ nativos', async ({ page }) => {
 })
 
 test('a fita ganha segmentos visíveis ao avançar pela página', async ({ page }) => {
+  if (await page.evaluate(() => matchMedia('(pointer: coarse)').matches)) {
+    const band = page.locator('[data-ribbon-band="0"] [data-ribbon-gate]')
+    await expect.poll(() => band.evaluate(el => new DOMMatrix(getComputedStyle(el).transform).m42)).toBeLessThan(0)
+    await page.evaluate(() => scrollTo({ top: 300, behavior: 'instant' }))
+    await expect.poll(() => band.evaluate(el => Math.abs(new DOMMatrix(getComputedStyle(el).transform).m42))).toBeLessThan(300)
+    return
+  }
+  await expect(page.locator('[data-ribbon-band]')).toHaveCount(0)
   const visibleInk = page.locator('svg:is([data-ribbon-desktop], [data-ribbon-mobile]):visible path[visibility="visible"]')
   await expect.poll(() => visibleInk.count()).toBeGreaterThan(0)
   const initial = await visibleInk.count()

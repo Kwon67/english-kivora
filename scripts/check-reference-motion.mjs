@@ -1,3 +1,4 @@
+import { readRibbonState } from './ribbon-state.mjs'
 import { chromium, webkit } from '@playwright/test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
@@ -32,11 +33,7 @@ for (const engine of (process.env.MOTION_ENGINES?.split(',') || ['chromium', 'we
   const firstWave = await wave.evaluate(el => getComputedStyle(el).transform)
   await page.waitForTimeout(600)
   assert.notEqual(await wave.evaluate(el => getComputedStyle(el).transform), firstWave, 'The reviewed illustration moves intact without deforming its limbs')
-  const ribbon = () => page.evaluate(() => {
-    const svg = [...document.querySelectorAll('[data-ribbon-desktop],[data-ribbon-mobile]')].find(el => getComputedStyle(el).display !== 'none')
-    const path = svg.querySelector('[data-ribbon-path]')
-    return { d: path.getAttribute('d'), offset: parseFloat(path.style.strokeDashoffset) }
-  })
+  const ribbon = () => page.evaluate(readRibbonState)
   const initialPath = (await ribbon()).d
   assert(initialPath.startsWith(mobile ? 'M410 240C325 220 385 430 325 500S270 555 240 570' : 'M1460 100C1050 80 1270 420 1115 510S1140 720 815 720'), 'Approved path prefix retained')
   const positions = [0, .2, .4, .6, .8, 1]
@@ -50,7 +47,7 @@ for (const engine of (process.env.MOTION_ENGINES?.split(',') || ['chromium', 'we
     }).length), 0, 'Content visible after entrance')
     down.push((await ribbon()).offset)
   }
-  assert.equal(down.at(-1), 0, 'Ribbon reaches footer')
+  assert(down.at(-1) < 1 / await page.evaluate(() => devicePixelRatio), 'Ribbon reaches footer within one device pixel')
   const stoppedWave = await wave.evaluate(el => getComputedStyle(el).transform)
   await page.waitForTimeout(400)
   assert.equal(await wave.evaluate(el => getComputedStyle(el).transform), stoppedWave, 'Offscreen scene pauses')

@@ -1,16 +1,16 @@
+import { showRibbonReference } from './ribbon-state.mjs'
 import {chromium,webkit} from '@playwright/test'
 import fs from 'node:fs/promises'
 const rows=[]
 for(const engine of ['chromium','webkit']){
  const browser=await (engine==='chromium'?chromium:webkit).launch(engine==='chromium'?{channel:'chrome'}:{})
- const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:3,isMobile:true})
+ const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:3,isMobile:true,hasTouch:true})
  await page.goto('http://localhost:3100/');await page.waitForTimeout(2500)
  // Reconstruct the former raster rendering even when run on the optimized source.
- await page.addStyleTag({content:'[data-ribbon-clip]{clip-path:none!important}'})
- await page.locator('[data-ribbon-path]').evaluateAll(paths=>paths.forEach(p=>p.setAttribute('mask',`url(#${p.ownerSVGElement.querySelector('mask').id})`)))
- for(const mode of ['original','no-mask','no-mask-no-blur']) {
- if(mode!=='original')await page.locator('[data-ribbon-path]').evaluateAll(ps=>ps.forEach(p=>p.removeAttribute('mask')))
- if(mode==='no-mask-no-blur')await page.addStyleTag({content:'nav {backdrop-filter:none!important}'})
+ const restore = await showRibbonReference(page)
+ for(const mode of ['static-reference','bands','bands-no-blur']) {
+ if(mode==='bands')await restore()
+ if(mode==='bands-no-blur')await page.addStyleTag({content:'nav {backdrop-filter:none!important}'})
  const cdp=engine==='chromium'?await page.context().newCDPSession(page):null
  if(cdp)await cdp.send('Tracing.start',{categories:'devtools.timeline',transferMode:'ReturnAsStream'})
  const result=await page.evaluate(async()=>{const frames=[];let last;const start=performance.now();document.documentElement.style.scrollBehavior='auto';await new Promise(done=>{const tick=t=>{if(last)frames.push(t-last);last=t;const p=Math.min(1,(t-start)/5000);scrollTo(0,(document.documentElement.scrollHeight-innerHeight)*(p<.5?p*2:2-p*2));if(p<1)requestAnimationFrame(tick);else done()};requestAnimationFrame(tick)});frames.sort((a,b)=>a-b);return {frames:frames.length,p95:frames[Math.floor(frames.length*.95)],over34:frames.filter(t=>t>34).length}})

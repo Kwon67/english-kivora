@@ -1,3 +1,4 @@
+import { readRibbonState } from './ribbon-state.mjs'
 import { chromium, webkit } from '@playwright/test'
 import fs from 'node:fs/promises'
 const label = process.argv[2] || 'current'
@@ -12,7 +13,7 @@ for (const engine of ['chromium','webkit']) for (const mobile of [false,true]) {
  await page.addInitScript(()=>{window.__geometry=0;const original=SVGPathElement.prototype.getTotalLength;SVGPathElement.prototype.getTotalLength=function(){window.__geometry++;return original.call(this)}})
  await page.goto('http://localhost:3100/',{waitUntil:'networkidle'}); await page.waitForTimeout(1600)
  const name=`${engine}-${mobile?'mobile':'desktop'}`
- const geometry=await page.evaluate(()=>{const svg=[...document.querySelectorAll('[data-ribbon-desktop],[data-ribbon-mobile]')].find(e=>getComputedStyle(e).display!=='none');return {d:svg.querySelector('[data-ribbon-path]').getAttribute('d'),viewBox:svg.getAttribute('viewBox'),height:svg.getBoundingClientRect().height}})
+ const geometry=await page.evaluate(readRibbonState)
  const runs=[]
  for(let trial=0;trial<3;trial++) {
  const session=engine==='chromium'?await context.newCDPSession(page):null
@@ -34,7 +35,7 @@ for (const engine of ['chromium','webkit']) for (const mobile of [false,true]) {
  await page.screenshot({path:`${out}/${name}-faq.png`})
  await page.setViewportSize(mobile?{width:844,height:390}:{width:1100,height:800});await page.waitForTimeout(600)
  await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));await page.waitForTimeout(600)
- const bottom=await page.evaluate(()=>{const p=[...document.querySelectorAll('[data-ribbon-path]')].find(p=>p.getBoundingClientRect().width);return {offset:parseFloat(p.style.strokeDashoffset),overflow:document.documentElement.scrollWidth>innerWidth}})
+ const bottom=await page.evaluate(readRibbonState)
  await page.emulateMedia({reducedMotion:'reduce'});await page.waitForTimeout(300)
  const hidden=await page.locator('[data-reveal]').evaluateAll(es=>es.filter(e=>getComputedStyle(e).opacity==='0').length)
  results.push({name,geometry,runs,faqGeometry,bottom,hidden,errors});console.log(JSON.stringify(results.at(-1)))

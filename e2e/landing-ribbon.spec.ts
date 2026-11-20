@@ -1,3 +1,5 @@
+import sharp from 'sharp'
+import { showRibbonReference } from '../scripts/ribbon-state.mjs'
 import { expect, test } from '@playwright/test'
 
 test.beforeEach(async ({ page, baseURL }) => {
@@ -53,6 +55,7 @@ async function measureInk(segment: Segment) {
 }
 
 test('every ribbon segment paints and retracts its final eight CSS pixels', async ({ page }) => {
+  test.skip(await page.evaluate(() => matchMedia('(pointer: coarse)').matches), 'Projected dash renderer uses a fine pointer')
   test.setTimeout(120_000)
   // Move the journey below the fold in the test so even the hero's first
   // segment can go all the way back to its hidden state.
@@ -122,6 +125,7 @@ test('every ribbon segment paints and retracts its final eight CSS pixels', asyn
 })
 
 test('opening the FAQ and changing breakpoint remeasure the active dash', async ({ page }) => {
+  test.skip(await page.evaluate(() => matchMedia('(pointer: coarse)').matches), 'Projected dash renderer uses a fine pointer')
   await page.goto('/')
   const ribbon = page.locator('svg:is([data-ribbon-mobile],[data-ribbon-desktop]):visible')
   const summary = page.locator('#faq summary').first()
@@ -159,4 +163,162 @@ test('opening the FAQ and changing breakpoint remeasure the active dash', async 
   const resized = await verifyNewGeometry(expanded)
   await summary.click()
   await verifyNewGeometry(resized)
+})
+
+test.describe('touch ribbon', () => {
+  test.beforeEach(async ({ page }) => {
+    test.skip(!await page.evaluate(() => matchMedia('(pointer: coarse)').matches), 'Touch renderer')
+    await page.goto('/')
+    await expect(page.locator('[data-ribbon-band="8"] svg')).toHaveAttribute('viewBox', /./)
+    await page.evaluate(() => document.fonts.ready)
+  })
+
+  test('native reveal starts in the hero and reverses without JS writes', async ({ page }) => {
+    const bands = page.locator('[data-ribbon-band]')
+    await expect(bands).toHaveCount(9)
+    expect(await page.evaluate(() => scrollY)).toBe(0)
+    const result = await bands.evaluateAll(async elements => {
+      const frame = () => new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+      const writes: string[] = []
+      const observer = new MutationObserver(records => writes.push(...records.map(r => r.type)))
+      for (const el of elements) observer.observe(el, { attributes: true, childList: true, subtree: true })
+      const read = (el: Element) => {
+        const gate = el.querySelector('[data-ribbon-gate]')!, art = gate.firstElementChild!
+        const a = new DOMMatrix(getComputedStyle(gate).transform).m42
+        const b = new DOMMatrix(getComputedStyle(art).transform).m42
+        const rect = el.getBoundingClientRect()
+        return { error: Math.abs(a + b), bottom: rect.bottom + a, height: rect.height }
+      }
+      const sample = async (index: number) => {
+        await frame(); await frame(); await frame()
+        return read(elements[index])
+      }
+      const initial = await sample(0)
+      const checks = []
+      for (const index of [1, 2, 6, 1, 5, 2, 7, 1, 0]) {
+        const el = elements[index]
+        const middle = el.getBoundingClientRect().top + scrollY + el.clientHeight / 2 - innerHeight / 2
+        for (const offset of [0, 0.5, 2, 1, 0]) {
+          scrollTo({ top: middle + offset, behavior: 'instant' })
+          checks.push(await sample(index))
+        }
+      }
+      observer.disconnect()
+      return { initial, checks, writes, focus: innerHeight / 2, dpr: devicePixelRatio }
+    })
+    expect(result.dpr).toBe(3)
+    expect(result.writes).toEqual([])
+    for (const sample of [result.initial, ...result.checks]) {
+      expect(sample.error).toBeLessThan(0.1 / result.dpr)
+      expect(Math.abs(sample.bottom - result.focus)).toBeLessThan(1)
+    }
+  })
+
+  test('DPR 3 retains the continuous ink across seams, cards and rapid reversals', async ({ page }) => {
+    test.setTimeout(120_000)
+    const bands = page.locator('[data-ribbon-band]')
+    // Distinguish the ribbon from the green section background. The cards,
+    // text clearances, stacking order and the actual browser compositor stay live.
+    await page.addStyleTag({ content: '[data-ribbon-journey] path[vector-effect="non-scaling-stroke"] {stroke:#ff00ff!important}' })
+    const capture = async () => sharp(await page.screenshot({ scale: 'device' })).removeAlpha().raw().toBuffer({ resolveWithObject: true })
+    const sample = async (y: number, top: number, bottom: number, settleForeground = false) => {
+      await page.evaluate(async y => {
+        scrollTo({ top: y, behavior: 'instant' })
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
+      }, y)
+      if (settleForeground) await page.waitForTimeout(800)
+      const actual = await capture()
+      const restore = await showRibbonReference(page)
+      let reference
+      try { reference = await capture() } finally { await restore() }
+      const isInk = (p: Buffer, i: number) => p[i] > 225 && p[i+1] < 45 && p[i+2] > 225
+      let ink = 0
+      for (let row = Math.round(top * 3); row < Math.round(bottom * 3); row++) {
+        let missing = 0, extra = 0
+        for (let x = 0; x < actual.info.width; x++) {
+          const i = (row * actual.info.width + x) * 3
+          const a = isInk(actual.data, i), b = isInk(reference.data, i)
+          if (b) ink++
+          if (a && !b) extra++
+          if (b && !a) missing++
+          // A lightly translucent scanline inside otherwise solid ink is also
+          // a seam, even when it still passes the magenta classification.
+          if (a && b && reference.data[i + 1] === 0 && actual.data[i + 1] > 8) missing++
+        }
+        // A cropped scanline cannot lose a strip of ink. Permit edge AA
+        // differences at the two sides of the stroke or a rounded clearance.
+        if (Math.max(missing, extra) > 8) {
+          for (const [label, shot] of [['tiled', actual], ['reference', reference]] as const) {
+            await test.info().attach(label, { body: await sharp(shot.data, { raw: shot.info }).png().toBuffer(), contentType: 'image/png' })
+          }
+        }
+        expect(Math.max(missing, extra), `scroll ${y}, device row ${row}`).toBeLessThanOrEqual(8)
+      }
+      return ink
+    }
+    for (const viewport of [{ width: 390, height: 844 }, { width: 844, height: 390 }]) {
+      await page.setViewportSize(viewport)
+      const narrow = viewport.width < 768
+      await expect(bands.first().locator('svg')).toHaveAttribute('viewBox', narrow ? /^0 -?[\d.]+ 390 / : /^0 -?[\d.]+ 1440 /)
+      const half = viewport.height / 2
+      await sample(0, half - 22, half - 2)
+      const edges = await bands.evaluateAll(els => els.slice(1).map(el => el.getBoundingClientRect().top + scrollY))
+      const row = Math.round(half - 45)
+      for (const edge of [...edges, edges[1], edges[0], edges.at(-1)!]) {
+        await sample(Math.round(edge - row), row - 3, row + 3, true)
+      }
+      // Isolate the ribbon for the same reference check behind opaque cards.
+      const hideCards = await page.addStyleTag({ content: '[data-ribbon-journey] > main, [data-ribbon-journey] > footer {visibility:hidden}' })
+      if (narrow) expect(await sample(0, half - 22, half - 2)).toBeGreaterThan(0)
+      for (const edge of edges) await sample(Math.round(edge - row), row - 3, row + 3)
+      const entry = edges[0] - row
+      for (const delta of [0, 0.5, 1, 0.5, 0]) {
+        const ink = await sample(entry + delta, row - 4, row + 4)
+        if (narrow) expect(ink).toBeGreaterThan(0)
+      }
+      await hideCards.evaluate(el => el.parentNode?.removeChild(el))
+    }
+  })
+
+  test('base styles keep the complete ink with scroll timeline rules unavailable', async ({ page }) => {
+    // Remove the progressive enhancement from the local sheet, exercising the
+    // same base cascade an engine that rejects the feature query receives.
+    const removed = await page.evaluate(() => {
+      let count = 0
+      for (const sheet of document.styleSheets) {
+        for (let i = sheet.cssRules.length - 1; i >= 0; i--) {
+          const rule = sheet.cssRules[i]
+          if (rule instanceof CSSSupportsRule && rule.conditionText.includes('animation-timeline') && rule.cssText.includes('ribbonGate')) {
+            sheet.deleteRule(i)
+            count++
+          }
+        }
+      }
+      return count
+    })
+    expect(removed).toBe(1)
+    await page.locator('#faq').evaluate(el => el.scrollIntoView())
+    await expect(page.locator('[data-ribbon-band="7"] [data-ribbon-gate]')).toHaveCSS('transform', 'none')
+    await expect(page.locator('[data-ribbon-band] path[vector-effect]')).toHaveCount(9)
+  })
+
+  test('FAQ, landscape and static reduced motion retain all nine contiguous bands', async ({ page }) => {
+    const last = page.locator('[data-ribbon-band="8"]')
+    const top = () => last.evaluate(el => (el as HTMLElement).offsetTop)
+    const initial = await top()
+    const summary = page.locator('#faq summary').first()
+    await summary.click()
+    await expect.poll(top).toBeGreaterThan(initial)
+    await summary.click()
+    await expect.poll(top).toBe(initial)
+    await page.setViewportSize({ width: 844, height: 390 })
+    await expect(page.locator('[data-ribbon-band="0"] svg')).toHaveAttribute('viewBox', /^0 -?[\d.]+ 1440 /)
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    const bands = page.locator('[data-ribbon-band]')
+    const gaps = await bands.evaluateAll(els => els.slice(1).map((el, i) =>
+      el.getBoundingClientRect().top - els[i].getBoundingClientRect().bottom))
+    expect(gaps).toEqual(Array(8).fill(0))
+    await expect(last.locator('[data-ribbon-gate]')).toHaveCSS('animation-name', 'none')
+    await expect(last.locator('path[vector-effect]')).toHaveAttribute('d', /^M/)
+  })
 })

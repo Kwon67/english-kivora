@@ -1,3 +1,4 @@
+import { readRibbonState, showRibbonReference } from './ribbon-state.mjs'
 import {chromium,webkit} from '@playwright/test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
@@ -9,11 +10,12 @@ for(const engine of ['chromium','webkit'])for(const mobile of [false,true]){
  const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())})
  await page.goto('http://localhost:3100/',{waitUntil:'networkidle'});await page.waitForTimeout(1500)
  const baseline=JSON.parse(await fs.readFile('output/landing-performance/before/results.json','utf8')).find(r=>r.name===`${engine}-${mobile?'mobile':'desktop'}`)
- const read=()=>page.evaluate(()=>{const svg=[...document.querySelectorAll('[data-ribbon-desktop],[data-ribbon-mobile]')].find(e=>getComputedStyle(e).display!=='none');const path=svg.querySelector('[data-ribbon-path]');return {d:path.getAttribute('d'),offset:parseFloat(path.style.strokeDashoffset),length:parseFloat(path.style.strokeDasharray),tiles:svg.querySelectorAll('[data-ribbon-tile]').length,hidden:[...document.querySelectorAll('[data-reveal]')].filter(e=>{const r=e.getBoundingClientRect();return r.top<innerHeight*.9&&r.bottom>0&&getComputedStyle(e).opacity==='0'}).length}})
+ const read=()=>page.evaluate(readRibbonState)
  assert.equal((await read()).d,baseline.geometry.d,'Exact original path')
+ const devicePixel = 1 / await page.evaluate(() => devicePixelRatio)
  const down=[]
  for(const p of [0,.2,.4,.6,.8,1]){await page.evaluate(p=>{document.documentElement.style.scrollBehavior='auto';scrollTo(0,(document.documentElement.scrollHeight-innerHeight)*p)},p);await page.waitForTimeout(1000);const r=await read();assert.equal(r.hidden,0);down.push(r.offset)}
- assert(down.every((v,i)=>i===0||v<=down[i-1]));assert.equal(down.at(-1),0)
+ assert(down.every((v,i)=>i===0||v<=down[i-1]));assert(down.at(-1)<devicePixel)
  const up=[]
  for(const p of [1,.8,.6,.4,.2,0]){await page.evaluate(p=>scrollTo(0,(document.documentElement.scrollHeight-innerHeight)*p),p);await page.waitForTimeout(150);up.push((await read()).offset)}
  assert(up.every((v,i)=>i===0||v>=up[i-1]));assert(down.every((v,i)=>Math.abs(v-up[5-i])<1),'Reversible at same scroll position')
@@ -22,7 +24,7 @@ for(const engine of ['chromium','webkit'])for(const mobile of [false,true]){
  await page.screenshot({path:`output/workspace-refresh/${engine}-${mobile?'mobile':'desktop'}-verified.png`})
  await faq.locator('summary').click();await page.waitForTimeout(600);assert.equal(await faq.getAttribute('open'),null)
  await page.setViewportSize(mobile?{width:844,height:390}:{width:600,height:900});await page.waitForTimeout(700)
- await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));await page.waitForTimeout(500);assert.equal((await read()).offset,0)
+ await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));await page.waitForTimeout(500);assert((await read()).offset<devicePixel)
  await page.emulateMedia({reducedMotion:'reduce'});await page.waitForTimeout(300);assert.equal((await read()).offset,0)
  await page.evaluate(()=>scrollTo(0,0));await page.waitForTimeout(200);assert.equal((await read()).hidden,0)
  const visual=[]
@@ -31,9 +33,9 @@ for(const engine of ['chromium','webkit'])for(const mobile of [false,true]){
  for(const position of [0,.45,1]) {
   await page.evaluate(p=>scrollTo(0,(document.documentElement.scrollHeight-innerHeight)*p),position);await page.waitForTimeout(200)
   const tiled=await page.screenshot()
-  const style=await page.addStyleTag({content:'[data-ribbon-clip]{clip-path:none!important}'})
-  await page.locator('[data-ribbon-path]').evaluateAll(paths=>paths.forEach(p=>p.setAttribute('mask',`url(#${p.ownerSVGElement.querySelector('mask').id})`)))
-  const original=await page.screenshot();await style.evaluate(e=>e.remove());await page.locator('[data-ribbon-path]').evaluateAll(paths=>paths.forEach(p=>p.removeAttribute('mask')))
+  const restore = await showRibbonReference(page)
+  const original = await page.screenshot()
+  await restore()
   const a=await sharp(tiled).raw().toBuffer(),b=await sharp(original).raw().toBuffer();let changed=0,max=0
   for(let i=0;i<a.length;i++){const d=Math.abs(a[i]-b[i]);if(d>8)changed++;max=Math.max(max,d)}
   const ratio=changed/a.length;visual.push({viewport,position,changedChannelRatio:ratio,maxDifference:max});assert(ratio<.001,'Vector rendering must match original full mask')

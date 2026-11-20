@@ -13,8 +13,9 @@ export default defineConfig({
   projects: [
     { name: 'desktop', use: { browserName: 'chromium', viewport: { width: 1440, height: 900 },
       launchOptions: { executablePath: process.env.KIVORA_CHROME_EXECUTABLE } } },
-    { name: 'touch', use: { ...devices['iPhone 13'], browserName: 'webkit' } },
-    { name: 'chromium-touch', use: { ...devices['Pixel 7'], browserName: 'chromium',
+    { name: 'webkit-desktop', use: { browserName: 'webkit', viewport: { width: 1440, height: 900 } } },
+    { name: 'touch', use: { ...devices['iPhone 13'], viewport: { width: 390, height: 844 }, browserName: 'webkit' } },
+    { name: 'chromium-touch', use: { ...devices['Pixel 7'], viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, browserName: 'chromium',
       launchOptions: { executablePath: process.env.KIVORA_CHROME_EXECUTABLE } } },
   ],
 })
