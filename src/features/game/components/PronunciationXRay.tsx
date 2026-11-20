@@ -1,7 +1,8 @@
 'use client'
 
-import { useMemo } from 'react'
-import { m } from 'motion/react'
+import { useMemo, useRef } from 'react'
+import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
 
 interface WordAlignment {
   word: string
@@ -79,8 +80,18 @@ export default function PronunciationXRay({ expected, spoken }: PronunciationXRa
     return bars.slice(0, 72)
   }, [expected, spoken])
 
+  const scope = useRef<HTMLDivElement>(null)
+  useGSAP(() => {
+    const media = gsap.matchMedia()
+    media.add('(prefers-reduced-motion: no-preference)', () => {
+      gsap.from('[data-expected-wave]', { scaleY: 0, stagger: 0.01, duration: 0.4 })
+      gsap.from('[data-spoken-wave]', { scaleY: 0, stagger: 0.01, delay: 0.2, duration: 0.4 })
+    }, scope)
+    return () => media.revert()
+  }, { scope, dependencies: [waveformBars], revertOnUpdate: true })
+
   return (
-    <div className="w-full max-w-xl mx-auto mt-4 overflow-hidden rounded-[1.2rem] bg-surface-container-lowest border border-border p-3 shadow-[var(--shadow-sm)] sm:p-4">
+    <div ref={scope} className="w-full max-w-xl mx-auto mt-4 overflow-hidden rounded-[1.2rem] bg-surface-container-lowest border border-border p-3 shadow-[var(--shadow-sm)] sm:p-4">
       <div className="mb-3 flex flex-col gap-2 sm:mb-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-2xs font-black uppercase tracking-widest text-text-subtle">Mapa de Pronúncia</p>
         <div className="flex flex-wrap items-center gap-2 text-[9px] font-bold text-text-muted sm:gap-3 sm:text-2xs">
@@ -106,19 +117,12 @@ export default function PronunciationXRay({ expected, spoken }: PronunciationXRa
           return (
             <div key={i} className="relative h-full w-1 flex shrink-0 flex-col items-center justify-center sm:w-1.5">
               {/* Expected Wave (Top) */}
-              <m.div 
-                initial={{ height: 0 }}
-                animate={{ height: expectedPx }}
-                transition={{ duration: 0.4, delay: i * 0.01 }}
+              <div data-expected-wave style={{ height: expectedPx }}
                 className="absolute bottom-1/2 w-1 origin-bottom rounded-t-full bg-primary opacity-25 sm:w-1.5"
               />
               
               {/* Spoken Wave (Bottom) */}
-              <m.div 
-                initial={{ height: 0 }}
-                animate={{ height: spokenPx }}
-                transition={{ duration: 0.4, delay: i * 0.01 + 0.2 }}
-                style={{ backgroundColor: spokenColor }}
+              <div data-spoken-wave style={{ height: spokenPx, backgroundColor: spokenColor }}
                 className="absolute top-1/2 w-1 origin-top rounded-b-full sm:w-1.5"
               />
             </div>

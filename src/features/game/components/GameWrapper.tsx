@@ -3,7 +3,8 @@
 import type { ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { AnimatePresence, m, useReducedMotion } from 'motion/react'
+import TransitionSlot from '@/components/motion/TransitionSlot'
+import { useEntrance } from '@/components/motion/useEntrance'
 import {
   ArrowRight,
   Clock3,
@@ -137,7 +138,7 @@ export default function GameWrapper({
   const [adaptiveInitialCount, setAdaptiveInitialCount] = useState(0)
   const [adaptiveRetries, setAdaptiveRetries] = useState(0)
   const saveResultPromise = useRef<Promise<boolean> | null>(null)
-  const prefersReducedMotion = useReducedMotion()
+  const enterPage = useEntrance(4, 0, 0.2)
 
   const currentCard = activeQueue[activeStep]
   const totalAnswered = correct + wrong
@@ -165,14 +166,6 @@ export default function GameWrapper({
   const deadlineMs = timerState.deadlineAt ? new Date(timerState.deadlineAt).getTime() : null
   const remainingMs = deadlineMs ? Math.max(deadlineMs - now, 0) : null
   const timerExpired = deadlineMs ? deadlineMs <= now : false
-  const cardTransition = prefersReducedMotion
-    ? { duration: 0 }
-    : { duration: 0.16, ease: [0.16, 1, 0.3, 1] as const }
-  const pageTransition = prefersReducedMotion
-    ? { duration: 0 }
-    : { duration: 0.2, ease: [0.16, 1, 0.3, 1] as const }
-  const cardMotionInitial = prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 4 }
-  const cardMotionExit = prefersReducedMotion ? { opacity: 1 } : { opacity: 0 }
   const errorReviewCards = useMemo(() => {
     const cardMap = new Map(cards.map((card) => [card.id, card]))
     const seen = new Set<string>()
@@ -360,7 +353,7 @@ export default function GameWrapper({
   if (phase === 'intro') {
     return (
       <GameShell>
-        <m.section initial={prefersReducedMotion ? false : { opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={pageTransition} className="practice-intro" aria-labelledby="practice-intro-title">
+        <section ref={enterPage} className="practice-intro" aria-labelledby="practice-intro-title">
           <p className="editorial-eyebrow">{modeConfig.label}</p>
           <h1 id="practice-intro-title">{packName}</h1>
           <p className="practice-intro-note">{modeNote}</p>
@@ -404,7 +397,7 @@ export default function GameWrapper({
                 )}
               </button>
           {hasTimer && timerStarted && <p className="practice-intro-timer" role="status"><Clock3 size={16} aria-hidden="true" />{timerExpired ? 'Tempo encerrado' : `Cronômetro ativo: ${formatRemaining(remainingMs || 0)}`}</p>}
-        </m.section>
+        </section>
       </GameShell>
     )
   }
@@ -413,10 +406,8 @@ export default function GameWrapper({
     return (
       <GameShell>
       <div className="mx-auto w-full max-w-2xl">
-        <m.div
-          initial={prefersReducedMotion ? false : { opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={pageTransition}
+        <div
+          ref={enterPage}
           className="w-full max-w-4xl"
         >
           {!isAdaptiveComplete && currentAdaptiveCard && adaptiveMode ? (
@@ -509,7 +500,7 @@ export default function GameWrapper({
               </button>
             </div>
           )}
-        </m.div>
+        </div>
       </div>
       </GameShell>
     )
@@ -519,10 +510,8 @@ export default function GameWrapper({
     return (
       <GameShell>
       <div className="mx-auto w-full max-w-2xl">
-        <m.div
-          initial={prefersReducedMotion ? false : { opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={pageTransition}
+        <div
+          ref={enterPage}
           className="w-full max-w-4xl"
         >
           {!isErrorReviewComplete && currentErrorReviewCard ? (
@@ -600,7 +589,7 @@ export default function GameWrapper({
               </button>
             </div>
           )}
-        </m.div>
+        </div>
       </div>
       </GameShell>
     )
@@ -610,10 +599,8 @@ export default function GameWrapper({
     return (
       <GameShell>
       <div className="mx-auto w-full max-w-2xl">
-        <m.div
-          initial={prefersReducedMotion ? false : { opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={pageTransition}
+        <div
+          ref={enterPage}
           className="w-full"
         >
           <div className="max-w-xl" aria-busy={saving}>
@@ -696,7 +683,7 @@ export default function GameWrapper({
               </button>
             )}
           </div>
-        </m.div>
+        </div>
       </div>
       </GameShell>
     )
@@ -767,14 +754,11 @@ export default function GameWrapper({
           gameMode === 'matching' ? 'max-w-[1100px]' : 'max-w-[860px]'
         }`}
       >
-        <AnimatePresence mode="wait" initial={false}>
+        <TransitionSlot duration={0.16} enterY={4} ease="expo.out" animateFirst={false}>
           {currentCard && gameMode === 'multiple_choice' && useReadingMode && (
-            <m.div
+            <div
               key={`reading-${currentCard.id}-${activeStep}-${correct + wrong}`}
-              initial={cardMotionInitial}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={cardMotionExit}
-              transition={cardTransition}
+
             >
               <ReadingComprehension
                 card={currentCard}
@@ -787,16 +771,13 @@ export default function GameWrapper({
                   setTimeout(handleWrong, 1200)
                 }}
               />
-            </m.div>
+            </div>
           )}
 
           {currentCard && gameMode === 'multiple_choice' && !useReadingMode && (
-            <m.div
+            <div
               key={`multiple-choice-${currentCard.id}-${activeStep}-${correct + wrong}`}
-              initial={cardMotionInitial}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={cardMotionExit}
-              transition={cardTransition}
+
             >
               <MultipleChoice
                   variant="assignment"
@@ -809,48 +790,39 @@ export default function GameWrapper({
                   setTimeout(handleWrong, 1200)
                 }}
               />
-            </m.div>
+            </div>
           )}
 
           {currentCard && gameMode === 'flashcard' && (
-            <m.div
+            <div
               key={`flashcard-${currentCard.id}-${activeStep}-${correct + wrong}`}
-              initial={cardMotionInitial}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={cardMotionExit}
-              transition={cardTransition}
+
             >
               <Flashcard
                 card={currentCard}
                 onCorrect={handleCorrect}
                 onWrong={handleWrong}
               />
-            </m.div>
+            </div>
           )}
 
           {currentCard && gameMode === 'typing' && useGuidedWritingMode && (
-            <m.div
+            <div
               key={`sentence-build-${currentCard.id}-${activeStep}-${correct + wrong}`}
-              initial={cardMotionInitial}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={cardMotionExit}
-              transition={cardTransition}
+
             >
               <SentenceBuildMode
                 card={currentCard}
                 onCorrect={handleCorrect}
                 onWrong={handleWrong}
               />
-            </m.div>
+            </div>
           )}
 
           {currentCard && gameMode === 'typing' && !useGuidedWritingMode && (
-            <m.div
+            <div
               key={`typing-${currentCard.id}-${activeStep}-${correct + wrong}`}
-              initial={cardMotionInitial}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={cardMotionExit}
-              transition={cardTransition}
+
             >
               <TypingMode
                 card={currentCard}
@@ -858,16 +830,13 @@ export default function GameWrapper({
                 onCorrect={handleCorrect}
                 onWrong={handleWrong}
               />
-            </m.div>
+            </div>
           )}
 
           {currentCard && playedMode === 'listening' && (
-            <m.div
+            <div
               key={`listening-${currentCard.id}-${activeStep}-${correct + wrong}`}
-              initial={cardMotionInitial}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={cardMotionExit}
-              transition={cardTransition}
+
             >
               {isSpeechFallback ? (
                 <p className="mx-auto mb-3 max-w-[760px] text-center font-body text-xs font-semibold text-brand-secondary">
@@ -879,16 +848,13 @@ export default function GameWrapper({
                 onCorrect={handleCorrect}
                 onWrong={handleWrong}
               />
-            </m.div>
+            </div>
           )}
 
           {currentCard && playedMode === 'speaking' && (
-            <m.div
+            <div
               key={`speaking-${currentCard.id}-${activeStep}-${activeQueue.length}`}
-              initial={cardMotionInitial}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={cardMotionExit}
-              transition={cardTransition}
+
             >
               <SpeakingMode
                 card={currentCard}
@@ -896,16 +862,13 @@ export default function GameWrapper({
                 onWrong={handleWrong}
                 onSpeechUnavailable={() => setSpeechAvailable(false)}
               />
-            </m.div>
+            </div>
           )}
 
           {gameMode === 'matching' && cards.length > 0 && (
-            <m.div
+            <div
               key={`matching-${assignmentId}`}
-              initial={cardMotionInitial}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={cardMotionExit}
-              transition={cardTransition}
+
             >
               <MatchingGame
                 cards={cards}
@@ -913,9 +876,9 @@ export default function GameWrapper({
                 onWrong={() => answerWrong(currentCard?.id)}
                 onFinish={finishGame}
               />
-            </m.div>
+            </div>
           )}
-        </AnimatePresence>
+        </TransitionSlot>
       </div>
 
       <Dialog open={showExitModal} onOpenChange={(next) => { if (!next) setShowExitModal(false) }}>
