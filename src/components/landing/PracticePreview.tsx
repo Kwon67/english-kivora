@@ -2,7 +2,7 @@
 
 import { useLandingLite } from './useLandingLite'
 import FeedbackConfetti from './FeedbackConfetti'
-import { playLandingSound } from './LandingSound'
+import { playLandingSound } from './landingSound'
 import { useRef, useState } from 'react'
 import { ArrowRight, Check, Lightbulb, RotateCcw } from 'lucide-react'
 import { gsap, useGSAP } from '@/lib/gsap'

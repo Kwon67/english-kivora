@@ -7,7 +7,7 @@ import 'lenis/dist/lenis.css'
 import { gsap, ScrollTrigger, SplitText, useGSAP } from '@/lib/gsap'
 import { duration, ease } from '@/lib/motion-tokens'
 import styles from './MindmarketLanding.module.css'
-import LandingSound, { playLandingSound } from './LandingSound'
+import { playLandingSound } from './landingSound'
 import { useLandingLite } from './useLandingLite'
 
 const LandingLenis = dynamic(() => import('./LandingLenis'), { ssr: false })
@@ -206,14 +206,13 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
     {smooth && !lite && <LandingLenis engineRef={engine} />}
     <ViewTransition name="landing" default="none" exit={lite ? 'none' : { 'kivora-auth': 'kivora-auth-exit', default: 'none' }}>
       <div ref={root} className={styles.page} onClickCapture={event => {
-        if (event.target instanceof Element && !event.target.closest('[data-sound-control], [data-sound-feedback]')
+        if (event.target instanceof Element && !event.target.closest('[data-sound-feedback]')
           && event.target.closest('a[href], button:not(:disabled), summary')) playLandingSound('click')
         if (!engine.current || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return
         const anchor = event.target instanceof Element && event.target.closest<HTMLAnchorElement>('a[href^="#"]')
         if (anchor && !anchor.closest('dialog') && !anchor.target && !anchor.hasAttribute('download') && scrollToAnchor(engine.current, anchor.hash)) event.preventDefault()
       }}>
         {children}
-        <LandingSound />
       </div>
     </ViewTransition>
   </ScrollContext.Provider>

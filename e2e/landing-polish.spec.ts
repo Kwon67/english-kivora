@@ -50,10 +50,10 @@ test('saveData selects the lightweight version and preserves the demo', async ({
   await expect(feedback.locator('i')).toHaveCount(0)
 })
 
-test('sound starts muted and follows the preference on reload', async ({ page }) => {
+test('interface sounds play on interaction without a toggle', async ({ page }) => {
   await page.addInitScript(() => {
+    localStorage.setItem('kivora-landing-sound', 'off')
     const create = AudioContext.prototype.createOscillator
-    document.documentElement?.setAttribute('data-test-notes', '0')
     AudioContext.prototype.createOscillator = function () {
       const html = document.documentElement
       html.dataset.testNotes = String(Number(html.dataset.testNotes ?? 0) + 1)
@@ -61,16 +61,11 @@ test('sound starts muted and follows the preference on reload', async ({ page })
     }
   })
   await page.goto('/')
-  const toggle = page.getByRole('button', { name: 'Sons da interface' })
+  const html = page.locator('html')
   const level = page.getByRole('button', { name: /^A2/ })
-  await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+  await expect(html).toHaveClass(/kivora-landing-scroll/)
+  await expect(page.getByRole('button', { name: 'Sons da interface' })).toHaveCount(0)
+  await expect(html).not.toHaveAttribute('data-test-notes')
   await level.click()
-  expect(await page.locator('html').getAttribute('data-test-notes') ?? '0').toBe('0')
-  await toggle.click()
-  await expect(toggle).toHaveAttribute('aria-pressed', 'true')
-  await expect(page.locator('html')).toHaveAttribute('data-test-notes', '1')
-  await page.reload()
-  await expect(toggle).toHaveAttribute('aria-pressed', 'true')
-  await toggle.click()
-  await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+  await expect(html).toHaveAttribute('data-test-notes', '2')
 })

@@ -15,14 +15,6 @@
 @keyframes intro-open { to { transform:translateY(-101%); visibility:hidden; } }
 @keyframes intro-ready { to { transform:translateY(-101%); visibility:hidden; } }
 
-.sound {
-  position:fixed; left:max(var(--gutter),env(safe-area-inset-left));
-  bottom:max(10px,env(safe-area-inset-bottom)); z-index:19;
-  display:grid; place-items:center; width:44px; height:44px;
-  background:var(--paper,#fffef8); color:var(--ink,#2c2e2a); border:1px solid var(--line); border-radius:50%;
-}
-.sound[aria-pressed=true] { background:var(--green,#8ed462); }
-
 .pointer { display:none; }
 @media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
   .pointer[data-visible] {

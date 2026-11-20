@@ -24,7 +24,7 @@ export default function SitePointer() {
       if (!media.matches || event.pointerType !== 'mouse' || !(target instanceof Element)
         || target.closest('input, textarea, select, [contenteditable], dialog')) { hide(); return }
       const control = target.closest<HTMLElement>('a[href], button:not(:disabled), summary')
-      const next = control?.matches('a:not([data-magnetic]), button:not([data-sound-control])') ? control : null
+      const next = control?.matches('a:not([data-magnetic]), button') ? control : null
       if (next !== magnetic) {
         resetMagnet()
         if (next && getComputedStyle(next).translate === 'none') magnetic = next
