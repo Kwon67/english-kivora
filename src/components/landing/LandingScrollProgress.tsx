@@ -1,7 +1,8 @@
 'use client'
 
-import { m } from 'motion/react'
-import { useEffect, useState } from 'react'
+import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { LANDING_CHAPTERS } from '@/lib/landingSections'
 import { landingBorder, landingRadius , landingRadiusLg} from '@/lib/landingStyles'
@@ -11,13 +12,22 @@ import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 export function LandingMobileProgress() {
   const { scrollProgress } = useLandingNavigation()
   const reducedMotion = useHydratedReducedMotion()
+  const bar = useRef<HTMLSpanElement>(null)
+  const update = useRef<gsap.QuickToFunc | null>(null)
+  useGSAP(() => {
+    update.current = gsap.quickTo(bar.current, 'scaleX', { duration: 0.12, ease: 'power2.out' })
+    return () => { update.current = null }
+  }, { scope: bar })
+  useLayoutEffect(() => {
+    if (reducedMotion) {
+      update.current?.tween.pause()
+      gsap.set(bar.current, { scaleX: scrollProgress })
+    } else update.current?.(scrollProgress)
+  }, [scrollProgress, reducedMotion])
 
   return (
     <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.5 overflow-hidden bg-brand-border md:hidden">
-      <m.span
-        className="block h-full origin-left bg-brand-accent"
-        animate={{ scaleX: scrollProgress }}
-        transition={{ duration: reducedMotion ? 0 : 0.12, ease: 'easeOut' }}
+      <span ref={bar} className="block h-full origin-left bg-brand-accent"
       />
     </div>
   )

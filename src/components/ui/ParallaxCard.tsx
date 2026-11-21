@@ -1,7 +1,8 @@
 'use client'
 
 import { useRef } from 'react'
-import { m, useMotionValue, useSpring, useTransform } from 'motion/react'
+import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
 
 interface ParallaxCardProps {
   children: React.ReactNode
@@ -16,56 +17,49 @@ export default function ParallaxCard({
 }: ParallaxCardProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   
-  const x = useMotionValue(0)
-  const y = useMotionValue(0)
-
-  // Suaviza o movimento
-  const mouseXSpring = useSpring(x)
-  const mouseYSpring = useSpring(y)
-
-  // Transforma posição do mouse em rotação
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], [strength, -strength])
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], [-strength, strength])
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return
-    
-    const rect = containerRef.current.getBoundingClientRect()
-    const width = rect.width
-    const height = rect.height
-    
-    // Normaliza posição para range -0.5 a 0.5
-    const mouseX = (e.clientX - rect.left) / width - 0.5
-    const mouseY = (e.clientY - rect.top) / height - 0.5
-    
-    x.set(mouseX)
-    y.set(mouseY)
-  }
-
-  const handleMouseLeave = () => {
-    x.set(0)
-    y.set(0)
-  }
+  const card = useRef<HTMLDivElement>(null)
+  useGSAP(() => {
+    const area = containerRef.current!
+    const media = gsap.matchMedia()
+    media.add('(prefers-reduced-motion: no-preference) and (hover: hover)', () => {
+      const rotateX = gsap.quickTo(card.current, 'rotationX', { duration: 0.46, ease: 'back.out(0.8)' })
+      const rotateY = gsap.quickTo(card.current, 'rotationY', { duration: 0.46, ease: 'back.out(0.8)' })
+      let bounds: DOMRect | undefined
+      const measure = () => { bounds = undefined }
+      const move = (event: PointerEvent) => {
+        bounds ??= area.getBoundingClientRect()
+        if (!bounds.width || !bounds.height) return
+        rotateX((1 - 2 * (event.clientY - bounds.top) / bounds.height) * strength)
+        rotateY((2 * (event.clientX - bounds.left) / bounds.width - 1) * strength)
+      }
+      const leave = () => { rotateX(0); rotateY(0); measure() }
+      const observer = new ResizeObserver(measure)
+      observer.observe(area)
+      area.addEventListener('pointermove', move)
+      area.addEventListener('pointerleave', leave)
+      window.addEventListener('scroll', measure, true)
+      return () => {
+        observer.disconnect()
+        area.removeEventListener('pointermove', move)
+        area.removeEventListener('pointerleave', leave)
+        window.removeEventListener('scroll', measure, true)
+      }
+    })
+    return () => media.revert()
+  }, { scope: containerRef, dependencies: [strength], revertOnUpdate: true })
 
   return (
     <div
       ref={containerRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
       className={`relative perspective-1000 ${className}`}
       style={{ perspective: '1200px' }}
     >
-      <m.div
-        style={{
-          rotateX,
-          rotateY,
-          transformStyle: 'preserve-3d',
-        }}
+      <div ref={card} style={{ transformStyle: 'preserve-3d' }}
         className="w-full h-full transition-shadow duration-300"
       >
         {children}
         
-      </m.div>
+      </div>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
-import { m, useInView, type PanInfo } from 'motion/react'
+import gsap from 'gsap'
+import { useDrag } from '@use-gesture/react'
 import { MoonStar, Quote, Sun, Zap, type LucideIcon } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import LandingCarouselControls from '@/components/ui/LandingCarouselControls'
@@ -47,7 +48,16 @@ export default function TestimonialsCarousel() {
   const hasNudged = useRef(false)
   /** Set right before an autoplay step that wraps last→first, so that one step snaps instead of sliding backward across the whole track. */
   const autoplayWrapped = useRef(false)
-  const inView = useInView(containerRef, { amount: 0.35 })
+  const [inView, setInView] = useState(false)
+  const track = useRef<HTMLDivElement>(null)
+  const dragStartX = useRef(0)
+  const dragging = useRef(false)
+  const slide = useRef<gsap.core.Tween | null>(null)
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.intersectionRatio >= 0.35), { threshold: 0.35 })
+    observer.observe(containerRef.current!)
+    return () => observer.disconnect()
+  }, [])
   const reducedMotion = useHydratedReducedMotion()
   const gap = 24
 
@@ -121,17 +131,36 @@ export default function TestimonialsCarousel() {
     setIndex(clampLandingSlide(nextIndex, testimonials.length))
   }
 
-  function handleDragEnd(_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) {
-    goTo(
-      getLandingSlideAfterDrag({
-        current: index,
-        count: testimonials.length,
-        offsetX: info.offset.x,
-        velocityX: info.velocity.x,
-      }),
-    )
+  const slideDuration = reducedMotion || autoplayWrapped.current || !ready ? 0 : 0.62
+  useLayoutEffect(() => {
+    if (!dragging.current) slide.current = gsap.to(track.current, { x, duration: slideDuration, ease: 'expo.out', overwrite: 'auto' })
+    return () => { slide.current?.kill() }
+  }, [x, slideDuration])
+
+  const bindDrag = useDrag(({ first, last, xy, initial, velocity, direction, canceled, event, tap }) => {
+    if (tap || !track.current) return
+    if (first) {
+      dragging.current = true
+      slide.current?.kill()
+      dragStartX.current = Number(gsap.getProperty(track.current, 'x'))
+      setInteractionPaused(true)
+    }
+    const offsetX = xy[0] - initial[0]
+    if (!last) {
+      gsap.set(track.current, { x: dragStartX.current + offsetX * 0.12 })
+      return
+    }
+    dragging.current = false
+    const interrupted = canceled || event.type === 'pointercancel' || event.type === 'touchcancel'
+    const next = interrupted ? index : getLandingSlideAfterDrag({
+      current: index, count: testimonials.length, offsetX, velocityX: velocity[0] * direction[0] * 1000,
+    })
+    if (next === index) {
+      slide.current = gsap.to(track.current, { x: baseX - index * (geometry.cardWidth + gap), duration: reducedMotion ? 0 : 0.62, ease: 'expo.out', overwrite: 'auto' })
+    }
+    goTo(next)
     setInteractionPaused(false)
-  }
+  }, { axis: 'x', filterTaps: true })
 
   return (
     <LandingSectionFrame id="depoimentos" band="soft" className="scroll-mt-24 overflow-hidden py-20 sm:py-24">
@@ -167,19 +196,7 @@ export default function TestimonialsCarousel() {
           }}
           className="relative mx-auto mt-12 max-w-[1440px] overflow-hidden py-4 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-dark"
         >
-          <m.div
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.12}
-            dragMomentum={false}
-            onDragStart={() => setInteractionPaused(true)}
-            onDragEnd={handleDragEnd}
-            animate={{ x }}
-            transition={{
-              type: 'tween',
-              duration: reducedMotion || autoplayWrapped.current || !ready ? 0 : 0.62,
-              ease: [0.22, 1, 0.36, 1],
-            }}
+          <div ref={track} {...bindDrag()}
             className={`flex cursor-grab touch-pan-y gap-6 [will-change:transform] active:cursor-grabbing transition-opacity duration-300 ${
               ready ? 'opacity-100' : 'opacity-0'
             }`}
@@ -216,7 +233,7 @@ export default function TestimonialsCarousel() {
                 </article>
               )
             })}
-          </m.div>
+          </div>
         </div>
 
         <LandingCarouselControls
