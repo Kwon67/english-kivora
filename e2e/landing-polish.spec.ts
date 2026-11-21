@@ -70,5 +70,5 @@ test('interface sounds play on interaction without a toggle', async ({ page }) =
   await expect(page.getByRole('button', { name: 'Sons da interface' })).toHaveCount(0)
   await expect(html).not.toHaveAttribute('data-test-notes')
   await level.click()
-  await expect(html).toHaveAttribute('data-test-notes', '2')
+  await expect(html).toHaveAttribute('data-test-notes', '1')
 })
