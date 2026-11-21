@@ -90,7 +90,7 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
         </div>
       </section>
 
-      <section className={styles.blitzBand} data-reveal aria-labelledby="blitz-title"><div><Eyebrow>POUCOS MINUTOS. MUITA ENERGIA.</Eyebrow><h2 id="blitz-title"><span data-title-ink>O seu inglês<br />entra no jogo<span className={styles.blitzDot}>.</span></span></h2></div><div className={styles.blitzMark} data-float aria-hidden="true"><SpotIllustration motif="bolt" /></div><div className={styles.blitzCopy}><p>Desafios rápidos, combos e ranking semanal. Uma dose de diversão para manter a prática viva.</p><Link href="/register" transitionTypes={['kivora-auth']} className={styles.lightLink}>Conhecer o Blitz <ArrowUpRight size={24} aria-hidden="true" /></Link></div>
+      <section className={styles.blitzBand} data-pointer-area data-reveal aria-labelledby="blitz-title"><div><Eyebrow>POUCOS MINUTOS. MUITA ENERGIA.</Eyebrow><h2 id="blitz-title"><span data-title-ink>O seu inglês<br />entra no jogo<span className={styles.blitzDot}>.</span></span></h2></div><div className={styles.blitzMark} data-cursor data-float aria-hidden="true"><SpotIllustration motif="bolt" /></div><div className={styles.blitzCopy}><p>Desafios rápidos, combos e ranking semanal. Uma dose de diversão para manter a prática viva.</p><Link href="/register" transitionTypes={['kivora-auth']} className={styles.lightLink}>Conhecer o Blitz <ArrowUpRight size={24} aria-hidden="true" /></Link></div>
         <div className={styles.ranking} data-ranking>
           <p>Ranking simulado <span>PTS</span></p>
           <ol>{[['Lia', '320'], ['Você', '280'], ['Caio', '240']].map(([name, score]) =>

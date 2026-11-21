@@ -68,32 +68,38 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
       for (const area of select('[data-pointer-area], [data-tilt], [data-magnetic]') as HTMLElement[]) {
         const isCard = area.hasAttribute('data-tilt')
         const magnet = area.hasAttribute('data-magnetic')
-        const shine = isCard ? document.createElement('span') : null
-        if (shine) {
-          shine.className = styles.shine
-          shine.setAttribute('aria-hidden', 'true')
-          area.append(shine)
-        }
         const targets = isCard ? [area] : Array.from(area.querySelectorAll(magnet ? '[data-action-icon]' : '[data-cursor]'))
+        if (!targets.length) continue
+        if (isCard) gsap.set(area, { transformPerspective: 900 })
         const axes = targets.map((el, i) => ({
           x: gsap.quickTo(el, isCard ? 'rotationY' : 'x', { duration: .42, ease: ease.out }),
           y: gsap.quickTo(el, isCard ? 'rotationX' : 'y', { duration: .42, ease: ease.out }),
-          strength: isCard ? 1.5 : magnet ? 6 : (i % 2 ? -10 : 14),
+          strength: isCard ? 3 : magnet ? 6 : (i % 2 ? -10 : 14),
         }))
-        const move = (event: PointerEvent) => {
+        let frame = 0
+        let clientX = 0
+        let clientY = 0
+        const update = () => {
+          frame = 0
           const rect = area.getBoundingClientRect()
-          const x = 2 * (event.clientX - rect.left) / rect.width - 1
-          const y = 2 * (event.clientY - rect.top) / rect.height - 1
+          const x = 2 * (clientX - rect.left) / rect.width - 1
+          const y = 2 * (clientY - rect.top) / rect.height - 1
           axes.forEach(axis => { axis.x(x * axis.strength); axis.y((isCard ? -y : y) * axis.strength) })
-          if (isCard) {
-            area.style.setProperty('--shine-x', (x * 50) + '%')
-            area.style.setProperty('--shine-y', (y * 50) + '%')
-          }
         }
-        const reset = () => axes.forEach(axis => { axis.x(0); axis.y(0) })
+        const move = (event: PointerEvent) => {
+          if (event.pointerType !== 'mouse') return
+          clientX = event.clientX
+          clientY = event.clientY
+          if (!frame) frame = requestAnimationFrame(update)
+        }
+        const reset = () => {
+          cancelAnimationFrame(frame)
+          frame = 0
+          axes.forEach(axis => { axis.x(0); axis.y(0) })
+        }
         area.addEventListener('pointermove', move)
         area.addEventListener('pointerleave', reset)
-        cleanups.push(() => { area.removeEventListener('pointermove', move); area.removeEventListener('pointerleave', reset); shine?.remove() })
+        cleanups.push(() => { area.removeEventListener('pointermove', move); area.removeEventListener('pointerleave', reset); cancelAnimationFrame(frame) })
       }
       return () => { cleanups.forEach(clean => clean()); setSmooth(false) }
     })

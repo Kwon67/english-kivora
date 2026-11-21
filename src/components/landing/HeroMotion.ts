@@ -48,7 +48,8 @@ export function setupHeroMotion(container: HTMLElement) {
   const title = container.querySelector('#hero-title')
   if (!title) return
   const welcome = container.querySelector<HTMLElement>('#kivora-intro')
-  let visible = false
+  const bounds = title.getBoundingClientRect()
+  let visible = bounds.bottom > 0 && bounds.top < window.innerHeight
   let playback: gsap.Context | undefined
   let timeline: gsap.core.Timeline | undefined
 
@@ -71,7 +72,7 @@ export function setupHeroMotion(container: HTMLElement) {
     }, container)
   }
   function sync() {
-    if (document.hidden || !visible || welcome?.dataset.intro) {
+    if (document.hidden || !visible || welcome?.dataset.intro === 'waiting') {
       timeline?.pause()
     } else if (timeline) {
       timeline.resume()
@@ -83,11 +84,14 @@ export function setupHeroMotion(container: HTMLElement) {
     visible = entry.isIntersecting
     sync()
   })
+  sync()
   observer.observe(title)
+  welcome?.addEventListener('kivora-intro-opening', sync)
   welcome?.addEventListener('kivora-intro-finished', sync)
   document.addEventListener('visibilitychange', sync)
   return () => {
     observer.disconnect()
+    welcome?.removeEventListener('kivora-intro-opening', sync)
     welcome?.removeEventListener('kivora-intro-finished', sync)
     document.removeEventListener('visibilitychange', sync)
     playback?.revert()

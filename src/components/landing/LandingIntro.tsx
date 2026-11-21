@@ -25,7 +25,10 @@ export default function LandingIntro() {
       delete overlay.dataset.intro
       overlay.dispatchEvent(new Event('kivora-intro-finished'))
     }
-    const open = () => { overlay.dataset.intro = 'opening' }
+    const open = () => {
+      overlay.dataset.intro = 'opening'
+      overlay.dispatchEvent(new Event('kivora-intro-opening'))
+    }
     const deadline = window.setTimeout(open, 2200)
     const skip = () => {
       window.clearTimeout(deadline)
