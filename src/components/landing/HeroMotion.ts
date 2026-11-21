@@ -8,6 +8,7 @@ export function setupHeroMotion(container: HTMLElement) {
   if (!letters || lines.length !== 3) return
 
   const word = SplitText.create(letters, { type: 'chars', tag: 'span', aria: 'none' })
+  const center = (word.chars.length - 1) / 2
   const intro = gsap.timeline({
     id: 'kivora-hero-intro',
     defaults: { ease: 'power3.out', clearProps: 'transform' },
@@ -17,8 +18,15 @@ export function setupHeroMotion(container: HTMLElement) {
     .from(lines[0], { yPercent: 88, duration: .51 }, 0)
     .from(lines[1], { yPercent: 105, duration: .55 }, 'world')
     .from(lines[2], { yPercent: 105, duration: .55 }, 'open')
-    // Increasing offsets tighten the tracking without changing the line's width.
-    .from(word.chars, { x: index => `-${index * .045}em`, duration: .82, ease: 'power2.inOut' }, 'open')
+    // Each half unfolds around the middle. Transforms preserve the typeset line.
+    .from(word.chars, {
+      x: index => `${(center - index) * .07}em`,
+      rotationY: index => (index - center) * 17,
+      transformPerspective: 450,
+      transformOrigin: index => index < center ? 'right center' : 'left center',
+      stagger: { from: 'center', amount: .18 },
+      duration: .64, ease: 'power2.out', clearProps: 'transform,transformOrigin',
+    }, 'open')
     .from(select('[data-hero-underline]'), { scaleX: 0, duration: .56, ease: 'power2.inOut' }, .74)
     .from(select('[data-hero-art]'), {
       scale: .86, transformOrigin: '51% 51%', duration: 1.12,
