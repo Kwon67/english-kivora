@@ -233,7 +233,6 @@
 .hero h1 { font-size:clamp(78px,8.8vw,142px); line-height:.92; letter-spacing:-.085em; margin-block:28px; }
 .hero [data-title-line] { display:block; }
 .hero [data-hero-keyword] { display:inline-block; transform-origin:left 80%; }
-.heroDescription { font-size:clamp(16px,1.25vw,20px); line-height:1.55; }
 .action,.textLink,.lightLink { display:inline-flex; align-items:center; justify-content:space-between; gap:24px; width:fit-content; }
 .page .action { padding:7px 8px 7px 22px; border-radius:999px; background:var(--ink); color:var(--paper); font-size:15px; font-weight:550; }
 .actionIcon { display:grid; place-items:center; width:38px; height:38px; border-radius:50%; background:var(--green); color:var(--ink); }
@@ -246,8 +245,6 @@
   .action:hover .actionIcon svg { translate:2px -2px; }
 }
 .heroCopy > .action { margin-top:24px; }
-.heroNote { display:flex; align-items:center; flex-wrap:wrap; gap:4px; margin-top:16px!important; font-size:11px; }
-.heroNote > span:first-child { width:6px; height:6px; border-radius:50%; background:var(--ink); margin-right:4px; }
 .heroVisual { position:relative; z-index:1; grid-column:7 / -1; grid-row:1; min-width:0; align-self:center; }
 .heroCopy { grid-row:1; }
 .heroVisual::before,.heroVisual::after { content:''; position:absolute; pointer-events:none; aspect-ratio:1; border-radius:50%; z-index:-1; }
@@ -417,7 +414,6 @@
   .heroArt { padding-block:6%; }
   .heroVisual::before { inset-inline:7%; }
   .heroVisual::after { width:77%; left:11.5%; }
-  .heroNote { font-size:10px; }
   .floatingWord > span,.wordTag,.demoSticker { font-size:10px; padding:7px 9px; }
   .hello { top:2%; }
   .discover { bottom:0; }

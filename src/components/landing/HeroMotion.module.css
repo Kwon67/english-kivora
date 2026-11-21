@@ -17,22 +17,3 @@
   pointer-events: none;
   transform-origin: left center;
 }
-
-.controls {
-  display: flex;
-  position: absolute;
-  inset-inline-end: 0;
-  top: -12px;
-}
-.controls button {
-  width: 40px;
-  height: 40px;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: inherit;
-}
-.controls button:not([hidden]) { display: inline-flex; }
-
-.controls [aria-pressed="false"] svg:last-child,
-.controls [aria-pressed="true"] svg:first-child { display: none; }

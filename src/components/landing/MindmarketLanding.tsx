@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import SpotIllustration from '@/components/illustrations/SpotIllustration'
-import { ArrowDown, ArrowRight, ArrowUpRight, Check, Pause, Play, RotateCcw } from 'lucide-react'
+import { ArrowDown, ArrowRight, ArrowUpRight, Check } from 'lucide-react'
 import LandingFAQ from './LandingFAQ'
 import LandingNavigation from './LandingNavigation'
 import LandingWordmark from './LandingWordmark'
@@ -48,10 +48,6 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
         <section className={styles.hero} aria-labelledby="hero-title">
           <div className={styles.heroCopy} data-hero-copy>
             <Eyebrow>INGLÊS PARA A VIDA ACONTECER</Eyebrow>
-            <div className={heroStyles.controls}>
-              <button hidden type="button" data-pause-title aria-label="Pausar movimento do título" aria-pressed="false"><Pause size={16} aria-hidden="true" /><Play size={16} aria-hidden="true" /></button>
-              <button hidden type="button" data-replay-title aria-label="Rever animação do título" title="Rever animação do título"><RotateCcw size={16} aria-hidden="true" /></button>
-            </div>
             <h1 id="hero-title" className={heroStyles.headline} aria-label="Seu inglês. Um mundo mais aberto.">
               <span data-title-ink aria-hidden="true">
                 <span data-title-line>Seu inglês.</span>{' '}
@@ -59,9 +55,7 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
                 <span data-title-line>mais <span data-hero-keyword className={heroStyles.keyword}><span data-hero-letters>aberto.</span><span data-hero-underline className={heroStyles.underline} /></span></span>
               </span>
             </h1>
-            <p data-hero-description className={styles.heroDescription}>Palavras viram conversas.{' '}<br />Pequenas práticas, novas possibilidades.</p>
             <Action magnetic>Começar grátis</Action>
-            <p className={styles.heroNote}><span /> No seu ritmo. Do primeiro <span lang="en">hello</span> em diante.</p>
           </div>
           <div className={styles.heroVisual} data-hero-parallax data-pointer-area>
             <div data-hero-art className={styles.heroArt}>

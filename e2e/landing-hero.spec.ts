@@ -177,7 +177,7 @@ test('a cena de memória responde ao scroll depois de sair, voltar e avançar', 
   }
 })
 
-test('o título espera pela aba visível e aceita replay no modo leve', async ({ page }) => {
+test('o título espera pela aba visível no modo leve', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'hardwareConcurrency', { value: 2 })
     Object.defineProperty(document, 'hidden', { configurable: true, get: () => true })
@@ -185,8 +185,7 @@ test('o título espera pela aba visível e aceita replay no modo leve', async ({
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.goto('/#hero-title')
   const letters = page.locator('[data-hero-letters] > span')
-  const replay = page.getByRole('button', { name: 'Rever animação do título' })
-  await expect(replay).toBeVisible()
+  await expect(page.locator('html')).toHaveClass(/kivora-landing-lite/)
   await expect(letters).toHaveCount(0)
   await page.evaluate(() => {
     Reflect.deleteProperty(document, 'hidden')
@@ -194,32 +193,28 @@ test('o título espera pela aba visível e aceita replay no modo leve', async ({
   })
   await expect(letters.first()).toBeAttached()
   await expect(letters).toHaveCount(0)
-  await replay.click()
-  await expect(letters.first()).toBeAttached()
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await expect(replay).toBeHidden()
   await expect(letters).toHaveCount(0)
   await checkHeading(page)
 })
 
-test('o título continua se movendo após a entrada e pode ser pausado', async ({ page }) => {
+test('o título continua se movendo após a entrada sem botões de controle', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.goto('/#hero-title')
-  const pause = page.getByRole('button', { name: 'Pausar movimento do título' })
+  await expect(page.locator('[data-hero-copy] button')).toHaveCount(0)
   const word = page.locator('[data-hero-keyword]')
   const width = () => word.evaluate(el => el.getBoundingClientRect().width)
-  await pause.click()
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await expect(word).toHaveCSS('transform', 'none')
+  await page.evaluate(() => document.fonts.ready.then(() => undefined))
   const resting = await width()
-  await expect(pause).toHaveAttribute('aria-pressed', 'true')
-  await pause.click()
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
   await expect(page.locator('[data-hero-letters] > span').first()).toBeAttached()
   await expect(page.locator('[data-hero-letters] > span')).toHaveCount(0)
   for (let cycle = 0; cycle < 2; cycle++) {
     await expect.poll(width).toBeGreaterThan(resting * 1.06)
     await expect.poll(width).toBeCloseTo(resting, 0)
   }
-  await pause.click()
-  await expect(word).toHaveCSS('transform', 'none')
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await expect(pause).toBeHidden()
+  await expect(word).toHaveCSS('transform', 'none')
 })
