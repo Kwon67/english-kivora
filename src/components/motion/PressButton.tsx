@@ -17,14 +17,29 @@ export default function PressButton({ hoverScale = 1, pressedScale, hoverY = 0, 
     if (!button || disabled) return
     const media = gsap.matchMedia()
     media.add('(prefers-reduced-motion: no-preference)', () => {
-      const scale = gsap.quickTo(button, 'scale', { duration: 0.22, ease: 'power3.out' })
-      const y = gsap.quickTo(button, 'y', { duration: 0.22, ease: 'power3.out' })
+      const timing = { duration: 0.22, ease: 'power3.out' }
+      const scaleX = gsap.quickTo(button, 'scaleX', timing)
+      const scaleY = gsap.quickTo(button, 'scaleY', timing)
+      const moveY = gsap.quickTo(button, 'y', timing)
       let hovering = false
-      const release = () => { scale(hovering ? hoverScale : 1); y(hovering ? hoverY : 0) }
-      const enter = (event: PointerEvent) => { hovering = event.pointerType !== 'touch'; release() }
-      const leave = () => { hovering = false; release() }
-      const press = () => { scale(pressedScale); y(0) }
-      const keyDown = (event: KeyboardEvent) => { if (event.key === 'Enter' || event.key === ' ') press() }
+      function feedback(scale: number, y: number) {
+        scaleX(scale)
+        scaleY(scale)
+        moveY(y)
+      }
+      const release = () => feedback(hovering ? hoverScale : 1, hovering ? hoverY : 0)
+      const enter = (event: PointerEvent) => {
+        hovering = event.pointerType !== 'touch'
+        release()
+      }
+      const leave = () => {
+        hovering = false
+        release()
+      }
+      const press = () => feedback(pressedScale, 0)
+      const keyDown = (event: KeyboardEvent) => {
+        if (event.key === 'Enter' || event.key === ' ') press()
+      }
       const events = new AbortController()
       const options = { signal: events.signal }
       button.addEventListener('pointerenter', enter, options)
