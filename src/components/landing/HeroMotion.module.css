@@ -1,0 +1,19 @@
+.headline [data-title-line] {
+  transform-origin: left 80%;
+}
+
+.keyword {
+  position: relative;
+}
+
+.underline {
+  position: absolute;
+  left: .06em;
+  right: .22em;
+  bottom: -.09em;
+  height: .13em;
+  border-top: .045em solid var(--ink);
+  border-radius: 80% 40% 0 0;
+  pointer-events: none;
+  transform-origin: left center;
+}

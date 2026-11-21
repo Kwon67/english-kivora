@@ -7,6 +7,7 @@ import LandingWordmark from './LandingWordmark'
 import LevelExplorer from './LevelExplorer'
 import PracticePreview from './PracticePreview'
 import styles from './MindmarketLanding.module.css'
+import heroStyles from './HeroMotion.module.css'
 import JourneyRibbon from './JourneyRibbon'
 import JourneyMotion from './JourneyMotion'
 import LandingIntro from './LandingIntro'
@@ -46,11 +47,11 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
         <section className={styles.hero} aria-labelledby="hero-title">
           <div className={styles.heroCopy} data-hero-copy>
             <Eyebrow>INGLÊS PARA A VIDA ACONTECER</Eyebrow>
-            <h1 id="hero-title" aria-label="Seu inglês. Um mundo mais aberto.">
+            <h1 id="hero-title" className={heroStyles.headline} aria-label="Seu inglês. Um mundo mais aberto.">
               <span data-title-ink aria-hidden="true">
                 <span data-title-line>Seu inglês.</span>{' '}
                 <span data-title-line>Um mundo</span>{' '}
-                <span data-title-line>mais <span data-hero-keyword>aberto.</span></span>
+                <span data-title-line>mais <span data-hero-keyword className={heroStyles.keyword}>aberto.<span data-hero-underline className={heroStyles.underline} /></span></span>
               </span>
             </h1>
             <p data-hero-description className={styles.heroDescription}>Palavras viram conversas.{' '}<br />Pequenas práticas, novas possibilidades.</p>
