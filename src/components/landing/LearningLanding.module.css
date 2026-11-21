@@ -53,6 +53,7 @@
 .pathSection .sectionDescription { margin-inline:auto; max-width:60ch; }
 .pathExplorer { max-width:950px; margin:40px auto 0; }
 .levels { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:12px; }
+.levels::before { transform-origin:left center; transform:scaleX(var(--rail-progress,1)); }
 .levels button { display:flex; flex-direction:column; align-items:center; gap:7px; padding:19px 10px; border-radius:16px; border:1px solid #e3dfd8; background:white; transition:transform .2s,background .2s,border-color .2s; }
 .levels button > span { font-family:var(--font-body); font-size:27px; font-weight:650; letter-spacing:-.03em; }
 .levels button > small { font-size:11px; color:var(--kivora-muted); }

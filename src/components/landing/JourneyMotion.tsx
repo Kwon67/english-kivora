@@ -4,11 +4,13 @@ import dynamic from 'next/dynamic'
 import { createContext, useContext, useRef, useState, ViewTransition, type ReactNode } from 'react'
 import type Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
-import { gsap, ScrollTrigger, SplitText, useGSAP } from '@/lib/gsap'
+import { gsap, ScrollTrigger, useGSAP } from '@/lib/gsap'
 import { duration, ease } from '@/lib/motion-tokens'
 import styles from './MindmarketLanding.module.css'
 import { playLandingSound } from './landingSound'
 import { useLandingLite } from './useLandingLite'
+import { setupHeroMotion } from './HeroMotion'
+import { setupPlanHover, setupSectionMotion } from './JourneySectionMotion'
 
 const LandingLenis = dynamic(() => import('./LandingLenis'), { ssr: false })
 let signed = false
@@ -54,23 +56,13 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
     media.add('(prefers-reduced-motion: no-preference)', () => {
       if (document.hidden || location.hash || window.scrollY > 48) return
 
-      // These are the actual typeset lines. The browser keeps ownership of
-      // their metrics during font swaps, zoom and orientation changes.
-      const intro = gsap.timeline({ id: 'kivora-hero-intro', defaults: { ease: ease.reveal } })
-      intro.from(select('[data-title-line]'), { yPercent: 17, duration: .5, stagger: .075, clearProps: 'transform' }, 0)
-        .from(select('[data-hero-keyword]'), {
-          scaleX: .89, skewX: -5, rotation: -1.5, duration: .51, ease: 'back.out(1.35)', clearProps: 'transform',
-        }, .21)
-        .from(select('[data-hero-description]'), { y: 7, duration: .45, clearProps: 'transform' }, .16)
-        .from(select('[data-hero-copy] [data-action-icon] svg, [data-hero-dock] [data-action-icon] svg'), {
-          x: -3, y: 3, rotation: -16, duration: .36, clearProps: 'transform',
-        }, .36)
+      setupHeroMotion(container)
     })
     media.add('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)', () => {
       setSmooth(true)
       // Each layer owns one transform. Travel, floating and pointer response
       // act on separate nodes so scrolling never fights the cursor.
-      const cleanups: (() => void)[] = []
+      const cleanups: (() => void)[] = [setupPlanHover(container)]
       for (const area of select('[data-pointer-area], [data-tilt], [data-magnetic]') as HTMLElement[]) {
         const isCard = area.hasAttribute('data-tilt')
         const magnet = area.hasAttribute('data-magnetic')
@@ -104,11 +96,8 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
       return () => { cleanups.forEach(clean => clean()); setSmooth(false) }
     })
 
-    media.add({
-      motion: '(prefers-reduced-motion: no-preference)',
-      splitHeadings: '(min-width: 768px) and (hover: hover) and (pointer: fine)',
-    }, context => {
-      if (!context.conditions?.motion) return
+    media.add('(prefers-reduced-motion: no-preference)', () => {
+      setupSectionMotion(container)
       const loops = new Map<Element, { animation: gsap.core.Animation; visible: boolean }>()
       const sync = () => loops.forEach(loop => loop.animation.paused(!loop.visible || document.hidden))
       const observer = new IntersectionObserver(entries => {
@@ -119,48 +108,6 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
         loops.set(element, { animation: animation.pause(), visible: false }); observer.observe(element)
       }
       document.addEventListener('visibilitychange', sync)
-      const restoreTitles = new Set<() => void>()
-      const revealTitle = (title: HTMLElement) => {
-        const ink = title.querySelector<HTMLElement>('[data-title-ink]')
-        if (!ink) return
-        // Keep the real heading in flow, including across font loads and resizes.
-        // Only the temporary visual copy is split into animated lines.
-        const layer = ink.cloneNode(true) as HTMLElement
-        layer.className = styles.titleRevealLayer
-        layer.setAttribute('aria-hidden', 'true')
-        title.append(layer)
-        ink.style.opacity = '0'
-        const restore = () => {
-          ink.style.removeProperty('opacity')
-          layer.remove()
-          restoreTitles.delete(restore)
-        }
-        restoreTitles.add(restore)
-        SplitText.create(layer, {
-          type: 'lines', mask: 'lines', tag: 'span', aria: 'none', autoSplit: true,
-          onSplit(split) {
-            return gsap.from(split.lines, {
-              yPercent: 104, rotation: 1.5, duration: duration.title, stagger: .08, ease: ease.title,
-              scrollTrigger: { trigger: title, start: 'top 97%', once: true },
-              onComplete: () => { split.revert(); restore() },
-            })
-          },
-        })
-      }
-      const titles = new IntersectionObserver(entries => {
-        for (const entry of entries) if (entry.isIntersecting) {
-          titles.unobserve(entry.target)
-          const title = entry.target as HTMLElement
-          context.add(() => {
-            // On touch, swapping balanced text for a split copy can change its visible lines.
-            if (context.conditions?.splitHeadings) revealTitle(title)
-            if (title.querySelector('[data-mark]')) gsap.fromTo(title, { '--paint': 0 }, {
-              '--paint': 1, duration: duration.reveal, ease: ease.out, scrollTrigger: { trigger: title, start: 'top 82%', once: true },
-            })
-          })
-        }
-      }, { rootMargin: '240px' })
-      for (const heading of select('main h2:not(#memory-title)')) titles.observe(heading)
       for (const scene of select('[data-art-scene]')) {
         gsap.from(scene, { y: 32, scale: .97, duration: 1, ease: ease.reveal, scrollTrigger: { trigger: scene, start: 'top 96%', once: true } })
         const illustration = scene.querySelector('[data-art-motion="illustration"]')
@@ -170,31 +117,11 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
         gsap.fromTo(element, { y: 15 }, { y: -22, ease: ease.linear,
           scrollTrigger: { trigger: element.closest('section'), start: 'top bottom', end: 'bottom top', scrub: .35 } })
       }
-      for (const element of select('[data-float], [data-spin]')) {
-        const spin = element.hasAttribute('data-spin')
-        loop(element, gsap.to(element, spin ? { rotation: 360, repeat: -1, duration: 32, ease: ease.linear } :
-          { y: -8, rotation: 2, duration: duration.float, ease: ease.loop, repeat: -1, yoyo: true }))
+      // The remaining decorative loops belong to the hero and FAQ. The story
+      // sections finish their own gestures as the visitor reaches each chapter.
+      for (const element of select('[data-hero-parallax] [data-float], #faq [data-float]')) {
+        loop(element, gsap.to(element, { y: -8, rotation: 2, duration: duration.float, ease: ease.loop, repeat: -1, yoyo: true }))
       }
-      const memory = container.querySelector('#revisoes')
-      if (memory) {
-        const growth = gsap.timeline({ defaults: { ease: ease.linear }, scrollTrigger: {
-          id: 'kivora-memory-growth', trigger: memory, start: 'top 78%', end: 'bottom 65%', scrub: true,
-        } })
-        growth.from(memory.querySelector('[data-plant]'), { scale: .62, rotation: -4, transformOrigin: '62% 74%', duration: .74 }, 0)
-          .fromTo(memory.querySelector('[data-mark]'), { '--paint': 0 }, { '--paint': 1, duration: .48 }, .52)
-      }
-      const message = container.querySelector('[data-type]')
-      if (message) {
-        const text = SplitText.create(message, { type: 'chars', aria: 'auto', tag: 'span' })
-        gsap.from(text.chars, { opacity: 0, stagger: .045, duration: .01, scrollTrigger: { trigger: message, start: 'top 90%', once: true } })
-      }
-      const scores = select('[data-score]') as HTMLElement[]
-      const blitz = gsap.timeline({ scrollTrigger: { trigger: '[data-ranking]', start: 'top 89%', once: true } })
-      scores.forEach((score, index) => {
-        blitz.from(score.parentElement, { y: 10, opacity: 0, duration: .3 }, index * .13)
-          .fromTo(score, { textContent: '000' }, { scrambleText: { text: score.dataset.score!, chars: '0123456789' }, duration: .65 }, index * .13)
-      })
-      blitz.call(() => playLandingSound('combo', false))
       const belt = select('[data-word-belt]')[0]
       if (belt) {
         const marquee = gsap.to(belt, { xPercent: -50, duration: duration.belt, repeat: -1, ease: ease.linear,
@@ -208,10 +135,10 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
         ScrollTrigger.addEventListener('scrollEnd', settle)
         return () => {
           ScrollTrigger.removeEventListener('scrollEnd', settle)
-          restoreTitles.forEach(restore => restore()); titles.disconnect(); observer.disconnect(); document.removeEventListener('visibilitychange', sync)
+          observer.disconnect(); document.removeEventListener('visibilitychange', sync)
         }
       }
-      return () => { restoreTitles.forEach(restore => restore()); titles.disconnect(); observer.disconnect(); document.removeEventListener('visibilitychange', sync) }
+      return () => { observer.disconnect(); document.removeEventListener('visibilitychange', sync) }
     })
     return () => {
       media.revert()

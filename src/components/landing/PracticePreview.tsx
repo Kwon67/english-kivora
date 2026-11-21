@@ -66,12 +66,12 @@ export default function PracticePreview() {
     if (lite) return
     const media = gsap.matchMedia()
     media.add('(prefers-reduced-motion: no-preference)', () => {
-      gsap.from(panel.current, { y: 24, opacity: 0, duration: duration.panel, ease: ease.reveal, clearProps: 'transform,opacity' })
+      gsap.from(panel.current, { y: 9, duration: duration.feedback, ease: ease.out, clearProps: 'transform' })
     })
     return () => media.revert()
   }, { scope: panel, dependencies: [mode, revealed, checked, lite], revertOnUpdate: true })
 
-  return <div className={styles.lab}>
+  return <div data-practice-lab className={styles.lab}>
     <div className={styles.labTabs} aria-label="Escolha uma prática">
       <button aria-pressed={mode === 'choose'} onClick={() => setMode('choose')}>Escolher</button>
       <button aria-pressed={mode === 'build'} onClick={() => setMode('build')}>Montar</button>
