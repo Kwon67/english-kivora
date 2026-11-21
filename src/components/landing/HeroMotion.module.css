@@ -2,12 +2,6 @@
   transform-origin: left 80%;
 }
 
-.lineMask {
-  display: block;
-  /* Leave room beyond the line box for the circumflex, descenders and ink stroke. */
-  clip-path: inset(-.16em -.14em -.18em -.14em);
-}
-
 .keyword {
   position: relative;
 }

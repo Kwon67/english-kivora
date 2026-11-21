@@ -7,29 +7,35 @@ export function setupHeroMotion(container: HTMLElement) {
   const letters = select('[data-hero-letters]')[0]
   if (!letters || lines.length !== 3) return
 
+  const first = SplitText.create(lines[0], { type: 'words', tag: 'span', aria: 'none' })
+  const world = SplitText.create(lines[1], { type: 'chars', tag: 'span', aria: 'none' })
   const word = SplitText.create(letters, { type: 'chars', tag: 'span', aria: 'none' })
   const center = (word.chars.length - 1) / 2
   const intro = gsap.timeline({
     id: 'kivora-hero-intro',
     defaults: { ease: 'power3.out', clearProps: 'transform' },
-    onComplete: () => word.revert(),
+    onComplete: () => { first.revert(); world.revert(); word.revert() },
   })
-  intro.addLabel('world', .18).addLabel('open', .48)
-    .from(lines[0], { yPercent: 88, duration: .51 }, 0)
-    .from(lines[1], { yPercent: 105, duration: .55 }, 'world')
-    .from(lines[2], { yPercent: 105, duration: .55 }, 'open')
-    // Each half unfolds around the middle. Transforms preserve the typeset line.
+  intro.addLabel('world', .22).addLabel('open', .63)
+    .from(first.words, {
+      scaleX: .68, scaleY: 1.38, rotation: i => i ? 7 : -8,
+      transformOrigin: '50% 82%', stagger: .075,
+      duration: .52, ease: 'back.out(1.8)',
+    }, 0)
+    .from(world.chars, {
+      rotationX: -84, transformPerspective: 440, transformOrigin: '50% 74%',
+      stagger: .042, duration: .61, ease: 'back.out(1.25)',
+    }, 'world')
+    // Fold the letters inward, then fan them out from the middle of the word.
     .from(word.chars, {
-      x: index => `${(center - index) * .07}em`,
-      rotationY: index => (index - center) * 17,
-      transformPerspective: 450,
-      transformOrigin: index => index < center ? 'right center' : 'left center',
-      stagger: { from: 'center', amount: .18 },
-      duration: .64, ease: 'power2.out', clearProps: 'transform,transformOrigin',
+      x: index => `${(center - index) * .27}em`,
+      rotation: index => (index - center) * -10,
+      scaleX: .56, scaleY: .8, transformOrigin: '50% 95%',
+      stagger: { from: 'center', amount: .21 }, duration: .68, ease: 'back.out(1.35)',
     }, 'open')
-    .from(select('[data-hero-underline]'), { scaleX: 0, duration: .56, ease: 'power2.inOut' }, .74)
+    .from(select('[data-hero-underline]'), { scaleX: 0, duration: .53, ease: 'power3.inOut' }, .99)
     .from(select('[data-hero-art]'), {
-      scale: .86, transformOrigin: '51% 51%', duration: 1.12,
+      scale: .86, transformOrigin: '51% 51%', duration: 1.30,
       ease: 'power2.inOut', clearProps: 'transform,transformOrigin',
     }, 'world')
     .from(select('[data-hero-description]'), { y: 7, duration: .43 }, .57)
