@@ -53,11 +53,11 @@ export function setupSectionMotion(root: HTMLElement) {
   const phrase = conversation?.querySelector('[data-type]')
   const bubble = phrase?.parentElement
   if (conversation && phrase && bubble) {
-    const words = SplitText.create(phrase, { type: 'words', tag: 'span', aria: 'auto' })
+    const text = SplitText.create(phrase, { type: 'chars', tag: 'span', aria: 'auto' })
     entrance(bubble, 'kivora-conversation', 'top 89%')
       .from(bubble, { scale: .93, y: 13, rotation: -2, transformOrigin: 'bottom left', duration: .4, ease: 'back.out(1.35)', clearProps: 'transform' }, 0)
-      .from(words.words, { yPercent: 26, duration: .24, stagger: .055, clearProps: 'transform' }, .12)
-      .from(bubble.querySelector('small'), { x: 12, duration: .38, clearProps: 'transform' }, .34)
+      .from(text.chars, { opacity: 0, duration: .01, stagger: .036 }, .12)
+      .from(bubble.querySelector('small'), { x: 12, duration: .38, clearProps: 'transform' }, .95)
       .fromTo(conversation.querySelector('[data-mark]'), { '--paint': 0 }, { '--paint': 1, duration: .5 }, .38)
   }
 
