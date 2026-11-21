@@ -1,6 +1,6 @@
 import { gsap, SplitText } from '@/lib/gsap'
 
-function animateHeadline(container: HTMLElement) {
+function animateHeadline(container: HTMLElement, onComplete: () => void) {
   const select = gsap.utils.selector(container)
   const lines = select('#hero-title [data-title-line]')
   const letters = select('[data-hero-letters]')[0]
@@ -13,7 +13,7 @@ function animateHeadline(container: HTMLElement) {
   const intro = gsap.timeline({
     id: 'kivora-hero-intro',
     defaults: { ease: 'power3.out', clearProps: 'transform' },
-    onComplete: () => { first.revert(); world.revert(); word.revert() },
+    onComplete: () => { first.revert(); world.revert(); word.revert(); onComplete() },
   })
   intro.addLabel('world', .22).addLabel('open', .63)
     .from(first.words, {
@@ -48,23 +48,57 @@ function animateHeadline(container: HTMLElement) {
 export function setupHeroMotion(container: HTMLElement) {
   const title = container.querySelector('#hero-title')
   const replay = container.querySelector<HTMLButtonElement>('[data-replay-title]')
-  if (!title || !replay) return
+  const toggle = container.querySelector<HTMLButtonElement>('[data-pause-title]')
+  if (!title || !replay || !toggle) return
   const welcome = container.querySelector<HTMLElement>('#kivora-intro')
   let visible = false
   let playback: gsap.Context | undefined
   let timeline: gsap.core.Timeline | undefined
 
+  let paused = false
+
+  function updateControl() {
+    toggle!.setAttribute('aria-pressed', String(paused))
+  }
   function play() {
     playback?.revert()
-    playback = gsap.context(() => { timeline = animateHeadline(container) }, container)
+    paused = false
+    updateControl()
+    playback = gsap.context(() => {
+      // This second timeline acts on the intact lines after SplitText restores the text.
+      const lines = container.querySelectorAll('#hero-title [data-title-line]')
+      const keyword = container.querySelector('[data-hero-keyword]')
+      const wave = gsap.timeline({
+        paused: true, repeat: -1, repeatDelay: 1.1,
+        defaults: { ease: 'sine.inOut', repeat: 1, yoyo: true },
+      })
+        .to(lines[0], { scaleX: .93, rotation: -2, skewX: -4, duration: .42 }, 0)
+        .to(lines[1], { rotationX: 38, transformPerspective: 440, duration: .48 }, .24)
+        .to(keyword, { scaleX: 1.10, rotation: -4, duration: .52 }, .52)
+      timeline = animateHeadline(container, () => {
+        timeline = wave
+        sync()
+      })
+    }, container)
   }
   function sync() {
-    if (document.hidden || !visible || welcome?.dataset.intro) {
+    if (paused || document.hidden || !visible || welcome?.dataset.intro) {
       timeline?.pause()
     } else if (timeline) {
       timeline.resume()
     } else {
       play()
+    }
+  }
+  function toggleMotion() {
+    if (paused) {
+      play()
+    } else {
+      paused = true
+      playback?.revert()
+      timeline = undefined
+      playback = undefined
+      updateControl()
     }
   }
   const observer = new IntersectionObserver(([entry]) => {
@@ -75,12 +109,17 @@ export function setupHeroMotion(container: HTMLElement) {
   welcome?.addEventListener('kivora-intro-finished', sync)
   document.addEventListener('visibilitychange', sync)
   replay.addEventListener('click', play)
+  toggle.addEventListener('click', toggleMotion)
+  toggle.hidden = false
   replay.hidden = false
   return () => {
     observer.disconnect()
     welcome?.removeEventListener('kivora-intro-finished', sync)
     document.removeEventListener('visibilitychange', sync)
     replay.removeEventListener('click', play)
+    toggle.removeEventListener('click', toggleMotion)
+    toggle.hidden = true
+    toggle.removeAttribute('aria-pressed')
     replay.hidden = true
     playback?.revert()
   }

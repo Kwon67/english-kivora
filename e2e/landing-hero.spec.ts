@@ -201,3 +201,25 @@ test('o título espera pela aba visível e aceita replay no modo leve', async ({
   await expect(letters).toHaveCount(0)
   await checkHeading(page)
 })
+
+test('o título continua se movendo após a entrada e pode ser pausado', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto('/#hero-title')
+  const pause = page.getByRole('button', { name: 'Pausar movimento do título' })
+  const word = page.locator('[data-hero-keyword]')
+  const width = () => word.evaluate(el => el.getBoundingClientRect().width)
+  await pause.click()
+  const resting = await width()
+  await expect(pause).toHaveAttribute('aria-pressed', 'true')
+  await pause.click()
+  await expect(page.locator('[data-hero-letters] > span').first()).toBeAttached()
+  await expect(page.locator('[data-hero-letters] > span')).toHaveCount(0)
+  for (let cycle = 0; cycle < 2; cycle++) {
+    await expect.poll(width).toBeGreaterThan(resting * 1.06)
+    await expect.poll(width).toBeCloseTo(resting, 0)
+  }
+  await pause.click()
+  await expect(word).toHaveCSS('transform', 'none')
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await expect(pause).toBeHidden()
+})
