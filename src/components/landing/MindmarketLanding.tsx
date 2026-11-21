@@ -52,7 +52,7 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
                 <span data-hero-mask className={heroStyles.lineMask}><span data-title-line>Seu inglês.</span></span>{' '}
                 <span data-hero-mask className={heroStyles.lineMask}><span data-title-line>Um mundo</span></span>{' '}
                 <span data-hero-mask className={heroStyles.lineMask}>
-                  <span data-title-line>mais <span data-hero-keyword className={heroStyles.keyword}>aberto.<span data-hero-underline className={heroStyles.underline} /></span></span>
+                  <span data-title-line>mais <span data-hero-keyword className={heroStyles.keyword}><span data-hero-letters>aberto.</span><span data-hero-underline className={heroStyles.underline} /></span></span>
                 </span>
               </span>
             </h1>

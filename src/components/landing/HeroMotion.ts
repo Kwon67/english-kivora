@@ -1,33 +1,31 @@
 import { gsap, SplitText } from '@/lib/gsap'
-import { ease } from '@/lib/motion-tokens'
 
 /** Runs inside JourneyMotion's scoped, reduced-motion-aware GSAP context. */
 export function setupHeroMotion(container: HTMLElement) {
   const select = gsap.utils.selector(container)
   const lines = select('#hero-title [data-title-line]')
-  if (!lines.length) return
+  const letters = select('[data-hero-letters]')[0]
+  if (!letters || lines.length !== 3) return
 
-  const intro = gsap.timeline({ id: 'kivora-hero-intro', defaults: { ease: ease.reveal } })
-  const type = (element: Element, interval: number, pause: number, aria: 'auto' | 'none') => {
-    const split = SplitText.create(element, { type: 'chars', tag: 'span', aria })
-    gsap.set(split.chars, { opacity: 0 })
-    intro.to(split.chars, { opacity: 1, duration: 0, stagger: interval }, '+=' + pause)
-  }
-
-  // Fixed line boxes reserve the final layout while letters appear in reading order.
-  for (const line of lines) type(line, .053, .115, 'none')
-  const ending = intro.duration()
-  intro.from(select('[data-hero-underline]'), {
-    scaleX: 0, duration: .32, clearProps: 'transform',
-  }, ending)
-  const description = select('[data-hero-description]')[0]
-  if (description) type(description, .022, 0, 'auto')
-
-  intro.from(select('[data-hero-art]'), {
-    scale: .91, rotation: -3, transformOrigin: '56% 62%', duration: .84,
-    clearProps: 'transform,transformOrigin',
-  }, 0)
+  const word = SplitText.create(letters, { type: 'chars', tag: 'span', aria: 'none' })
+  const intro = gsap.timeline({
+    id: 'kivora-hero-intro',
+    defaults: { ease: 'power3.out', clearProps: 'transform' },
+    onComplete: () => word.revert(),
+  })
+  intro.addLabel('world', .18).addLabel('open', .48)
+    .from(lines[0], { yPercent: 88, duration: .51 }, 0)
+    .from(lines[1], { yPercent: 105, duration: .55 }, 'world')
+    .from(lines[2], { yPercent: 105, duration: .55 }, 'open')
+    // Increasing offsets tighten the tracking without changing the line's width.
+    .from(word.chars, { x: index => `-${index * .045}em`, duration: .82, ease: 'power2.inOut' }, 'open')
+    .from(select('[data-hero-underline]'), { scaleX: 0, duration: .56, ease: 'power2.inOut' }, .74)
+    .from(select('[data-hero-art]'), {
+      scale: .86, transformOrigin: '51% 51%', duration: 1.12,
+      ease: 'power2.inOut', clearProps: 'transform,transformOrigin',
+    }, 'world')
+    .from(select('[data-hero-description]'), { y: 7, duration: .43 }, .57)
     .from(select('[data-hero-copy] [data-action-icon] svg, [data-hero-dock] [data-action-icon] svg'), {
-      x: -5, y: 5, rotation: -24, duration: .46, ease: 'back.out(1.3)', clearProps: 'transform',
-    }, ending)
+      x: -4, y: 4, duration: .36,
+    }, .79)
 }
