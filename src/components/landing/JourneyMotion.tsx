@@ -56,7 +56,7 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
     media.add('(prefers-reduced-motion: no-preference)', () => {
       if (document.hidden || location.hash || window.scrollY > 48) return
 
-      setupHeroMotion(container)
+      return setupHeroMotion(container)
     })
     media.add('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)', () => {
       setSmooth(true)

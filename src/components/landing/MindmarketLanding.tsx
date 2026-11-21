@@ -40,6 +40,7 @@ function Eyebrow({ number, children }: { number?: string; children: React.ReactN
 
 export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<Record<'discovery' | 'memory' | 'conversation', string>> }) {
   return <JourneyMotion>
+    <LandingIntro />
     <LandingNavigation links={links} />
     <div className={styles.journey} data-ribbon-journey>
     <main id="main-content">
@@ -63,7 +64,6 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
           <div className={styles.heroVisual} data-hero-parallax data-pointer-area>
             <div data-hero-art className={styles.heroArt}>
               <DiscoveryScene riveSrc={riveAssets.discovery} />
-              <LandingIntro />
             </div>
             <span className={`${styles.floatingWord} ${styles.hello}`} data-float lang="en"><span data-cursor>hello, world! <JourneySpark /></span></span>
             <span className={`${styles.floatingWord} ${styles.discover}`} data-float lang="en"><span data-cursor>let’s discover <ArrowUpRight size={21} aria-hidden="true" /></span></span>

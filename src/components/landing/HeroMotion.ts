@@ -28,4 +28,12 @@ export function setupHeroMotion(container: HTMLElement) {
     .from(select('[data-hero-copy] [data-action-icon] svg, [data-hero-dock] [data-action-icon] svg'), {
       x: -4, y: 4, duration: .36,
     }, .79)
+
+  const welcome = container.querySelector<HTMLElement>('#kivora-intro')
+  if (welcome?.dataset.intro) {
+    intro.pause(0)
+    const play = () => { intro.play() }
+    welcome.addEventListener('kivora-intro-finished', play, { once: true })
+    return () => welcome.removeEventListener('kivora-intro-finished', play)
+  }
 }

@@ -18,7 +18,7 @@ test('SEO and brand assets respond without login while protected pages still red
   expect(new URL(protectedPage.headers().location, baseURL).pathname).toBe('/login')
 })
 
-test('the brand intro opens within its budget and skips a reload', async ({ page }) => {
+test('the brand intro covers the viewport, reveals the landing and replays on reload', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'hardwareConcurrency', { value: 8 })
     Object.defineProperty(navigator, 'deviceMemory', { value: 8 })
@@ -28,8 +28,11 @@ test('the brand intro opens within its budget and skips a reload', async ({ page
   await page.goto('/', { waitUntil: 'commit' })
   const intro = page.locator('#kivora-intro')
   await expect(intro).toHaveAttribute('data-intro', /waiting|opening/)
-  await expect(intro).toBeHidden({ timeout: 1500 })
+  expect(await intro.boundingBox()).toEqual({ x: 0, y: 0, ...page.viewportSize() })
+  await expect(intro).toBeHidden({ timeout: 4000 })
   await page.reload()
+  await expect(intro).toHaveAttribute('data-intro', 'waiting')
+  await page.keyboard.press('Escape')
   await expect(intro).toBeHidden()
   await expect(intro).not.toHaveAttribute('data-intro')
 })
