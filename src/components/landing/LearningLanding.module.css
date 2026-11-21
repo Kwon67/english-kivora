@@ -67,7 +67,8 @@
 .levelExample p:last-child { font-size:13px; color:var(--kivora-muted); line-height:1.65; }
 .roundLink { display:grid; place-items:center; flex:none; width:48px; height:48px; background:var(--tone-soft); color:var(--tone-ink); border-radius:50%; }
 .roundLink:hover { box-shadow:0 0 0 1px var(--tone-accent); }
-.pathNote { display:flex; align-items:center; justify-content:center; gap:7px; color:var(--kivora-muted); font-size:12px; margin-top:20px; }
+.pathExplorer > .pathNote { margin-block-start:20px; }
+.pathNote { display:flex; align-items:center; justify-content:center; gap:7px; color:var(--kivora-muted); font-size:12px; }
 .pathNote svg { color:var(--kivora-success); flex:none; }
 .practiceGrid,.recallGrid,.conversationGrid,.progressGrid { display:grid; grid-template-columns:1fr 1fr; gap:90px; align-items:center; max-width:1248px; margin:auto; padding:104px 36px; }
 .methodList { list-style:none; padding:0; display:grid; gap:24px; margin-top:32px; }
