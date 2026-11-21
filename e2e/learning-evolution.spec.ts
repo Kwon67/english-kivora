@@ -419,6 +419,26 @@ test('onboarding recovers a disconnected submit and reaches today without an eli
   await expect(page.getByRole('button', { name: 'Começar contexto' })).toBeEnabled()
 })
 
+test('Blitz mounts the selected first round without showing a provisional choice', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.addInitScript(() => {
+    // The opening draw is between multiple choice and matching. Select matching.
+    Math.random = () => 0.9
+    const observer = new MutationObserver(() => {
+      const heading = document.querySelector('.blitz-round h2')
+      if (!heading) return
+      document.documentElement.dataset.firstBlitzRound = heading.textContent ?? ''
+      observer.disconnect()
+    })
+    observer.observe(document, { childList: true, subtree: true })
+  })
+  await page.goto('/blitz/play')
+  const matching = 'Combine inglês e português'
+  await expect(page.locator('html')).toHaveAttribute('data-first-blitz-round', matching)
+  await expect(page.locator('.blitz-round')).toHaveCount(1)
+  await expect(page.getByRole('heading', { name: matching })).toBeVisible()
+})
+
 test('Blitz restores only the signed-in learner’s result after reopening the game', async ({ page }) => {
   await page.goto('/blitz/play')
   const exit = page.getByRole('button', { name: 'Sair do Blitz' })

@@ -450,6 +450,7 @@ export default function BlitzClient({
     correctCardIdsRef.current = []
     setActiveSource(source)
     setActiveAiPack(aiPack)
+    setStartedAt(0)
     setPhase('playing')
     setLives(BLITZ_LIVES)
     setScore(0)
@@ -475,9 +476,11 @@ export default function BlitzClient({
     )
   }
 
+  // Wait for the initial mode selection before mounting a keyed round that can animate out.
+  const preparing = phase === 'initializing' || (phase === 'playing' && startedAt === 0)
   return (
     <BlitzShell>
-      {phase === 'initializing' && (
+      {preparing && (
         <RouteLoadingSkeleton label="Preparando partida do Blitz">
           <div className="blitz-match space-y-5" aria-hidden="true">
             <Skeleton className="h-8 w-24 rounded-control" />
@@ -486,7 +489,7 @@ export default function BlitzClient({
           </div>
         </RouteLoadingSkeleton>
       )}
-      {phase === 'playing' && (
+      {phase === 'playing' && !preparing && (
         <div className="blitz-match">
           <header className="blitz-match-heading">
             <h1><Zap size={20} aria-hidden="true" /> {activeSource === 'ai' ? 'Blitz IA' : 'Blitz'}</h1>
@@ -518,7 +521,6 @@ export default function BlitzClient({
           <TransitionSlot duration={0.2} enterOpacity={0.88} exitOpacity={0.88}>
             <div
               key={`${currentMode}-${currentCard.id}`}
-
               className="blitz-round"
             >
               {currentMode === 'multiple_choice' && (
