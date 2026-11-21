@@ -67,13 +67,16 @@ test('movimento reduzido preserva teclado e FAQ nativos', async ({ page }) => {
 test('reativar animações numa visita direta ao FAQ mantém a página utilizável', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))
-  // The shared setup visits /. Force a new document at the anchor for hydration.
+  // Leave the document opened by the shared setup. A reload at the hash can
+  // restore WebKit's previous scroll position instead of visiting the anchor.
+  await page.goto('about:blank')
   await page.goto('/#faq')
-  await page.reload()
   const faq = page.locator('#faq')
   const paint = () => page.evaluate(() =>
     document.querySelector<HTMLElement>('#memory-title [data-mark]')?.style.getPropertyValue('--paint'))
+  await page.evaluate(() => document.fonts.ready.then(() => undefined))
   await expect(faq).toBeInViewport()
+  await expect.poll(() => anchorOffset(faq)).toBeLessThan(4)
   await expect.poll(paint).toBe('1')
   // The ranking sits above the FAQ. Wait for its entry to settle before toggling.
   await expect(page.locator('[data-ranking] li').last()).toHaveCSS('transform', 'none')

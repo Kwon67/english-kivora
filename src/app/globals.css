@@ -2083,7 +2083,9 @@ html[data-scroll-lock='true'] body {
   box-shadow: none;
 }
 
-/* Lenis owns wheel interpolation while the landing is active. */
+/* Apply the landing's scroll policy to its server HTML too. Otherwise WebKit
+   starts a smooth fragment scroll that hydration can interrupt halfway. */
+html:has([data-ribbon-journey]),
 html.kivora-landing-scroll {
   scroll-behavior: auto;
   /* Landing sections already reserve space for their own sticky header. */
