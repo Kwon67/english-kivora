@@ -83,6 +83,42 @@ test('guided flashcard has no zero denominator and restores its phase', async ({
   await expect(page.getByRole('button', { name: 'Mostrar resposta', exact: true })).toHaveCount(0)
 })
 
+test('guided listening keeps the card visible while advancing', async ({ page, request, hasTouch }) => {
+  await request.post('/api/product-fixture', { data: { guidedListening: true } })
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  const manifest = JSON.parse(await readFile('audio/manifest.json', 'utf8')) as Record<string, { path: string }>
+  const recording = await readFile('public' + Object.values(manifest)[0].path)
+  await page.route('**/api/tts/preview?**', route => route.fulfill({ contentType: 'audio/mpeg', body: recording }))
+  await page.goto('/guided')
+
+  const input = page.getByTestId('listening-input')
+  await input.fill('How are you today?')
+  await page.getByTestId('listening-submit').click()
+  await expect(page.getByText('Você ouviu perfeitamente!')).toBeVisible()
+
+  const staysVisible = await page.getByRole('button', { name: 'Ir para a próxima' }).evaluate(async button => {
+    const panel = button.closest('.guided-review-prompt')
+    if (!(button instanceof HTMLButtonElement) || !panel) throw new Error('Missing guided review card')
+    const until = performance.now() + 400
+    let visible = true
+    button.click()
+    do {
+      await new Promise(requestAnimationFrame)
+      visible &&= panel.isConnected && getComputedStyle(panel).opacity === '1'
+    } while (performance.now() < until)
+    return visible
+  })
+
+  expect(staysVisible).toBe(true)
+  const grade = page.getByRole('button', { name: /\bBom\b/ })
+  if (hasTouch) await grade.tap()
+  else await grade.click()
+  await expect(input).toBeVisible()
+  await expect(input).toHaveValue('')
+  const state = await (await request.get('/api/product-fixture')).json()
+  expect(state.reviews).toMatchObject([{ cardId: 'card-0-0', practiceMode: 'listening', practiceOutcome: 'correct' }])
+})
+
 test('canceling a guided swipe leaves the card available for exactly one grade', async ({ page, request, browserName, hasTouch }) => {
   test.skip(browserName !== 'chromium' || !hasTouch, 'CDP touch input on a touch viewport')
   await page.goto('/guided')

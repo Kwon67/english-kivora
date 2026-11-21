@@ -33,9 +33,7 @@ import {
   reviewSoftBtn,
   reviewTile,
 } from '@/features/review/lib/reviewPageUi'
-import TransitionSlot from '@/components/motion/TransitionSlot'
 import PressButton from '@/components/motion/PressButton'
-import { useEntrance } from '@/components/motion/useEntrance'
 import { getDueCards, refreshReviewQueue, submitCardReview } from '@/app/actions'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
@@ -694,8 +692,6 @@ export default function ReviewClient({
     [handleReview]
   )
 
-  const enterAnswer = useEntrance(10)
-  const enterGrades = useEntrance(8)
   const bindSwipe = useDrag(
     ({ down, last, movement: [movementX, movementY], event, first, canceled }) => {
       if (canceled || event?.type === 'touchcancel' || event?.type === 'pointercancel') {
@@ -962,9 +958,7 @@ export default function ReviewClient({
       ) : null}
 
 	      <main className="space-y-4">
-        <TransitionSlot duration={0.18} enterY={5} ease="expo.out">
 		          <section
-		            key={`${getCardKey(activeCard)}-${reviewPhase}-${currentModeIndex}`}
 		            className={`${reviewPracticePanel} guided-review-prompt`}
 	          >
 	            <div
@@ -986,6 +980,7 @@ export default function ReviewClient({
 
               {reviewPhase === 'mode' ? (
                 <ReviewModePractice
+                  key={`${getCardKey(activeCard)}-${currentModeIndex}`}
                   mode={activeReviewMode}
                   card={activeCard.cards}
                   packCards={activePackCards}
@@ -999,6 +994,7 @@ export default function ReviewClient({
                 />
               ) : (
 	            <div
+                key={getCardKey(activeCard)}
                 {...bindSwipe()}
                 className="relative flex min-h-0 flex-col"
                 style={{ touchAction: 'pan-y' }}
@@ -1022,7 +1018,7 @@ export default function ReviewClient({
                 </div>
 
                 {showAnswer ? (
-                  <div ref={enterAnswer}
+                  <div
                     data-review-selectable
                     className={`${reviewMeaningCard} guided-review-answer mt-4`}
                   >
@@ -1057,9 +1053,7 @@ export default function ReviewClient({
               </div>
 
               {showAnswer ? (
-                <div ref={enterGrades}
-                  className="mt-3 grid grid-cols-2 gap-2 border-t border-brand-dark/15 pt-3 sm:mt-4 sm:grid-cols-4 sm:gap-3 sm:pt-4"
-                >
+                <div className="mt-3 grid grid-cols-2 gap-2 border-t border-brand-dark/15 pt-3 sm:mt-4 sm:grid-cols-4 sm:gap-3 sm:pt-4">
                   {practiceNotice ? (
                     <p className="col-span-2 font-body text-xs font-semibold leading-snug text-brand-secondary sm:col-span-4">
                       {practiceNotice}
@@ -1112,7 +1106,6 @@ export default function ReviewClient({
             </div>
               )}
           </section>
-        </TransitionSlot>
       </main>
 
       {showExitConfirm ? (
