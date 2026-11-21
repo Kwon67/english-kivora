@@ -9,12 +9,17 @@ export function setupHeroMotion(container: HTMLElement) {
 
   const intro = gsap.timeline({ id: 'kivora-hero-intro', defaults: { ease: ease.reveal } })
   intro.addLabel('headline', 0)
-    .addLabel('open', .16)
-    .addLabel('invite', .38)
-    // Use the lines already typeset by the browser, even while the font loads.
+    .addLabel('open', .22)
+    .addLabel('invite', .48)
+    // The moving masks carry the lines together; the type rises through each lower edge.
+    .from(select('[data-hero-mask]'), {
+      // Give the last line less travel to keep the subtitle clear on small screens.
+      yPercent: index => index === lines.length - 1 ? 3 : 17,
+      duration: .67, stagger: .105, clearProps: 'transform',
+    }, 'headline')
     .from(lines, {
-      xPercent: -1.2, yPercent: 24, skewX: -3.5, scaleY: .94,
-      duration: .54, stagger: .085, clearProps: 'transform',
+      x: '-.08em', yPercent: 37, skewX: -4.5, scaleY: .95,
+      duration: .7, stagger: .105, clearProps: 'transform',
     }, 'headline')
     .from(select('[data-hero-keyword]'), {
       scaleX: .79, rotation: -3, skewX: -7, duration: .65,
@@ -27,7 +32,7 @@ export function setupHeroMotion(container: HTMLElement) {
       y: 10, duration: .46, clearProps: 'transform',
     }, 'open')
     .from(select('[data-hero-art]'), {
-      scale: .94, rotation: -2.5, transformOrigin: '56% 62%', duration: .77,
+      scale: .91, rotation: -3, transformOrigin: '56% 62%', duration: .84,
       clearProps: 'transform,transformOrigin',
     }, 'open')
     .from(select('[data-hero-copy] [data-action-icon] svg, [data-hero-dock] [data-action-icon] svg'), {
