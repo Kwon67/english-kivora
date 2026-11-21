@@ -457,6 +457,8 @@
   .footerExplore nav { margin-top:16px; }
   .footerBottom { flex-wrap:wrap; padding-bottom:80px; }
 }
+/* On history return the page is interactive underneath the browser's route snapshot. */
+:global(html.kivora-landing-scroll::view-transition) { pointer-events:none; }
 @media(prefers-reduced-motion:reduce) {
   .page,.page *,.page *::before,.page *::after { transition-property:none!important; animation-duration:0s!important; scroll-behavior:auto!important; }
   :global(::view-transition-group(landing)), :global(::view-transition-old(landing)), :global(::view-transition-new(landing)) { animation-duration:0s!important; }
