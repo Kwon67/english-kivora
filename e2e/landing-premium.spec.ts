@@ -72,6 +72,50 @@ test.describe('Kivora public experience', () => {
     await expect(faq).not.toHaveAttribute('open', '')
   })
 
+  test('um novo toque durante a saída do FAQ reabre a mesma resposta sem salto', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'hardwareConcurrency', { value: 8 })
+      Object.defineProperty(navigator, 'deviceMemory', { value: 8 })
+      Object.defineProperty(navigator, 'connection', { value: undefined })
+    })
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.reload()
+    const item = page.locator('#faq details').first()
+    const summary = item.locator('summary')
+    const native = await summary.elementHandle()
+    await summary.scrollIntoViewIfNeeded()
+    await expect.poll(() => native.evaluate(node => node.isConnected)).toBe(false)
+    await summary.focus()
+    await page.keyboard.press('Enter')
+    const answer = item.locator('[data-faq-answer]')
+    await expect(item).toHaveAttribute('open', '')
+    await expect(answer).not.toHaveAttribute('style', /height:|opacity:/)
+
+    const reversal = await item.evaluate(async details => {
+      const trigger = details.querySelector('summary')!
+      const answer = details.querySelector<HTMLElement>('[data-faq-answer]')!
+      trigger.click()
+      const start = performance.now()
+      while (performance.now() - start < 1200) {
+        await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+        const opacity = Number(getComputedStyle(answer).opacity)
+        if (opacity <= 0 || opacity >= 1) continue
+        const closing = trigger.getAttribute('aria-expanded')
+        const before = answer.getBoundingClientRect().height
+        trigger.click()
+        return { closing, opening: trigger.getAttribute('aria-expanded'), jump: Math.abs(answer.getBoundingClientRect().height - before) }
+      }
+      throw new Error('A resposta não apresentou um quadro intermediário de saída')
+    })
+    expect(reversal).toEqual({ closing: 'false', opening: 'true', jump: 0 })
+    await expect(answer).not.toHaveAttribute('style', /height:|opacity:/)
+    await expect(item).toHaveAttribute('open', '')
+    await expect(answer).not.toHaveAttribute('aria-hidden')
+    await expect(summary).toBeFocused()
+    await page.keyboard.press('Space')
+    await expect(item).not.toHaveAttribute('open')
+  })
+
   test('reduced motion and resize keep text and controls available', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     for (const [width, height] of [[1440,900], [834,1194], [390,844], [320,568], [844,390]]) {
