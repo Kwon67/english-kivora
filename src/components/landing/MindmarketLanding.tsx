@@ -30,7 +30,7 @@ const faqs = [
 ]
 
 function Action({ href = '/register', children, className = '', magnetic }: { href?: string; children: React.ReactNode; className?: string; magnetic?: boolean }) {
-  return <Link href={href} transitionTypes={href === '/register' ? ['kivora-auth'] : undefined} data-magnetic={magnetic ? true : undefined} className={`${styles.action} ${className}`}><span>{children}</span><span className={styles.actionIcon}><ArrowUpRight size={22} strokeWidth={1.8} aria-hidden="true" /></span></Link>
+  return <Link href={href} transitionTypes={href === '/register' ? ['kivora-auth'] : undefined} data-magnetic={magnetic ? true : undefined} className={`${styles.action} ${className}`}><span>{children}</span><span data-action-icon className={styles.actionIcon}><ArrowUpRight size={22} strokeWidth={1.8} aria-hidden="true" /></span></Link>
 }
 
 function Eyebrow({ number, children }: { number?: string; children: React.ReactNode }) {
@@ -39,7 +39,6 @@ function Eyebrow({ number, children }: { number?: string; children: React.ReactN
 
 export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<Record<'discovery' | 'memory' | 'conversation', string>> }) {
   return <JourneyMotion>
-    <LandingIntro />
     <LandingNavigation links={links} />
     <div className={styles.journey} data-ribbon-journey>
     <main id="main-content">
@@ -47,13 +46,22 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
         <section className={styles.hero} aria-labelledby="hero-title">
           <div className={styles.heroCopy} data-hero-copy>
             <Eyebrow>INGLÊS PARA A VIDA ACONTECER</Eyebrow>
-            <h1 id="hero-title"><span data-title-ink><span className={styles.titleClip}><span data-title-line>Seu inglês.</span></span>{' '}<span className={styles.titleClip}><span data-title-line>Um mundo</span></span>{' '}<span className={styles.titleClip}><span data-title-line>mais aberto.</span></span></span></h1>
-            <p className={styles.heroDescription}>Palavras viram conversas.{' '}<br />Pequenas práticas, novas possibilidades.</p>
+            <h1 id="hero-title" aria-label="Seu inglês. Um mundo mais aberto.">
+              <span data-title-ink aria-hidden="true">
+                <span data-title-line>Seu inglês.</span>{' '}
+                <span data-title-line>Um mundo</span>{' '}
+                <span data-title-line>mais <span data-hero-keyword>aberto.</span></span>
+              </span>
+            </h1>
+            <p data-hero-description className={styles.heroDescription}>Palavras viram conversas.{' '}<br />Pequenas práticas, novas possibilidades.</p>
             <Action magnetic>Começar grátis</Action>
             <p className={styles.heroNote}><span /> No seu ritmo. Do primeiro <span lang="en">hello</span> em diante.</p>
           </div>
           <div className={styles.heroVisual} data-hero-parallax data-pointer-area>
-            <div data-hero-art className={styles.heroArt}><DiscoveryScene riveSrc={riveAssets.discovery} /></div>
+            <div data-hero-art className={styles.heroArt}>
+              <DiscoveryScene riveSrc={riveAssets.discovery} />
+              <LandingIntro />
+            </div>
             <span className={`${styles.floatingWord} ${styles.hello}`} data-float lang="en"><span data-cursor>hello, world! <JourneySpark /></span></span>
             <span className={`${styles.floatingWord} ${styles.discover}`} data-float lang="en"><span data-cursor>let’s discover <ArrowUpRight size={21} aria-hidden="true" /></span></span>
           </div>
@@ -113,6 +121,6 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
       </nav>
     </div><div className={styles.footerBottom}><span>© {new Date().getFullYear()} Kivora English</span><div><Link href="/privacy" prefetch={false}>Privacidade</Link><Link href="/terms" prefetch={false}>Termos de uso</Link><Link href="/login" transitionTypes={['kivora-auth']}>Entrar</Link></div><span>Feito para quem tem curiosidade.</span></div></footer>
     </div>
-    <div className={styles.mobileDock}><Action>Começar grátis</Action></div>
+    <div className={styles.mobileDock} data-hero-dock><Action>Começar grátis</Action></div>
   </JourneyMotion>
 }

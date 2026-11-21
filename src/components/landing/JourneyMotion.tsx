@@ -51,6 +51,21 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
     const pause = () => gsap.globalTimeline.paused(document.hidden)
     document.addEventListener('visibilitychange', pause)
     pause()
+    media.add('(prefers-reduced-motion: no-preference)', () => {
+      if (document.hidden || location.hash || window.scrollY > 48) return
+
+      // These are the actual typeset lines. The browser keeps ownership of
+      // their metrics during font swaps, zoom and orientation changes.
+      const intro = gsap.timeline({ id: 'kivora-hero-intro', defaults: { ease: ease.reveal } })
+      intro.from(select('[data-title-line]'), { yPercent: 17, duration: .5, stagger: .075, clearProps: 'transform' }, 0)
+        .from(select('[data-hero-keyword]'), {
+          scaleX: .89, skewX: -5, rotation: -1.5, duration: .51, ease: 'back.out(1.35)', clearProps: 'transform',
+        }, .21)
+        .from(select('[data-hero-description]'), { y: 7, duration: .45, clearProps: 'transform' }, .16)
+        .from(select('[data-hero-copy] [data-action-icon] svg, [data-hero-dock] [data-action-icon] svg'), {
+          x: -3, y: 3, rotation: -16, duration: .36, clearProps: 'transform',
+        }, .36)
+    })
     media.add('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)', () => {
       setSmooth(true)
       // Each layer owns one transform. Travel, floating and pointer response
@@ -65,7 +80,7 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
           shine.setAttribute('aria-hidden', 'true')
           area.append(shine)
         }
-        const targets = isCard || magnet ? [area] : Array.from(area.querySelectorAll('[data-cursor]'))
+        const targets = isCard ? [area] : Array.from(area.querySelectorAll(magnet ? '[data-action-icon]' : '[data-cursor]'))
         const axes = targets.map((el, i) => ({
           x: gsap.quickTo(el, isCard ? 'rotationY' : 'x', { duration: .42, ease: ease.out }),
           y: gsap.quickTo(el, isCard ? 'rotationX' : 'y', { duration: .42, ease: ease.out }),
@@ -145,7 +160,7 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
           })
         }
       }, { rootMargin: '240px' })
-      for (const heading of select('main h1, main h2')) titles.observe(heading)
+      for (const heading of select('main h2:not(#memory-title)')) titles.observe(heading)
       for (const scene of select('[data-art-scene]')) {
         gsap.from(scene, { y: 32, scale: .97, duration: 1, ease: ease.reveal, scrollTrigger: { trigger: scene, start: 'top 96%', once: true } })
         const illustration = scene.querySelector('[data-art-motion="illustration"]')
@@ -160,10 +175,14 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
         loop(element, gsap.to(element, spin ? { rotation: 360, repeat: -1, duration: 32, ease: ease.linear } :
           { y: -8, rotation: 2, duration: duration.float, ease: ease.loop, repeat: -1, yoyo: true }))
       }
-      for (const plant of select('[data-plant]')) gsap.from(plant, {
-        scale: .62, transformOrigin: '62% 74%', ease: ease.linear,
-        scrollTrigger: { trigger: '#revisoes', start: 'top 70%', end: 'bottom 65%', scrub: true },
-      })
+      const memory = container.querySelector('#revisoes')
+      if (memory) {
+        const growth = gsap.timeline({ defaults: { ease: ease.linear }, scrollTrigger: {
+          id: 'kivora-memory-growth', trigger: memory, start: 'top 78%', end: 'bottom 65%', scrub: true,
+        } })
+        growth.from(memory.querySelector('[data-plant]'), { scale: .62, rotation: -4, transformOrigin: '62% 74%', duration: .74 }, 0)
+          .fromTo(memory.querySelector('[data-mark]'), { '--paint': 0 }, { '--paint': 1, duration: .48 }, .52)
+      }
       const message = container.querySelector('[data-type]')
       if (message) {
         const text = SplitText.create(message, { type: 'chars', aria: 'auto', tag: 'span' })

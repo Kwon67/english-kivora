@@ -1,7 +1,7 @@
 .intro { display:none; }
 .intro[data-intro] {
-  position:fixed; inset:0; z-index:150; display:grid; place-items:center;
-  pointer-events:none; background:#8ed462; color:#2c2e2a;
+  position:absolute; inset:4% 1%; z-index:1; display:grid; place-items:center;
+  pointer-events:none; border-radius:50%; background:#8ed462; color:#2c2e2a;
   animation:intro-open 390ms 1050ms cubic-bezier(.65,0,.22,1) both;
 }
 .intro[data-intro="opening"] { animation:intro-ready 390ms cubic-bezier(.65,0,.22,1) both; }
@@ -12,8 +12,8 @@
   animation:intro-type 420ms steps(6,end) both;
 }
 @keyframes intro-type { from { clip-path:inset(0 100% 0 0); } to { clip-path:inset(0); } }
-@keyframes intro-open { to { transform:translateY(-101%); visibility:hidden; } }
-@keyframes intro-ready { to { transform:translateY(-101%); visibility:hidden; } }
+@keyframes intro-open { to { opacity:0; transform:scale(.94); visibility:hidden; } }
+@keyframes intro-ready { to { opacity:0; transform:scale(.94); visibility:hidden; } }
 
 .pointer { display:none; }
 @media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
