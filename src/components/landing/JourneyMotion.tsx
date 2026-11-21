@@ -36,6 +36,13 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
   const [smooth, setSmooth] = useState(false)
   const lite = useLandingLite()
 
+  // The short headline sequence does not require the full scrolling or Rive runtime.
+  useGSAP(() => {
+    const media = gsap.matchMedia()
+    media.add('(prefers-reduced-motion: no-preference)', () => setupHeroMotion(root.current!))
+    return () => media.revert()
+  }, { scope: root })
+
   useGSAP(() => {
     if (!signed) {
       signed = true
@@ -53,11 +60,6 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
     const pause = () => gsap.globalTimeline.paused(document.hidden)
     document.addEventListener('visibilitychange', pause)
     pause()
-    media.add('(prefers-reduced-motion: no-preference)', () => {
-      if (document.hidden || location.hash || window.scrollY > 48) return
-
-      return setupHeroMotion(container)
-    })
     media.add('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)', () => {
       setSmooth(true)
       // Each layer owns one transform. Travel, floating and pointer response

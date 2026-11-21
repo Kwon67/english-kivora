@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import SpotIllustration from '@/components/illustrations/SpotIllustration'
-import { ArrowDown, ArrowRight, ArrowUpRight, Check } from 'lucide-react'
+import { ArrowDown, ArrowRight, ArrowUpRight, Check, RotateCcw } from 'lucide-react'
 import LandingFAQ from './LandingFAQ'
 import LandingNavigation from './LandingNavigation'
 import LandingWordmark from './LandingWordmark'
@@ -48,6 +48,7 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
         <section className={styles.hero} aria-labelledby="hero-title">
           <div className={styles.heroCopy} data-hero-copy>
             <Eyebrow>INGLÊS PARA A VIDA ACONTECER</Eyebrow>
+            <button hidden type="button" data-replay-title className={heroStyles.replay} aria-label="Rever animação do título" title="Rever animação do título"><RotateCcw size={16} aria-hidden="true" /></button>
             <h1 id="hero-title" className={heroStyles.headline} aria-label="Seu inglês. Um mundo mais aberto.">
               <span data-title-ink aria-hidden="true">
                 <span data-title-line>Seu inglês.</span>{' '}

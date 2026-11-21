@@ -17,3 +17,16 @@
   pointer-events: none;
   transform-origin: left center;
 }
+
+.replay {
+  position: absolute;
+  inset-inline-end: 0;
+  top: -12px;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: inherit;
+}
+.replay:not([hidden]) { display: inline-flex; }

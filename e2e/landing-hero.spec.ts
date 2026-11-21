@@ -176,3 +176,28 @@ test('a cena de memória responde ao scroll depois de sair, voltar e avançar', 
     await expect(target).toHaveCSS('transform', 'none')
   }
 })
+
+test('o título espera pela aba visível e aceita replay no modo leve', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'hardwareConcurrency', { value: 2 })
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => true })
+  })
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto('/#hero-title')
+  const letters = page.locator('[data-hero-letters] > span')
+  const replay = page.getByRole('button', { name: 'Rever animação do título' })
+  await expect(replay).toBeVisible()
+  await expect(letters).toHaveCount(0)
+  await page.evaluate(() => {
+    Reflect.deleteProperty(document, 'hidden')
+    document.dispatchEvent(new Event('visibilitychange'))
+  })
+  await expect(letters.first()).toBeAttached()
+  await expect(letters).toHaveCount(0)
+  await replay.click()
+  await expect(letters.first()).toBeAttached()
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await expect(replay).toBeHidden()
+  await expect(letters).toHaveCount(0)
+  await checkHeading(page)
+})

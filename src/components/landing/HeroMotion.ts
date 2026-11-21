@@ -1,7 +1,6 @@
 import { gsap, SplitText } from '@/lib/gsap'
 
-/** Runs inside JourneyMotion's scoped, reduced-motion-aware GSAP context. */
-export function setupHeroMotion(container: HTMLElement) {
+function animateHeadline(container: HTMLElement) {
   const select = gsap.utils.selector(container)
   const lines = select('#hero-title [data-title-line]')
   const letters = select('[data-hero-letters]')[0]
@@ -43,11 +42,46 @@ export function setupHeroMotion(container: HTMLElement) {
       x: -4, y: 4, duration: .36,
     }, .79)
 
+  return intro
+}
+
+export function setupHeroMotion(container: HTMLElement) {
+  const title = container.querySelector('#hero-title')
+  const replay = container.querySelector<HTMLButtonElement>('[data-replay-title]')
+  if (!title || !replay) return
   const welcome = container.querySelector<HTMLElement>('#kivora-intro')
-  if (welcome?.dataset.intro) {
-    intro.pause(0)
-    const play = () => { intro.play() }
-    welcome.addEventListener('kivora-intro-finished', play, { once: true })
-    return () => welcome.removeEventListener('kivora-intro-finished', play)
+  let visible = false
+  let playback: gsap.Context | undefined
+  let timeline: gsap.core.Timeline | undefined
+
+  function play() {
+    playback?.revert()
+    playback = gsap.context(() => { timeline = animateHeadline(container) }, container)
+  }
+  function sync() {
+    if (document.hidden || !visible || welcome?.dataset.intro) {
+      timeline?.pause()
+    } else if (timeline) {
+      timeline.resume()
+    } else {
+      play()
+    }
+  }
+  const observer = new IntersectionObserver(([entry]) => {
+    visible = entry.isIntersecting
+    sync()
+  })
+  observer.observe(title)
+  welcome?.addEventListener('kivora-intro-finished', sync)
+  document.addEventListener('visibilitychange', sync)
+  replay.addEventListener('click', play)
+  replay.hidden = false
+  return () => {
+    observer.disconnect()
+    welcome?.removeEventListener('kivora-intro-finished', sync)
+    document.removeEventListener('visibilitychange', sync)
+    replay.removeEventListener('click', play)
+    replay.hidden = true
+    playback?.revert()
   }
 }
