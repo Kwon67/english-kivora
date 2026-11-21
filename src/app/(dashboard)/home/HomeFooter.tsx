@@ -1,6 +1,6 @@
 'use client'
 
-import { m } from 'motion/react'
+import gsap from 'gsap'
 import Link from 'next/link'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import {
@@ -72,11 +72,21 @@ const highlightLinks = [
 
 const frostedFooterClass = `${homeCardClass} home-frosted-surface home-frosted-surface-soft`
 
-const footerMotion = {
-  initial: { opacity: 0, y: 15 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, amount: 0.15 },
-  transition: { duration: 0.6, ease: 'easeOut' as const },
+function revealFooter(element: HTMLElement | null) {
+  if (!element) return
+  const media = gsap.matchMedia()
+  media.add('(prefers-reduced-motion: no-preference)', () => {
+    const tween = gsap.from(element, { opacity: 0, y: 15, duration: 0.6, ease: 'power2.out', paused: true })
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.intersectionRatio >= 0.15) {
+        observer.disconnect()
+        tween.play()
+      }
+    }, { threshold: 0.15 })
+    observer.observe(element)
+    return () => observer.disconnect()
+  })
+  return () => media.revert()
 }
 
 export default function HomeFooter() {
@@ -86,8 +96,7 @@ export default function HomeFooter() {
     <>
       <div className="relative mt-6 sm:hidden">
         <HomeGlassBackdrop />
-        <m.footer
-          {...footerMotion}
+        <footer ref={revealFooter}
           className={`home-footer-motion content-visibility-section render-contained relative z-10 overflow-hidden ${frostedFooterClass}`}
         >
           <div className="p-5">
@@ -140,13 +149,12 @@ export default function HomeFooter() {
               Conta
             </Link>
           </div>
-        </m.footer>
+        </footer>
       </div>
 
       <div className="relative mt-10 hidden max-w-full sm:mt-12 sm:block">
         <HomeGlassBackdrop />
-        <m.footer
-          {...footerMotion}
+        <footer ref={revealFooter}
           className={`home-footer-motion content-visibility-section render-contained relative z-10 max-w-full overflow-hidden p-6 sm:p-8 lg:p-10 ${frostedFooterClass}`}
         >
         <div className="min-w-0">
@@ -210,7 +218,7 @@ export default function HomeFooter() {
             </p>
           </div>
         </div>
-        </m.footer>
+        </footer>
       </div>
     </>
   )

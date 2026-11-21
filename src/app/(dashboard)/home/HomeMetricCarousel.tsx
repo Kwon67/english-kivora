@@ -1,7 +1,7 @@
 'use client'
 
-import { m } from 'motion/react'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useFlipSelection } from '@/components/motion/useFlipSelection'
+import { useEffect, useRef, type ReactNode } from 'react'
 
 interface HomeMetricCarouselProps {
   count: number
@@ -10,7 +10,7 @@ interface HomeMetricCarouselProps {
 
 export default function HomeMetricCarousel({ count, children }: HomeMetricCarouselProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [activeIndex, setActiveIndex] = useState(0)
+  const { index: activeIndex, select, indicator, id } = useFlipSelection(0, 0.38, 'back.out(0.28)')
 
   useEffect(() => {
     const container = containerRef.current
@@ -24,13 +24,13 @@ export default function HomeMetricCarousel({ count, children }: HomeMetricCarous
         if (visible.length === 0) return
         const mostVisible = visible.reduce((a, b) => (a.intersectionRatio > b.intersectionRatio ? a : b))
         const index = cards.indexOf(mostVisible.target as HTMLElement)
-        if (index !== -1) setActiveIndex(index)
+        if (index !== -1) select(index)
       },
       { root: container, threshold: [0.5, 0.75, 1] }
     )
     cards.forEach((card) => observer.observe(card))
     return () => observer.disconnect()
-  }, [count])
+  }, [count, select])
 
   return (
     <div>
@@ -50,10 +50,8 @@ export default function HomeMetricCarousel({ count, children }: HomeMetricCarous
         {Array.from({ length: count }).map((_, index) => (
           <span key={index} aria-hidden="true" className="relative h-1.5 w-5 overflow-hidden rounded-full bg-brand-border">
             {index === activeIndex ? (
-              <m.span
-                layoutId="home-carousel-active-dot"
+              <span ref={indicator} data-flip-id={id}
                 className="absolute inset-0 rounded-full bg-brand-dark"
-                transition={{ type: 'spring', stiffness: 420, damping: 32 }}
               />
             ) : null}
           </span>
