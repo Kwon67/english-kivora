@@ -5,7 +5,9 @@ import { playLandingSound } from './landingSound'
 function entrance(trigger: Element, id: string, start = 'top 86%') {
   return gsap.timeline({
     defaults: { duration: .54, ease: ease.reveal },
-    scrollTrigger: { id, trigger, start, once: true },
+    // Keep passed triggers in the media context until teardown. Removing them
+    // mid-refresh can invalidate ScrollTrigger's traversal on anchored loads.
+    scrollTrigger: { id, trigger, start, toggleActions: 'play none none none' },
   })
 }
 

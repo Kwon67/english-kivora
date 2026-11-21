@@ -64,6 +64,33 @@ test('movimento reduzido preserva teclado e FAQ nativos', async ({ page }) => {
   await expect(item).not.toHaveAttribute('open', '')
 })
 
+test('reativar animações numa visita direta ao FAQ mantém a página utilizável', async ({ page }) => {
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
+  // The shared setup visits /. Force a new document at the anchor for hydration.
+  await page.goto('/#faq')
+  await page.reload()
+  const faq = page.locator('#faq')
+  const paint = () => page.evaluate(() =>
+    document.querySelector<HTMLElement>('#memory-title [data-mark]')?.style.getPropertyValue('--paint'))
+  await expect(faq).toBeInViewport()
+  await expect.poll(paint).toBe('1')
+  // The ranking sits above the FAQ. Wait for its entry to settle before toggling.
+  await expect(page.locator('[data-ranking] li').last()).toHaveCSS('transform', 'none')
+  for (let toggle = 0; toggle < 2; toggle++) {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await expect.poll(paint).toBe('')
+    await page.evaluate(() => new Promise<void>(done => requestAnimationFrame(() => requestAnimationFrame(() => done()))))
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await expect.poll(async () => ({ paint: await paint(), errors })).toEqual({ paint: '1', errors: [] })
+  }
+  const item = faq.locator('details').first()
+  await item.locator('summary').focus()
+  await page.keyboard.press('Enter')
+  await expect(item).toHaveAttribute('open', '')
+  expect(errors).toEqual([])
+})
+
 test('títulos mantêm suas linhas ao recarregar e rolar no celular', async ({ page, hasTouch }) => {
   test.skip(!hasTouch, 'O efeito por linha pertence aos dispositivos com ponteiro fino.')
   const ids = ['practice-title', 'blitz-title', 'pricing-title', 'faq-title']

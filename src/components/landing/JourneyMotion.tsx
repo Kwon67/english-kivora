@@ -109,7 +109,7 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
       }
       document.addEventListener('visibilitychange', sync)
       for (const scene of select('[data-art-scene]')) {
-        gsap.from(scene, { y: 32, scale: .97, duration: 1, ease: ease.reveal, scrollTrigger: { trigger: scene, start: 'top 96%', once: true } })
+        gsap.from(scene, { y: 32, scale: .97, duration: 1, ease: ease.reveal, scrollTrigger: { trigger: scene, start: 'top 96%', toggleActions: 'play none none none' } })
         const illustration = scene.querySelector('[data-art-motion="illustration"]')
         loop(scene, gsap.to(illustration, { y: -7, rotation: .35, duration: duration.illustration, ease: ease.loop, repeat: -1, yoyo: true }))
       }
