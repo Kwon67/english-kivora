@@ -61,9 +61,9 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
         <filter id="landing-print-colors" colorInterpolationFilters="sRGB">
           <feColorMatrix type="saturate" values="0" />
           <feComponentTransfer>
-            <feFuncR type="table" tableValues="0.1216 0.2667 0.6667 0.9647 1.0000" />
-            <feFuncG type="table" tableValues="0.0118 0.1412 0.8902 0.9412 0.9961" />
-            <feFuncB type="table" tableValues="0.0627 0.2000 0.6706 0.7373 0.9725" />
+            <feFuncR type="table" tableValues="0.0980 0.1255 0.6784 0.9176 1.0000" />
+            <feFuncG type="table" tableValues="0.2196 0.3059 0.5569 0.8627 0.9961" />
+            <feFuncB type="table" tableValues="0.2627 0.3294 0.4549 0.7804 0.9725" />
           </feComponentTransfer>
         </filter>
       </defs>

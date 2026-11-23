@@ -1,11 +1,11 @@
 {
   "colors": [
     "000000",
-    "1f0310",
-    "442433",
-    "a3d95b",
-    "aae3ab",
-    "f6f0bc",
+    "193843",
+    "204e54",
+    "904c37",
+    "d6e2df",
+    "eadcc7",
     "f5f4eb",
     "fffef8",
     "ffffff",
@@ -36,6 +36,6 @@
     "/images/journey-2026/memory-illustrated.riv": "ecf61501fc4a1cc285d7158bceb8a63805ca7d3ee53454669aaf044abf5d1cac",
     "/images/journey-2026/conversation-illustrated.riv": "d7d373fc4bbc407786ce27e425674f9d4c10ccd223c3ee895741d36201729fba",
     "/images/journey-details/sunflower-grounded.webp": "31659f03b7d315eeb5ccad94b11eea1c4c698d9390660df8599edb479c9d4487",
-    "/images/hero/tram-book.674d5188a187.svg": "674d5188a1870f3e886c942eb3538d467e5fac383d653d7b9c1fbcf41f4104f8"
+    "/images/hero/tram-book.180672e541e3.svg": "180672e541e30b858ae2a5cfce090ad6e502ec3f64c01fa173a2833208e4e05a"
   }
 }
