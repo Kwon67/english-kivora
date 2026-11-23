@@ -1,7 +1,6 @@
 'use client'
 
 import { useLayoutEffect, useRef } from 'react'
-import LandingWordmark from './LandingWordmark'
 import { isLandingLite } from './useLandingLite'
 import styles from './LandingPolish.module.css'
 
@@ -20,41 +19,31 @@ export default function LandingIntro() {
     greeted = true
     startedHere.current = true
 
-    overlay.dataset.intro = 'waiting'
     const finish = () => {
+      if (!overlay.dataset.intro) return
       delete overlay.dataset.intro
       overlay.dispatchEvent(new Event('kivora-intro-finished'))
     }
-    const open = () => {
-      overlay.dataset.intro = 'opening'
-      overlay.dispatchEvent(new Event('kivora-intro-opening'))
-    }
-    const deadline = window.setTimeout(open, 2200)
-    const skip = () => {
-      window.clearTimeout(deadline)
-      finish()
-    }
-    const onVisibility = () => { if (document.hidden) skip() }
+    const onVisibility = () => { if (document.hidden) finish() }
     const onEnd = (event: AnimationEvent) => {
       if (event.target === overlay) finish()
     }
     overlay.addEventListener('animationend', onEnd)
-    window.addEventListener('pointerdown', skip, { once: true, passive: true })
-    window.addEventListener('keydown', skip, { once: true })
+    window.addEventListener('pointerdown', finish, { once: true, passive: true })
+    window.addEventListener('keydown', finish, { once: true })
     document.addEventListener('visibilitychange', onVisibility)
-    reduced.addEventListener('change', skip)
+    reduced.addEventListener('change', finish)
+    overlay.dataset.intro = 'opening'
+    overlay.dispatchEvent(new Event('kivora-intro-opening'))
     return () => {
-      window.clearTimeout(deadline)
       overlay.removeEventListener('animationend', onEnd)
-      window.removeEventListener('pointerdown', skip)
-      window.removeEventListener('keydown', skip)
+      window.removeEventListener('pointerdown', finish)
+      window.removeEventListener('keydown', finish)
       document.removeEventListener('visibilitychange', onVisibility)
-      reduced.removeEventListener('change', skip)
+      reduced.removeEventListener('change', finish)
       delete overlay.dataset.intro
     }
   }, [])
 
-  return <div ref={intro} id="kivora-intro" className={styles.intro} aria-hidden="true">
-    <div className={styles.introBrand}><LandingWordmark /><span className={styles.introHello} lang="en">hello.</span></div>
-  </div>
+  return <div ref={intro} id="kivora-intro" className={styles.intro} aria-hidden="true" />
 }

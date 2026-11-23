@@ -40,12 +40,12 @@ function Eyebrow({ number, children }: { number?: string; children: React.ReactN
 
 export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<Record<'discovery' | 'memory' | 'conversation', string>> }) {
   return <JourneyMotion>
-    <LandingIntro />
     <LandingNavigation links={links} />
     <div className={styles.journey} data-ribbon-journey>
     <main id="main-content">
       <JourneyRibbon />
         <section className={styles.hero} aria-labelledby="hero-title">
+          <LandingIntro />
           <div className={styles.heroCopy} data-hero-copy>
             <Eyebrow>INGLÊS PARA A VIDA ACONTECER</Eyebrow>
             <h1 id="hero-title" className={heroStyles.headline} aria-label="Seu inglês. Um mundo mais aberto.">

@@ -1,17 +1,17 @@
-.intro { display:none; }
-.intro[data-intro] {
-  position:fixed; inset:0; z-index:1000; display:grid; place-items:center;
-  pointer-events:none; background:#8ed462; color:#2c2e2a;
+.intro {
+  /* The hero stacks its background at -2 and its content above this layer. */
+  position:absolute; inset:0 calc((100vw - 100%) / -2); z-index:-1;
+  pointer-events:none; background:var(--paper); opacity:0; visibility:hidden;
+  transform-origin:top;
 }
-.intro[data-intro="opening"] { animation:intro-ready 480ms cubic-bezier(.65,0,.22,1) both; }
-.introBrand { display:grid; justify-items:center; gap:16px; transform:scale(1.7); }
-.introHello {
-  width:48px; overflow:hidden; white-space:nowrap;
-  font:500 13px/1.45 var(--font-kivora-mono),monospace;
-  animation:intro-type 420ms steps(6,end) both;
+@media (prefers-reduced-motion:no-preference) {
+  .intro[data-intro="opening"] { visibility:visible; animation:intro-ready 480ms cubic-bezier(.65,0,.22,1) both; }
 }
-@keyframes intro-type { from { clip-path:inset(0 100% 0 0); } to { clip-path:inset(0); } }
-@keyframes intro-ready { to { opacity:0; visibility:hidden; } }
+@keyframes intro-ready {
+  from { opacity:0; transform:scaleY(1); }
+  30% { opacity:.24; }
+  to { opacity:0; transform:scaleY(0); }
+}
 
 .pointer { display:none; }
 @media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
@@ -32,4 +32,3 @@
   .pointer[data-edge-y]::after { top:auto; bottom:15px; }
   @keyframes cursor-label { from { opacity:0; transform:scale(.9); } }
 }
-@media (prefers-reduced-motion:reduce) { .intro[data-intro] { display:none; } }

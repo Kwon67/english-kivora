@@ -18,23 +18,47 @@ test('SEO and brand assets respond without login while protected pages still red
   expect(new URL(protectedPage.headers().location, baseURL).pathname).toBe('/login')
 })
 
-test('the brand intro covers the viewport, reveals the landing and replays on reload', async ({ page }) => {
+test('the hero stays visible while the curtain opens after delayed hydration', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'hardwareConcurrency', { value: 8 })
     Object.defineProperty(navigator, 'deviceMemory', { value: 8 })
     Object.defineProperty(navigator, 'connection', { value: undefined })
   })
   await page.emulateMedia({ reducedMotion: 'no-preference' })
-  await page.goto('/', { waitUntil: 'commit' })
+  const chunks = Promise.withResolvers<void>()
+  await page.route('**/_next/static/**/*.js', async route => {
+    await chunks.promise
+    await route.continue()
+  })
   const intro = page.locator('#kivora-intro')
-  await expect(intro).toHaveAttribute('data-intro', /waiting|opening/)
-  expect(await intro.boundingBox()).toEqual({ x: 0, y: 0, ...page.viewportSize() })
-  await expect(intro).toBeHidden({ timeout: 4000 })
-  await page.reload()
-  await expect(intro).toHaveAttribute('data-intro', 'waiting')
-  await page.keyboard.press('Escape')
-  await expect(intro).toBeHidden()
-  await expect(intro).not.toHaveAttribute('data-intro')
+  const title = page.getByRole('heading', { level: 1 })
+  type IntroProbe = HTMLDivElement & { opening?: Promise<{ opacity: string; behindHero: boolean; pointerEvents: string }> }
+  try {
+    await page.goto('/', { waitUntil: 'commit' })
+    await expect(title).toBeVisible()
+    await expect(intro).toBeHidden()
+    await expect(intro).toHaveCSS('opacity', '0')
+    await intro.evaluate(element => {
+      const node = element as IntroProbe
+      node.opening = new Promise(resolve => {
+        node.addEventListener('kivora-intro-opening', () => {
+          const hero = document.querySelector('#hero-title')!.closest('section')!
+          const style = getComputedStyle(node)
+          resolve({
+            opacity: style.opacity,
+            behindHero: node.parentElement === hero && getComputedStyle(hero).isolation === 'isolate' && style.zIndex === '-1',
+            pointerEvents: style.pointerEvents,
+          })
+        }, { once: true })
+      })
+    })
+  } finally {
+    chunks.resolve()
+  }
+  expect(await intro.evaluate(node => (node as IntroProbe).opening, undefined, { timeout: 5000 }))
+    .toEqual({ opacity: '0', behindHero: true, pointerEvents: 'none' })
+  await expect(intro).toBeHidden({ timeout: 1500 })
+  await expect(title).toBeVisible()
 })
 
 test('saveData selects the lightweight version and preserves the demo', async ({ page }) => {
