@@ -2170,7 +2170,7 @@ html.kivora-landing-scroll {
 
 @media (prefers-reduced-motion:no-preference) {
   html:not(.kivora-landing-lite)::view-transition-group(.kivora-auth-exit) {
-    background:#8ed462;
+    background:#f5f4eb;
     animation:kivora-auth-curtain 470ms cubic-bezier(.65,0,.24,1) both;
   }
   html:not(.kivora-landing-lite)::view-transition-old(.kivora-auth-exit) {

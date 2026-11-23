@@ -36,6 +36,12 @@ for (const [width, height] of [[390, 844], [768, 1024], [1440, 900]]) {
     })
 
     test('paleta e ilustrações', async ({ page }) => {
+      const cream = 'rgb(245, 244, 235)'
+      await expect(page.locator('body')).toHaveCSS('background-color', cream)
+      const hero = page.getByRole('region', { name: 'Seu inglês. Um mundo mais aberto.' })
+      expect(await hero.evaluate(el => getComputedStyle(el, '::before').backgroundColor)).toBe(cream)
+      await expect(hero.getByRole('link', { name: 'Começar grátis' })).toHaveCSS('background-color', 'rgb(163, 217, 91)')
+      await expect(page.locator('footer')).toHaveCSS('background-color', cream)
       const violations = new Set<string>()
       await visitPaintStates(page, samples => samples.forEach(sample => {
         if (!allowed(sample.color)) violations.add(`#${sample.color} · ${sample.property} · ${sample.element}`)

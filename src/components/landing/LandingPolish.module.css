@@ -17,3 +17,5 @@
   .pointer[data-edge-y]::after { top:auto; bottom:15px; }
   @keyframes cursor-label { from { opacity:0; transform:scale(.9); } }
 }
+
+body:has([data-ribbon-journey]) .pointer { --ink:#1f0310; --green:#a3d95b; }
