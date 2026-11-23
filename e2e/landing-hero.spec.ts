@@ -152,6 +152,20 @@ test('o CTA aceita o primeiro toque ou clique durante a entrada', async ({ page,
   await expect(page).toHaveURL(/\/register$/)
 })
 
+test('Começar grátis abre o formulário sem a cortina de autenticação', async ({ page }) => {
+  await page.addInitScript(() => {
+    document.addEventListener('animationstart', event => {
+      if (event.animationName.startsWith('kivora-auth-')) document.documentElement.dataset.authCurtain = event.animationName
+    })
+  })
+  await page.goto('/')
+  await primaryLink(page).click()
+  await expect(page).toHaveURL(/\/register$/)
+  await expect(page.locator('form').first()).toBeVisible()
+  await page.waitForTimeout(500)
+  await expect(page.locator('html')).not.toHaveAttribute('data-auth-curtain', /.+/)
+})
+
 test('cada linha cabe com a fonte de fallback e após carregar a fonte da página', async ({ page, isMobile }, testInfo) => {
   const fonts = Promise.withResolvers<void>()
   let requested = 0

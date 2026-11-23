@@ -38,7 +38,7 @@ const faqs = [
 ]
 
 function Action({ href = '/register', children, className = '', magnetic }: { href?: string; children: React.ReactNode; className?: string; magnetic?: boolean }) {
-  return <Link href={href} transitionTypes={href === '/register' ? ['kivora-auth'] : undefined} data-magnetic={magnetic ? true : undefined} className={`${styles.action} ${className}`}><span>{children}</span><span data-action-icon className={styles.actionIcon}><ArrowUpRight size={22} strokeWidth={1.8} aria-hidden="true" /></span></Link>
+  return <Link href={href} data-magnetic={magnetic ? true : undefined} className={`${styles.action} ${className}`}><span>{children}</span><span data-action-icon className={styles.actionIcon}><ArrowUpRight size={22} strokeWidth={1.8} aria-hidden="true" /></span></Link>
 }
 
 function Eyebrow({ number, children }: { number?: string; children: React.ReactNode }) {
@@ -77,9 +77,12 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
             </div>
           </div>
           <figure className={styles.heroVisual} data-hero-art>
-            <div className={styles.meridians} aria-hidden="true" />
-            <span className={styles.glint} data-hero-glint aria-hidden="true" />
-            <figcaption className={styles.cardStage}><HeroFlashcard /></figcaption>
+            <div className={styles.travelBook} aria-hidden="true" />
+            <svg className={styles.speech} data-hero-glint aria-hidden="true" viewBox="0 0 62 46" fill="none">
+              <path d="M18 4h28c9 0 13 7 13 15s-5 15-14 15H29L15 43l2-10C7 32 3 27 3 18S9 4 18 4Z" fill="var(--paper)" stroke="currentColor" strokeWidth="2.4" />
+              <path d="M18 19h3m8 0h3m8 0h3" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+            </svg>
+            <figcaption className={styles.cardStage} data-hero-card-stage><HeroFlashcard /></figcaption>
           </figure>
         </section>
 

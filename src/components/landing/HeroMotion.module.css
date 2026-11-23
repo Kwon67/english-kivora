@@ -24,7 +24,7 @@
   right: .22em;
   bottom: -.09em;
   height: .13em;
-  border-top: .045em solid var(--ink);
+  border-top: .045em solid var(--coral);
   border-radius: 80% 40% 0 0;
   pointer-events: none;
 }

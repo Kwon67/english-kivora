@@ -39,6 +39,9 @@ export function setupHeroMotion(container: HTMLElement) {
             y: 8, opacity: .65, duration: .72,
             ease: 'power3.out', clearProps: 'transform,opacity',
           }, .22)
+          .from(select('[data-hero-card-stage]'), {
+            y: 6, opacity: .78, duration: .44, ease: 'power2.out', clearProps: 'transform,opacity',
+          }, .38)
           .from(select('[data-hero-copy] [data-action-icon] svg, [data-hero-dock] [data-action-icon] svg'), {
             x: -4, y: 4, duration: .36, ease: 'power3.out', clearProps: 'transform',
           }, .79)
