@@ -10,7 +10,6 @@ import styles from './MindmarketLanding.module.css'
 import heroStyles from './HeroMotion.module.css'
 import JourneyRibbon from './JourneyRibbon'
 import JourneyMotion from './JourneyMotion'
-import LandingIntro from './LandingIntro'
 import { ConversationScene, DiscoveryScene, JourneyMotif, JourneySpark, MemoryScene } from './JourneyArt'
 
 const links = [
@@ -45,7 +44,6 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
     <main id="main-content">
       <JourneyRibbon />
         <section className={styles.hero} aria-labelledby="hero-title">
-          <LandingIntro />
           <div className={styles.heroCopy} data-hero-copy>
             <Eyebrow>INGLÊS PARA A VIDA ACONTECER</Eyebrow>
             <h1 id="hero-title" className={heroStyles.headline} aria-label="Seu inglês. Um mundo mais aberto.">

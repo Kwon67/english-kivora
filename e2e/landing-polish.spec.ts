@@ -18,46 +18,37 @@ test('SEO and brand assets respond without login while protected pages still red
   expect(new URL(protectedPage.headers().location, baseURL).pathname).toBe('/login')
 })
 
-test('the hero stays visible while the curtain opens after delayed hydration', async ({ page }) => {
-  await page.addInitScript(() => {
-    Object.defineProperty(navigator, 'hardwareConcurrency', { value: 8 })
-    Object.defineProperty(navigator, 'deviceMemory', { value: 8 })
-    Object.defineProperty(navigator, 'connection', { value: undefined })
-  })
+test('the hero has no intro layer before or after delayed hydration', async ({ page }) => {
+  const overlaySelector = '#kivora-intro, section[aria-labelledby="hero-title"] > :not([data-hero-copy], [data-hero-parallax], a[href="#seu-caminho"])'
+  await page.addInitScript(selector => {
+    function checkFrame() {
+      if (document.querySelector(selector)) {
+        document.documentElement.setAttribute('data-test-hero-overlay', '')
+        return
+      }
+      requestAnimationFrame(checkFrame)
+    }
+    requestAnimationFrame(checkFrame)
+  }, overlaySelector)
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   const chunks = Promise.withResolvers<void>()
   await page.route('**/_next/static/**/*.js', async route => {
     await chunks.promise
     await route.continue()
   })
-  const intro = page.locator('#kivora-intro')
+  const html = page.locator('html')
   const title = page.getByRole('heading', { level: 1 })
-  type IntroProbe = HTMLDivElement & { opening?: Promise<{ opacity: string; behindHero: boolean; pointerEvents: string }> }
   try {
     await page.goto('/', { waitUntil: 'commit' })
     await expect(title).toBeVisible()
-    await expect(intro).toBeHidden()
-    await expect(intro).toHaveCSS('opacity', '0')
-    await intro.evaluate(element => {
-      const node = element as IntroProbe
-      node.opening = new Promise(resolve => {
-        node.addEventListener('kivora-intro-opening', () => {
-          const hero = document.querySelector('#hero-title')!.closest('section')!
-          const style = getComputedStyle(node)
-          resolve({
-            opacity: style.opacity,
-            behindHero: node.parentElement === hero && getComputedStyle(hero).isolation === 'isolate' && style.zIndex === '-1',
-            pointerEvents: style.pointerEvents,
-          })
-        }, { once: true })
-      })
-    })
+    await expect(page.locator(overlaySelector)).toHaveCount(0)
   } finally {
     chunks.resolve()
   }
-  expect(await intro.evaluate(node => (node as IntroProbe).opening, undefined, { timeout: 5000 }))
-    .toEqual({ opacity: '0', behindHero: true, pointerEvents: 'none' })
-  await expect(intro).toBeHidden({ timeout: 1500 })
+  await expect(html).toHaveClass(/kivora-landing-scroll/)
+  // Observe the entire startup window, including any animation removed before this assertion.
+  await page.waitForTimeout(3000)
+  await expect(page.locator('html[data-test-hero-overlay]')).toHaveCount(0)
   await expect(title).toBeVisible()
 })
 
@@ -67,7 +58,7 @@ test('saveData selects the lightweight version and preserves the demo', async ({
   })
   await page.goto('/')
   await expect(page.locator('html')).toHaveClass(/kivora-landing-lite/)
-  await expect(page.locator('#kivora-intro')).toBeHidden()
+  await expect(page.locator('#kivora-intro')).toHaveCount(0)
   await expect(page.locator('[data-art-scene] canvas')).toHaveCount(0)
   await expect(page.locator('[data-ribbon-path]')).toHaveCSS('stroke-dasharray', 'none')
   await page.getByRole('button', { name: 'a', exact: true }).click()
