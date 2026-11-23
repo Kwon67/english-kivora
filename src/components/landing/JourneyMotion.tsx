@@ -36,6 +36,16 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
   const [smooth, setSmooth] = useState(false)
   const lite = useLandingLite()
 
+  useGSAP(() => {
+    const hero = root.current!.querySelector('[aria-labelledby="hero-title"]')!
+    const dock = root.current!.querySelector<HTMLElement>('[data-hero-dock]')!
+    const observer = new IntersectionObserver(([entry]) => {
+      dock.toggleAttribute('data-visible', !entry.isIntersecting && entry.boundingClientRect.bottom <= 0)
+    })
+    observer.observe(hero)
+    return () => { observer.disconnect(); dock.removeAttribute('data-visible') }
+  }, { scope: root })
+
   // The short headline sequence does not require the full scrolling or Rive runtime.
   useGSAP(() => setupHeroMotion(root.current!), { scope: root })
 
@@ -117,13 +127,13 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
         const illustration = scene.querySelector('[data-art-motion="illustration"]')
         loop(scene, gsap.to(illustration, { y: -7, rotation: .35, duration: duration.illustration, ease: ease.loop, repeat: -1, yoyo: true }))
       }
-      for (const element of select('[data-scene-travel], [data-hero-parallax]')) {
+      for (const element of select('[data-scene-travel]')) {
         gsap.fromTo(element, { y: 15 }, { y: -22, ease: ease.linear,
           scrollTrigger: { trigger: element.closest('section'), start: 'top bottom', end: 'bottom top', scrub: .35 } })
       }
-      // The remaining decorative loops belong to the hero and FAQ. The story
-      // sections finish their own gestures as the visitor reaches each chapter.
-      for (const element of select('[data-hero-parallax] [data-float], #faq [data-float]')) {
+      const hero = container.querySelector('[aria-labelledby="hero-title"]')!
+      loop(hero, gsap.to(select('[data-hero-glint]'), { y: -5, rotation: 3, duration: 4, ease: 'sine.inOut', repeat: -1, yoyo: true }))
+      for (const element of select('#faq [data-float]')) {
         loop(element, gsap.to(element, { y: -8, rotation: 2, duration: duration.float, ease: ease.loop, repeat: -1, yoyo: true }))
       }
       const belt = select('[data-word-belt]')[0]

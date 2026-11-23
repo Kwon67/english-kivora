@@ -1,10 +1,4 @@
 {
-  "discovery": [
-    { "motif": "plane", "x": 63, "y": 159, "size": 111, "originX": 0.5, "originY": 0.5 },
-    { "motif": "sun", "x": 489, "y": 49, "size": 56, "originX": 0.5, "originY": 0.5 },
-    { "motif": "burst", "x": 854, "y": 405, "size": 67, "originX": 0.5, "originY": 0.5 },
-    { "motif": "ticks", "x": 800, "y": 100, "size": 65, "originX": 0.5, "originY": 0.5 }
-  ],
   "memory": [
     { "motif": "plane", "x": 59, "y": 156, "size": 112, "originX": 0.5, "originY": 0.5 },
     { "motif": "sun", "x": 655, "y": 69, "size": 66, "originX": 0.5, "originY": 0.5 },

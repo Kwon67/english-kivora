@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import SpotIllustration from '@/components/illustrations/SpotIllustration'
-import { ArrowDown, ArrowRight, ArrowUpRight, Check } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Check } from 'lucide-react'
 import LandingFAQ from './LandingFAQ'
 import LandingNavigation from './LandingNavigation'
 import LandingWordmark from './LandingWordmark'
@@ -10,7 +10,7 @@ import styles from './MindmarketLanding.module.css'
 import heroStyles from './HeroMotion.module.css'
 import JourneyRibbon from './JourneyRibbon'
 import JourneyMotion from './JourneyMotion'
-import { ConversationScene, DiscoveryScene, JourneyMotif, JourneySpark, MemoryScene } from './JourneyArt'
+import { ConversationScene, JourneyMotif, JourneySpark, MemoryScene } from './JourneyArt'
 
 // Runs as HTML is parsed, before the heading paints. Failed or late chunks leave readable text.
 const heroRevealBootstrap = `(() => {
@@ -52,7 +52,7 @@ function HeroWord({ children, underline = false }: { children: string; underline
   </span>
 }
 
-export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<Record<'discovery' | 'memory' | 'conversation', string>> }) {
+export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<Record<'memory' | 'conversation', string>> }) {
   return <JourneyMotion>
     <LandingNavigation links={links} />
     <div className={styles.journey} data-ribbon-journey>
@@ -60,7 +60,7 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
       <JourneyRibbon />
         <section className={styles.hero} aria-labelledby="hero-title">
           <div className={styles.heroCopy} data-hero-copy>
-            <Eyebrow>INGLÊS PARA A VIDA ACONTECER</Eyebrow>
+            <Eyebrow>PRÁTICA DE VOCABULÁRIO</Eyebrow>
             <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: heroRevealBootstrap }} />
             <h1 id="hero-title" className={heroStyles.headline} aria-label="Seu inglês. Um mundo mais aberto.">
               <span data-title-ink aria-hidden="true">
@@ -69,16 +69,21 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
                 <span data-title-line><HeroWord>mais</HeroWord>{' '}<HeroWord underline>aberto.</HeroWord></span>
               </span>
             </h1>
-            <Action magnetic>Começar grátis</Action>
-          </div>
-          <div className={styles.heroVisual} data-hero-parallax data-pointer-area>
-            <div data-hero-art className={styles.heroArt}>
-              <DiscoveryScene riveSrc={riveAssets.discovery} />
+            <p className={styles.heroSubtitle}>Treine o ouvido com frases em inglês e revise o vocabulário com flashcards.</p>
+            <div className={styles.heroActions}>
+              <Action>Começar grátis</Action>
+              <Link href="#como-funciona">Como funciona <span aria-hidden="true">↓</span></Link>
             </div>
-            <span className={`${styles.floatingWord} ${styles.hello}`} data-float lang="en"><span data-cursor>hello, world! <JourneySpark /></span></span>
-            <span className={`${styles.floatingWord} ${styles.discover}`} data-float lang="en"><span data-cursor>let’s discover <ArrowUpRight size={21} aria-hidden="true" /></span></span>
           </div>
-          <Link href="#seu-caminho" className={styles.scrollHint}><span>Uma nova descoberta a cada dia</span><ArrowDown size={19} aria-hidden="true" /></Link>
+          <figure className={styles.heroVisual} data-hero-art>
+            <div className={styles.windowArt} aria-hidden="true" />
+            <span className={styles.glint} data-hero-glint aria-hidden="true" />
+            <figcaption className={styles.phraseCard}>
+              <span className={styles.cardLabel}>Flashcard · Viagem</span>
+              <strong lang="en">Is this seat taken?</strong>
+              <span>Este lugar está ocupado?</span>
+            </figcaption>
+          </figure>
         </section>
 
         <section id="seu-caminho" className={styles.pathSection} aria-labelledby="path-title">

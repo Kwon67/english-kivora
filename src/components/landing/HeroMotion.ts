@@ -36,8 +36,8 @@ export function setupHeroMotion(container: HTMLElement) {
               ease: WORD_EASE, clearProps: 'transform,opacity',
             }, 0)
           .from(select('[data-hero-art]'), {
-            scale: .86, transformOrigin: '51% 51%', duration: 1.30,
-            ease: 'power2.inOut', clearProps: 'transform,transformOrigin',
+            y: 8, opacity: .65, duration: .72,
+            ease: 'power3.out', clearProps: 'transform,opacity',
           }, .22)
           .from(select('[data-hero-copy] [data-action-icon] svg, [data-hero-dock] [data-action-icon] svg'), {
             x: -4, y: 4, duration: .36, ease: 'power3.out', clearProps: 'transform',
