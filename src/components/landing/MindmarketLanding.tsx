@@ -12,6 +12,13 @@ import JourneyRibbon from './JourneyRibbon'
 import JourneyMotion from './JourneyMotion'
 import { ConversationScene, DiscoveryScene, JourneyMotif, JourneySpark, MemoryScene } from './JourneyArt'
 
+// Runs as HTML is parsed, before the heading paints. Failed or late chunks leave readable text.
+const heroRevealBootstrap = `(() => {
+  if (document.hidden || !matchMedia('(prefers-reduced-motion: no-preference)').matches) return;
+  const script = document.currentScript;
+  script.dataset.heroReveal = setTimeout(() => { delete script.dataset.heroReveal }, 2000);
+})()`
+
 const links = [
   { href: '#seu-caminho', label: 'Seu caminho' },
   { href: '#como-funciona', label: 'Como funciona' },
@@ -37,6 +44,14 @@ function Eyebrow({ number, children }: { number?: string; children: React.ReactN
   return <p className={styles.eyebrow}>{number && <span>{number}</span>}{children}</p>
 }
 
+function HeroWord({ children, underline = false }: { children: string; underline?: boolean }) {
+  return <span className={heroStyles.wordMask}>
+    <span className={heroStyles.word} data-title-word data-hero-keyword={underline || undefined}>
+      {children}{underline && <span className={heroStyles.underline} />}
+    </span>
+  </span>
+}
+
 export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<Record<'discovery' | 'memory' | 'conversation', string>> }) {
   return <JourneyMotion>
     <LandingNavigation links={links} />
@@ -46,11 +61,12 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
         <section className={styles.hero} aria-labelledby="hero-title">
           <div className={styles.heroCopy} data-hero-copy>
             <Eyebrow>INGLÊS PARA A VIDA ACONTECER</Eyebrow>
+            <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: heroRevealBootstrap }} />
             <h1 id="hero-title" className={heroStyles.headline} aria-label="Seu inglês. Um mundo mais aberto.">
               <span data-title-ink aria-hidden="true">
-                <span data-title-line>Seu inglês.</span>{' '}
-                <span data-title-line>Um mundo</span>{' '}
-                <span data-title-line>mais <span data-hero-keyword className={heroStyles.keyword}><span data-hero-letters>aberto.</span><span data-hero-underline className={heroStyles.underline} /></span></span>
+                <span data-title-line><HeroWord>Seu</HeroWord>{' '}<HeroWord>inglês.</HeroWord></span>{' '}
+                <span data-title-line><HeroWord>Um</HeroWord>{' '}<HeroWord>mundo</HeroWord></span>{' '}
+                <span data-title-line><HeroWord>mais</HeroWord>{' '}<HeroWord underline>aberto.</HeroWord></span>
               </span>
             </h1>
             <Action magnetic>Começar grátis</Action>

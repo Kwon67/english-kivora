@@ -136,8 +136,9 @@ test.describe('HTML inicial', () => {
     await page.goto('/')
     const title = await checkHeading(page)
     await expect(title).toBeVisible()
-    for (const line of await title.locator('[data-title-line]').all()) {
-      await expect(line).toHaveCSS('opacity', '1')
+    for (const word of await title.locator('[data-title-word]').all()) {
+      await expect(word).toHaveCSS('opacity', '1')
+      await expect(word).toHaveCSS('transform', 'none')
     }
     await primaryLink(page).click()
     await expect(page).toHaveURL(/\/register$/)
@@ -172,49 +173,82 @@ test('a cena de memória responde ao scroll depois de sair, voltar e avançar', 
   await checkScene()
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await expect.poll(paint).toBe('')
-  for (const target of await page.locator('#hero-title [data-title-line], #hero-title [data-hero-keyword]').all()) {
+  for (const target of await page.locator('#hero-title [data-title-word]').all()) {
     await expect(target).toHaveCSS('transform', 'none')
   }
 })
 
-test('o título espera pela aba visível no modo leve', async ({ page }) => {
-  await page.addInitScript(() => {
-    Object.defineProperty(navigator, 'hardwareConcurrency', { value: 2 })
-    Object.defineProperty(document, 'hidden', { configurable: true, get: () => true })
-  })
-  await page.emulateMedia({ reducedMotion: 'no-preference' })
-  await page.goto('/#hero-title')
-  const letters = page.locator('[data-hero-letters] > span')
-  await expect(page.locator('html')).toHaveClass(/kivora-landing-lite/)
-  await expect(letters).toHaveCount(0)
-  await page.evaluate(() => {
-    Reflect.deleteProperty(document, 'hidden')
-    document.dispatchEvent(new Event('visibilitychange'))
-  })
-  await expect(letters.first()).toBeAttached()
-  await expect(letters).toHaveCount(0)
+test('o título aparece estático com movimento reduzido', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await expect(letters).toHaveCount(0)
-  await checkHeading(page)
+  await page.goto('/')
+  const title = await checkHeading(page)
+  await expect(page.locator('script[data-hero-reveal]')).toHaveCount(0)
+  for (const word of await title.locator('[data-title-word]').all()) {
+    await expect(word).toHaveCSS('opacity', '1')
+    await expect(word).toHaveCSS('transform', 'none')
+  }
 })
 
-test('o título continua se movendo após a entrada sem botões de controle', async ({ page }) => {
+test('o título fica legível quando os chunks falham', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' })
-  await page.goto('/#hero-title')
-  await expect(page.locator('[data-hero-copy] button')).toHaveCount(0)
-  const word = page.locator('[data-hero-keyword]')
-  const width = () => word.evaluate(el => el.getBoundingClientRect().width)
-  await page.emulateMedia({ reducedMotion: 'reduce' })
-  await expect(word).toHaveCSS('transform', 'none')
-  await page.evaluate(() => document.fonts.ready.then(() => undefined))
-  const resting = await width()
-  await page.emulateMedia({ reducedMotion: 'no-preference' })
-  await expect(page.locator('[data-hero-letters] > span').first()).toBeAttached()
-  await expect(page.locator('[data-hero-letters] > span')).toHaveCount(0)
-  for (let cycle = 0; cycle < 2; cycle++) {
-    await expect.poll(width).toBeGreaterThan(resting * 1.06)
-    await expect.poll(width).toBeCloseTo(resting, 0)
+  await page.route('**/_next/static/**/*.js', route => route.abort())
+  await page.goto('/')
+  const title = await checkHeading(page)
+  await expect(page.locator('script[data-hero-reveal]')).toHaveCount(0, { timeout: 3000 })
+  for (const word of await title.locator('[data-title-word]').all()) {
+    await expect(word).toHaveCSS('opacity', '1')
+    await expect(word).toHaveCSS('transform', 'none')
   }
-  await page.emulateMedia({ reducedMotion: 'reduce' })
-  await expect(word).toHaveCSS('transform', 'none')
+})
+
+test('o título revela as palavras uma vez e fica estável, sem controles', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  const chunks = Promise.withResolvers<void>()
+  await page.route('**/_next/static/**/*.js', async route => {
+    await chunks.promise
+    await route.continue()
+  })
+  const title = page.locator('#hero-title')
+  const words = title.locator('[data-title-word]')
+  try {
+    await page.goto('/', { waitUntil: 'commit' })
+    await expect(words).toHaveCount(6)
+    await expect(words.first()).toHaveCSS('opacity', '0')
+  } finally {
+    chunks.resolve()
+  }
+  await expect(words.first()).not.toHaveCSS('transform', 'none')
+  await expect(page.locator('[data-hero-copy] button')).toHaveCount(0)
+  const wordStyles = () => words.evaluateAll(elements => elements.map(element => {
+    const { transform, opacity } = getComputedStyle(element)
+    return { transform, opacity }
+  }))
+  await page.waitForFunction(() => performance.now() >= 3000)
+  const resting = await wordStyles()
+  expect(resting).toEqual(Array(6).fill({ transform: 'none', opacity: '1' }))
+  await title.evaluate(element => {
+    const observer = new MutationObserver(() => {
+      element.setAttribute('data-test-title-replayed', '')
+      observer.disconnect()
+    })
+    observer.observe(element, { attributes: true, attributeFilter: ['style'], subtree: true })
+    window.scrollTo({ top: innerHeight * 2, behavior: 'instant' })
+  })
+  const viewport = page.viewportSize()!
+  await page.setViewportSize({ ...viewport, width: viewport.width + 10 })
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
+  await page.waitForFunction(() => performance.now() >= 6000)
+  expect(await wordStyles()).toEqual(resting)
+  await expect(page.locator('#hero-title[data-test-title-replayed]')).toHaveCount(0)
+  await checkHeading(page)
+  const selected = await title.evaluate(element => {
+    const range = document.createRange()
+    range.selectNodeContents(element)
+    const selection = window.getSelection()!
+    selection.addRange(range)
+    const text = selection.toString().replace(/\s+/g, ' ').trim()
+    selection.removeAllRanges()
+    return text
+  })
+  expect(selected).toBe(headline)
 })
