@@ -57,6 +57,49 @@ test('o cartão mantém a escala desde o primeiro quadro', async ({ page }) => {
   await assertNoHorizontalOverflow(page, 'hero')
 })
 
+for (const activation of ['click', 'Enter', 'Space'] as const) {
+  test(`o flashcard revela a tradução uma vez com ${activation}`, async ({ page, hasTouch }) => {
+    await page.goto('/')
+    const card = page.getByRole('button', { name: 'Revelar tradução' })
+    await expect(card).toHaveAttribute('aria-pressed', 'false')
+    await expect(card).toHaveAccessibleDescription('Is this seat taken?')
+    await expect(card.getByText('Este lugar está ocupado?')).toHaveCount(0)
+    if (activation === 'click') {
+      if (hasTouch) await card.tap()
+      else await card.click()
+    } else {
+      await card.focus()
+      await card.press(activation)
+    }
+    await expect(card).toHaveAccessibleDescription('Este lugar está ocupado?')
+    await expect(card).toHaveAttribute('aria-pressed', 'true')
+    await expect(card).toBeDisabled()
+    await expect(card).toHaveCSS('transform', 'none')
+    await card.press('Enter')
+    await expect(card.getByText('Este lugar está ocupado?')).toBeVisible()
+  })
+}
+
+test('movimento reduzido revela a tradução com fade, sem girar o cartão', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  const card = page.getByRole('button', { name: 'Revelar tradução' })
+  const samples = await card.evaluate(async (button: HTMLButtonElement) => {
+    const frames = []
+    button.click()
+    const start = performance.now()
+    do {
+      await new Promise(requestAnimationFrame)
+      const { opacity, transform } = getComputedStyle(button)
+      frames.push({ opacity: Number(opacity), transform })
+    } while (performance.now() - start < 500)
+    return frames
+  })
+  expect(samples.some(frame => frame.opacity < 1)).toBe(true)
+  expect(samples.every(frame => frame.transform === 'none')).toBe(true)
+  await expect(card).toHaveAccessibleDescription('Este lugar está ocupado?')
+})
+
 test('o CTA flutuante aparece apenas depois do hero no celular', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'CTA flutuante mobile')
   await page.goto('/')
@@ -121,7 +164,10 @@ test('cada linha cabe com a fonte de fallback e após carregar a fonte da págin
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/', { waitUntil: 'domcontentloaded' })
   const title = await checkHeading(page)
-  const widths = isMobile ? [375, 390, 402, 430] : [834, 1440, 2560]
+  const emphasis = title.locator('[data-hero-keyword]')
+  await expect(emphasis).toHaveCSS('font-style', 'italic')
+  expect(await emphasis.evaluate(el => getComputedStyle(el).fontSynthesis)).toContain('style')
+  const widths = isMobile ? [360, 375, 390, 402, 430] : [768, 834, 1440, 2560]
   const evidence = []
   try {
     await expect.poll(() => requested).toBeGreaterThan(0)

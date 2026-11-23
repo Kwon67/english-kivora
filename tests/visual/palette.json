@@ -3,9 +3,7 @@
     "000000",
     "0875c9",
     "183b73",
-    "192342",
     "209fff",
-    "283a9e",
     "2c2e2a",
     "315c29",
     "35462d",
@@ -27,7 +25,6 @@
     "8ed462",
     "8fcaff",
     "90d464",
-    "9294aa",
     "a5e27f",
     "addd8c",
     "cfc8ba",
@@ -37,7 +34,6 @@
     "e6eddb",
     "e8e1d6",
     "e8e8de",
-    "eae9ff",
     "ebc1ff",
     "eeefe5",
     "f0f0e8",
@@ -46,7 +42,6 @@
     "f5f4eb",
     "ff705d",
     "ffb4a7",
-    "fffdf5",
     "fffef8",
     "ffffff"
   ],
@@ -73,7 +68,6 @@
     "/images/journey-2026/memory-illustrated.riv": "ecf61501fc4a1cc285d7158bceb8a63805ca7d3ee53454669aaf044abf5d1cac",
     "/images/journey-2026/conversation-illustrated.riv": "d7d373fc4bbc407786ce27e425674f9d4c10ccd223c3ee895741d36201729fba",
     "/images/journey-details/sunflower-grounded.webp": "31659f03b7d315eeb5ccad94b11eea1c4c698d9390660df8599edb479c9d4487",
-    "/images/hero/open-window.svg": "9fb42f451453ea421116a23f682cc381d793a5cc7f72530b850dcb1841697916",
-    "/images/hero/glint.svg": "a3a92fa6c033a67e0b03cd378627efe0cf382e4dd70f44890d638e0fe68f0c3d"
+    "/images/hero/meridians.svg": "b1dbda2b604bca211e4349a6fd941b86291bcef4494985d56ddeeb279df84604"
   }
 }
