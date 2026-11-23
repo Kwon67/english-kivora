@@ -7,6 +7,7 @@ import LandingWordmark from './LandingWordmark'
 import LevelExplorer from './LevelExplorer'
 import PracticePreview from './PracticePreview'
 import styles from './MindmarketLanding.module.css'
+import HeroFlashcard from './HeroFlashcard'
 import heroStyles from './HeroMotion.module.css'
 import JourneyRibbon from './JourneyRibbon'
 import JourneyMotion from './JourneyMotion'
@@ -76,13 +77,9 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
             </div>
           </div>
           <figure className={styles.heroVisual} data-hero-art>
-            <div className={styles.windowArt} aria-hidden="true" />
+            <div className={styles.meridians} aria-hidden="true" />
             <span className={styles.glint} data-hero-glint aria-hidden="true" />
-            <figcaption className={styles.phraseCard}>
-              <span className={styles.cardLabel}>Flashcard · Viagem</span>
-              <strong lang="en">Is this seat taken?</strong>
-              <span>Este lugar está ocupado?</span>
-            </figcaption>
+            <figcaption className={styles.cardStage}><HeroFlashcard /></figcaption>
           </figure>
         </section>
 
