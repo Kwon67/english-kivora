@@ -5,7 +5,7 @@ const headline = 'Seu inglês. Um mundo mais aberto.'
 const lines = ['Seu inglês.', 'Um mundo', 'mais aberto.']
 
 function primaryLink(page: Page) {
-  return page.locator('[data-hero-copy], [data-hero-dock]').getByRole('link', { name: 'Começar grátis', exact: true })
+  return page.locator('[data-hero-copy]').getByRole('link', { name: 'Começar grátis', exact: true })
 }
 
 async function checkHeading(page: Page) {
@@ -37,38 +37,58 @@ function measureLines(title: Locator) {
   }))
 }
 
-test('etiquetas respondem ao ponteiro e o CTA continua navegável', async ({ page, isMobile }) => {
-  test.skip(isMobile, 'Ponteiro fino')
+test('o cartão mantém a escala desde o primeiro quadro', async ({ page }) => {
+  await page.addInitScript(() => {
+    const sample = () => {
+      const art = document.querySelector('[data-hero-art]')
+      if (art) {
+        const transform = getComputedStyle(art).transform
+        const matrix = transform === 'none' ? new DOMMatrix() : new DOMMatrix(transform)
+        if (matrix.a !== 1 || matrix.d !== 1) art.setAttribute('data-scaled', '')
+      }
+      if (performance.now() < 3500) requestAnimationFrame(sample)
+    }
+    requestAnimationFrame(sample)
+  })
   await page.goto('/')
-  const label = page.locator('[data-hero-parallax] [data-float] [data-cursor]').first()
-  const box = await label.boundingBox()
-  expect(box).not.toBeNull()
-  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2)
-  await expect.poll(() => label.evaluate(el => getComputedStyle(el).transform)).not.toMatch(/^(none|matrix\(1, 0, 0, 1, 0, 0\))$/)
-  await page.locator('[data-magnetic]').click()
-  await expect(page).toHaveURL(/\/register$/)
-})
-
-test('o poster acompanha a preferência de movimento em tempo real', async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.goto('/')
-  const hero = page.locator('[data-art-scene="discovery"]')
-  await expect(hero.locator('picture img')).toBeVisible()
-  await expect(hero.locator('canvas')).toHaveCount(0)
-  await page.emulateMedia({ reducedMotion: 'no-preference' })
-  await expect(hero.locator('[data-rive-ready=true]')).toHaveCount(1, { timeout: 15_000 })
-  await page.emulateMedia({ reducedMotion: 'reduce' })
-  await expect(hero.locator('canvas')).toHaveCount(0)
+  await expect(page.getByText('Is this seat taken?')).toBeVisible()
+  await page.waitForFunction(() => performance.now() >= 3500)
+  await expect(page.locator('[data-hero-art][data-scaled]')).toHaveCount(0)
   await assertNoHorizontalOverflow(page, 'hero')
 })
 
-test('falha do arquivo Rive preserva a ilustração e a prática', async ({ page }) => {
-  await page.route('**/*.riv', route => route.abort())
+test('o CTA flutuante aparece apenas depois do hero no celular', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'CTA flutuante mobile')
   await page.goto('/')
-  await expect(page.locator('[data-art-scene="discovery"] picture img')).toBeVisible()
-  await page.getByRole('button', { name: 'Relembrar', exact: true }).click()
-  await page.getByRole('button', { name: 'Revelar significado' }).click()
-  await expect(page.getByText('um pouco mais perto', { exact: true })).toBeVisible()
+  const dock = page.locator('[data-hero-dock]')
+  await expect(primaryLink(page)).toBeInViewport()
+  await expect(dock).toBeHidden()
+  await page.locator('#como-funciona').scrollIntoViewIfNeeded()
+  await expect(dock).toBeVisible()
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
+  await expect(dock).toBeHidden()
+})
+
+test('o brilho pausa fora da tela e respeita movimento reduzido', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'hardwareConcurrency', { value: 8 })
+    Object.defineProperty(navigator, 'deviceMemory', { value: 8 })
+    Object.defineProperty(navigator, 'connection', { value: undefined })
+  })
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto('/')
+  const glint = page.locator('[data-hero-glint]')
+  const matrix = () => glint.evaluate(el => getComputedStyle(el).transform)
+  const first = await matrix()
+  await expect.poll(matrix).not.toBe(first)
+  await page.locator('#como-funciona').scrollIntoViewIfNeeded()
+  await expect(glint).not.toBeInViewport()
+  await page.waitForTimeout(120)
+  const paused = await matrix()
+  await page.waitForTimeout(300)
+  expect(await matrix()).toBe(paused)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await expect(glint).toHaveCSS('transform', 'none')
 })
 
 test('o CTA aceita o primeiro toque ou clique durante a entrada', async ({ page, hasTouch }) => {

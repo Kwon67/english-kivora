@@ -19,7 +19,7 @@ test('SEO and brand assets respond without login while protected pages still red
 })
 
 test('the hero has no intro layer before or after delayed hydration', async ({ page }) => {
-  const overlaySelector = '#kivora-intro, section[aria-labelledby="hero-title"] > :not([data-hero-copy], [data-hero-parallax], a[href="#seu-caminho"])'
+  const overlaySelector = '#kivora-intro, section[aria-labelledby="hero-title"] > :not([data-hero-copy], [data-hero-art])'
   await page.addInitScript(selector => {
     function checkFrame() {
       if (document.querySelector(selector)) {

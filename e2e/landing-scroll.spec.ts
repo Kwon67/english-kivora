@@ -19,15 +19,15 @@ test('âncora, margem, histórico e retorno à landing', async ({ page }) => {
   const html = page.locator('html')
   if (await usesSmoothScroll(page)) await expect(html).toHaveClass(/\blenis\b/)
   else await expect(html).not.toHaveClass(/\blenis\b/)
-  await page.locator('a[href="#seu-caminho"]:visible').first().click()
-  const section = page.locator('#seu-caminho')
-  await expect(page).toHaveURL(/#seu-caminho$/)
+  await page.locator('[data-hero-copy] a[href="#como-funciona"]').first().click()
+  const section = page.locator('#como-funciona')
+  await expect(page).toHaveURL(/#como-funciona$/)
   await expect.poll(() => anchorOffset(section)).toBeLessThan(3)
   if (await usesSmoothScroll(page)) await expect(section).toBeFocused()
   await page.goBack()
   await expect(page).toHaveURL(/\/$/)
   await page.goForward()
-  await expect(page).toHaveURL(/#seu-caminho$/)
+  await expect(page).toHaveURL(/#como-funciona$/)
   await page.locator('footer a[href="/terms"]').click()
   await expect(html).not.toHaveClass(/kivora-landing-scroll|\blenis\b/)
   await page.goBack()
@@ -131,13 +131,13 @@ test('títulos mantêm suas linhas ao recarregar e rolar no celular', async ({ p
   }
 })
 
-test('as três cenas trocam os ornamentos estáticos pela mesma arte em movimento', async ({ page }) => {
+test('as duas cenas trocam os ornamentos estáticos pela mesma arte em movimento', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'hardwareConcurrency', { value: 8 })
     Object.defineProperty(navigator, 'deviceMemory', { value: 8 })
     Object.defineProperty(navigator, 'connection', { value: undefined })
   })
-  const scenes = ['discovery', 'memory', 'conversation'] as const
+  const scenes = ['memory', 'conversation'] as const
   const gates = new Map(scenes.map(name => [name, Promise.withResolvers<void>()]))
   for (const [name, gate] of gates) {
     await page.route(`**/${name}-illustrated.riv`, async route => {
