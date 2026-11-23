@@ -1,0 +1,66 @@
+import { gsap } from '@/lib/gsap'
+
+const WORD_DURATION = 1.05
+const WORD_STAGGER = .08
+const WORD_EASE = 'power4.out'
+const WORD_START_Y_PERCENT = 110
+const WORD_START_OPACITY = .25
+
+export function setupHeroMotion(container: HTMLElement) {
+  const bootstrap = container.querySelector<HTMLScriptElement>('script[data-hero-reveal]')
+  if (!bootstrap) return
+
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)')
+  const showTitle = () => {
+    clearTimeout(Number(bootstrap.dataset.heroReveal))
+    delete bootstrap.dataset.heroReveal
+  }
+
+  if (reducedMotion.matches || document.hidden) {
+    showTitle()
+    return
+  }
+
+  const context = gsap.context(() => {}, container)
+  // Let StrictMode finish its setup/cleanup cycle before consuming the page's one reveal.
+  const frame = requestAnimationFrame(() => {
+    if (bootstrap.dataset.heroReveal === undefined) return
+    try {
+      context.add(() => {
+        const select = gsap.utils.selector(container)
+        gsap.timeline()
+          .fromTo(select('#hero-title [data-title-word]'),
+            { yPercent: WORD_START_Y_PERCENT, opacity: WORD_START_OPACITY },
+            {
+              yPercent: 0, opacity: 1, duration: WORD_DURATION, stagger: WORD_STAGGER,
+              ease: WORD_EASE, clearProps: 'transform,opacity',
+            }, 0)
+          .from(select('[data-hero-art]'), {
+            scale: .86, transformOrigin: '51% 51%', duration: 1.30,
+            ease: 'power2.inOut', clearProps: 'transform,transformOrigin',
+          }, .22)
+          .from(select('[data-hero-copy] [data-action-icon] svg, [data-hero-dock] [data-action-icon] svg'), {
+            x: -4, y: 4, duration: .36, ease: 'power3.out', clearProps: 'transform',
+          }, .79)
+      })
+    } catch (error) {
+      context.revert()
+      throw error
+    } finally {
+      showTitle()
+    }
+  })
+
+  const onMotionChange = (event: MediaQueryListEvent) => {
+    if (!event.matches) return
+    cancelAnimationFrame(frame)
+    showTitle()
+    context.revert()
+  }
+  reducedMotion.addEventListener('change', onMotionChange)
+  return () => {
+    cancelAnimationFrame(frame)
+    reducedMotion.removeEventListener('change', onMotionChange)
+    context.revert()
+  }
+}

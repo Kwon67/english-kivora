@@ -33,7 +33,7 @@ import {
   reviewSoftBtn,
   reviewTile,
 } from '@/features/review/lib/reviewPageUi'
-import { m, AnimatePresence } from 'motion/react'
+import PressButton from '@/components/motion/PressButton'
 import { getDueCards, refreshReviewQueue, submitCardReview } from '@/app/actions'
 import { navBackTransitionTypes, navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import StudyBreadcrumb from '@/components/navigation/StudyBreadcrumb'
@@ -693,7 +693,13 @@ export default function ReviewClient({
   )
 
   const bindSwipe = useDrag(
-    ({ down, last, movement: [movementX, movementY], event, first }) => {
+    ({ down, last, movement: [movementX, movementY], event, first, canceled }) => {
+      if (canceled || event?.type === 'touchcancel' || event?.type === 'pointercancel') {
+        swipeStartedOnSelectableRef.current = false
+        swipePeakXRef.current = 0
+        setReviewSwipeVisual('neutral')
+        return
+      }
       if (first) {
         swipeStartedOnSelectableRef.current = isReviewSelectableElement(event?.target ?? null)
         swipePeakXRef.current = 0
@@ -952,13 +958,7 @@ export default function ReviewClient({
       ) : null}
 
 	      <main className="space-y-4">
-        <AnimatePresence mode="wait">
-		          <m.section
-		            key={`${getCardKey(activeCard)}-${reviewPhase}-${currentModeIndex}`}
-	            initial={{ opacity: 0, y: 5 }}
-	            animate={{ opacity: 1, y: 0 }}
-	            exit={{ opacity: 0 }}
-	            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+		          <section
 		            className={`${reviewPracticePanel} guided-review-prompt`}
 	          >
 	            <div
@@ -980,6 +980,7 @@ export default function ReviewClient({
 
               {reviewPhase === 'mode' ? (
                 <ReviewModePractice
+                  key={`${getCardKey(activeCard)}-${currentModeIndex}`}
                   mode={activeReviewMode}
                   card={activeCard.cards}
                   packCards={activePackCards}
@@ -993,6 +994,7 @@ export default function ReviewClient({
                 />
               ) : (
 	            <div
+                key={getCardKey(activeCard)}
                 {...bindSwipe()}
                 className="relative flex min-h-0 flex-col"
                 style={{ touchAction: 'pan-y' }}
@@ -1016,9 +1018,7 @@ export default function ReviewClient({
                 </div>
 
                 {showAnswer ? (
-                  <m.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
+                  <div
                     data-review-selectable
                     className={`${reviewMeaningCard} guided-review-answer mt-4`}
                   >
@@ -1037,27 +1037,23 @@ export default function ReviewClient({
                         className="mx-auto mt-3"
                       />
                     ) : null}
-                  </m.div>
+                  </div>
                 ) : (
-                  <m.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  <PressButton
+                    hoverScale={1.02}
+                    pressedScale={0.98}
                     type="button"
                     onClick={() => setShowAnswer(true)}
                     className={`${reviewPrimaryBtn} mx-auto mt-4`}
                   >
                     <Eye className="h-4 w-4" strokeWidth={2} />
                     Mostrar resposta
-                  </m.button>
+                  </PressButton>
                 )}
               </div>
 
               {showAnswer ? (
-                <m.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-3 grid grid-cols-2 gap-2 border-t border-brand-dark/15 pt-3 sm:mt-4 sm:grid-cols-4 sm:gap-3 sm:pt-4"
-                >
+                <div className="mt-3 grid grid-cols-2 gap-2 border-t border-brand-dark/15 pt-3 sm:mt-4 sm:grid-cols-4 sm:gap-3 sm:pt-4">
                   {practiceNotice ? (
                     <p className="col-span-2 font-body text-xs font-semibold leading-snug text-brand-secondary sm:col-span-4">
                       {practiceNotice}
@@ -1069,9 +1065,9 @@ export default function ReviewClient({
                     )
 
                     return (
-                      <m.button
+                      <PressButton
                         key={button.quality}
-                        whileTap={{ scale: 0.96 }}
+                        pressedScale={0.96}
                         type="button"
                         onMouseDown={(event) => {
                           if (hasActiveTextSelection()) {
@@ -1097,7 +1093,7 @@ export default function ReviewClient({
                         >
                           {estimate}
                         </span>
-                      </m.button>
+                      </PressButton>
                     )
                   })}
                   {visibleQualityButtons.length === qualityButtons.length ? (
@@ -1105,12 +1101,11 @@ export default function ReviewClient({
                       Deslize ← errei · centro bom · fácil →
                     </p>
                   ) : null}
-                </m.div>
+                </div>
               ) : null}
             </div>
               )}
-          </m.section>
-        </AnimatePresence>
+          </section>
       </main>
 
       {showExitConfirm ? (

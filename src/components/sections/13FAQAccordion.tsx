@@ -1,8 +1,8 @@
 'use client'
 
 import { ChevronDown } from 'lucide-react'
-import { m } from 'motion/react'
-import { useCallback, useState } from 'react'
+import gsap from 'gsap'
+import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import LandingSectionHeader from '@/components/ui/LandingSectionHeader'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
@@ -35,6 +35,20 @@ const faqs = [
       'Sim. Use no navegador ou adicione à tela inicial.',
   },
 ]
+
+function FAQAnswer({ index, open, reduced, answer }: { index: number; open: boolean; reduced: boolean; answer: string }) {
+  const panel = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const tween = gsap.to(panel.current, {
+      height: open ? 'auto' : 0, opacity: open ? 1 : 0, duration: reduced ? 0 : 0.38, ease: 'expo.out',
+    })
+    return () => { tween.kill() }
+  }, [open, reduced])
+  return <div ref={panel} id={`faq-panel-${index}`} role="region" aria-labelledby={`faq-trigger-${index}`}
+    aria-hidden={!open} style={{ height: 0, opacity: 0 }} className="overflow-hidden [will-change:height,opacity]">
+    <p className="px-3 pb-6 leading-7 text-brand-secondary sm:px-4">{answer}</p>
+  </div>
+}
 
 export default function FAQAccordion() {
   const [open, setOpen] = useState(-1)
@@ -73,18 +87,7 @@ export default function FAQAccordion() {
                 {/* Stays mounted when collapsed: the answers have to be in the server HTML for
                     crawlers to index them and for FAQPage rich results to be eligible. Collapsing
                     is done with height, not by unmounting. */}
-                <m.div
-                  id={`faq-panel-${index}`}
-                  role="region"
-                  aria-labelledby={`faq-trigger-${index}`}
-                  aria-hidden={!isOpen}
-                  initial={false}
-                  animate={{ height: isOpen ? 'auto' : 0, opacity: isOpen ? 1 : 0 }}
-                  transition={{ duration: reducedMotion ? 0 : 0.38, ease: [0.22, 1, 0.36, 1] }}
-                  className="overflow-hidden [will-change:height,opacity]"
-                >
-                  <p className="px-3 pb-6 leading-7 text-brand-secondary sm:px-4">{faq.answer}</p>
-                </m.div>
+                <FAQAnswer index={index} open={isOpen} reduced={reducedMotion} answer={faq.answer} />
               </div>
             )
           })}

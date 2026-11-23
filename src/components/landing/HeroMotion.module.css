@@ -1,0 +1,30 @@
+@media (prefers-reduced-motion: no-preference) {
+  script[data-hero-reveal] + .headline .word {
+    opacity: 0;
+  }
+}
+
+.wordMask {
+  display: inline-block;
+  vertical-align: top;
+  overflow: clip;
+  padding: .12em .06em .22em;
+  margin: -.12em -.06em -.22em;
+}
+
+.word {
+  display: block;
+  position: relative;
+  white-space: nowrap;
+}
+
+.underline {
+  position: absolute;
+  left: .06em;
+  right: .22em;
+  bottom: -.09em;
+  height: .13em;
+  border-top: .045em solid var(--ink);
+  border-radius: 80% 40% 0 0;
+  pointer-events: none;
+}

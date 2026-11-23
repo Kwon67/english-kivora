@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState, useTransition } from 'react'
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
@@ -26,7 +26,7 @@ import {
 } from '@/features/cards/lib/packFolders'
 import { navForwardTransitionTypes } from '@/lib/navigationTransitions'
 import { notify } from '@/lib/toast'
-import { m } from 'motion/react'
+import gsap from 'gsap'
 import {
   accentBadge,
   cardClass,
@@ -290,17 +290,30 @@ export default function UserPackFoldersOrganizer({
     }))
   }
 
+  const animatePack = useCallback((element: HTMLElement | null) => {
+    if (!element) return
+    const media = gsap.matchMedia()
+    media.add('(prefers-reduced-motion: no-preference)', () => {
+      gsap.from(element, { opacity: 0.94, y: 4, duration: 0.25 })
+      const move = gsap.quickTo(element, 'y', { duration: 0.25, overwrite: 'auto' })
+      const enter = (event: PointerEvent) => { if (event.pointerType !== 'touch') move(-2) }
+      const leave = () => move(0)
+      element.addEventListener('pointerenter', enter)
+      element.addEventListener('pointerleave', leave)
+      return () => {
+        element.removeEventListener('pointerenter', enter)
+        element.removeEventListener('pointerleave', leave)
+      }
+    })
+    return () => media.revert()
+  }, [])
+
   const renderPackCard = (pack: UserPackSummary, currentFolderLabel: string) => {
     const moveTargets = folderLabels.filter((label) => label !== currentFolderLabel)
 
     return (
-      <m.article
-        key={pack.id}
-        initial={{ opacity: 0.94, y: 4 }}
-        animate={{ opacity: 1, y: 0 }}
-        whileHover={{ y: -2 }}
-        transition={{ duration: 0.25 }}
-        className={`${cardClass} ${libraryFrostedSubtle} p-5 relative overflow-hidden group flex flex-col justify-between hover:-translate-y-0.5 transition-transform`}
+      <article key={pack.id} ref={animatePack}
+        className={`${cardClass} ${libraryFrostedSubtle} p-5 relative overflow-hidden group flex flex-col justify-between hover:-translate-y-0.5 transition-[translate]`}
       >
         <div>
           <div className="flex items-start justify-between gap-3 relative z-10">
@@ -461,7 +474,7 @@ export default function UserPackFoldersOrganizer({
             </button>
           </div>
         </div>
-      </m.article>
+      </article>
     )
   }
 

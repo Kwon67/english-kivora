@@ -1,19 +1,17 @@
 'use client'
 
-import { useReducedMotion } from 'motion/react'
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 
-/**
- * Keeps the first SSR/client render identical while still honoring the
- * user's reduced-motion preference immediately after hydration.
- */
+const preference = '(prefers-reduced-motion: reduce)'
+const readPreference = () => window.matchMedia(preference).matches
+const serverPreference = () => false
+
+function subscribe(notify: () => void) {
+  const media = window.matchMedia(preference)
+  media.addEventListener('change', notify)
+  return () => media.removeEventListener('change', notify)
+}
+
 export function useHydratedReducedMotion() {
-  const prefersReducedMotion = useReducedMotion()
-  const [hydrated, setHydrated] = useState(false)
-
-  useEffect(() => {
-    setHydrated(true)
-  }, [])
-
-  return hydrated && Boolean(prefersReducedMotion)
+  return useSyncExternalStore(subscribe, readPreference, serverPreference)
 }

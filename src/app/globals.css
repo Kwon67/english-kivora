@@ -373,7 +373,7 @@ select {
     box-shadow 180ms ease;
 }
 
-/* Trust bar marquee — edge fade (motion driven by Framer in 04TrustBar) */
+/* Trust bar marquee — edge fade (animated with GSAP in 04TrustBar) */
 .landing-trust-marquee {
   mask-image: linear-gradient(
     to right,
@@ -1280,7 +1280,7 @@ button.card:hover {
    spinner that flashes instead of spinning slowly). The @property approach
    lets each animation define a gentler reduced-motion alternative via
    --animation-reduced. The initial-value is 'none', so by default all
-   non-Framer-Motion animations are cleanly disabled in reduced-motion mode.
+   CSS animations are cleanly disabled in reduced-motion mode.
    Individual elements can opt into a slower version:
      .my-spinner { --animation-reduced: spin 8s linear infinite; } */
 
@@ -1291,9 +1291,9 @@ button.card:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *:not([data-framer-motion]):not([data-framer-motion] *),
-  *:not([data-framer-motion])::before,
-  *:not([data-framer-motion])::after {
+  *,
+  *::before,
+  *::after {
     animation: var(--animation-reduced) !important;
     scroll-behavior: auto !important;
     /* Short but non-zero transition for snappy interactive feedback */
@@ -1778,7 +1778,7 @@ html[data-scroll-lock='true'] body {
 /* Baseline: Newly Available since 2024-08-06.
    Chrome 117+ / Firefox 129+ / Safari 17.5+.
    Progressive enhancement: elements are instantly visible in older browsers.
-   These classes complement Framer Motion — use them for lightweight cases
+   These classes complement GSAP — use them for lightweight cases
    that don't need full animation control (feedback messages, tooltips, etc). */
 
 /* General fade-up: feedback alerts, banners, notification badges */
@@ -2083,7 +2083,9 @@ html[data-scroll-lock='true'] body {
   box-shadow: none;
 }
 
-/* Lenis owns wheel interpolation while the landing is active. */
+/* Apply the landing's scroll policy to its server HTML too. Otherwise WebKit
+   starts a smooth fragment scroll that hydration can interrupt halfway. */
+html:has([data-ribbon-journey]),
 html.kivora-landing-scroll {
   scroll-behavior: auto;
   /* Landing sections already reserve space for their own sticky header. */
@@ -2155,7 +2157,7 @@ html.kivora-landing-scroll {
   html { scrollbar-width:thin; scrollbar-color:#477c2d66 transparent; }
 }
 @media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
-  html[data-kivora-pointer], html[data-kivora-pointer] :is(a,button,summary,[role="button"]):not(dialog *) { cursor:none; }
+  html[data-kivora-pointer], html[data-kivora-pointer] * { cursor:none !important; }
   a:not([aria-label]):hover { text-decoration:underline; text-decoration-thickness:1px; animation:kivora-underline 160ms ease-out both; }
 }
 @media (pointer:coarse) and (prefers-reduced-motion:no-preference) {

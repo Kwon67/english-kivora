@@ -41,7 +41,7 @@ const nextConfig: NextConfig = {
     process.env.NODE_ENV === 'development'
       ? (process.env.NEXT_DEPLOYMENT_ID ?? `local-${process.pid}`)
       : process.env.NEXT_DEPLOYMENT_ID,
-  allowedDevOrigins: ['192.168.0.6', '192.168.3.70', 'localhost:3000', '192.168.101.142'],
+  allowedDevOrigins: ['192.168.0.6', '192.168.3.70', 'localhost:3000', '192.168.101.142', '192.168.101.163'],
   turbopack: {},
   // Enable production optimizations
   compress: true,
@@ -53,11 +53,10 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '6mb',
     },
     // Already optimized packages (auto-enabled for these):
-    // lucide-react, recharts, motion
+    // lucide-react, recharts
     optimizePackageImports: [
       'canvas-confetti',
       'recharts',
-      'motion',
     ],
   },
 

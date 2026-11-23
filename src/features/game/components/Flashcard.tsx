@@ -7,13 +7,9 @@ import type { Card } from '@/types/database.types'
 import AudioButton from '@/components/ui/AudioButton'
 import { feedback } from '@/lib/feedback'
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
-import {
-  m,
-  useMotionValue,
-  useTransform,
-  PanInfo,
-  useAnimation,
-} from 'motion/react'
+import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
+import { useDrag } from '@use-gesture/react'
 
 interface FlashcardProps {
   card: Card
@@ -30,15 +26,32 @@ export default function Flashcard({
   const [flippedCardId, setFlippedCardId] = useState<string | null>(null)
   const flipped = flippedCardId === card.id
   const response = useRef({ answered: false, active: false, startedAt: 0 })
-  const controls = useAnimation()
+  const panel = useRef<HTMLDivElement>(null)
+  const rightHint = useRef<HTMLDivElement>(null)
+  const leftHint = useRef<HTMLDivElement>(null)
+  const offset = useRef({ x: 0 })
+  const animation = useRef<gsap.core.Tween | null>(null)
+  const draw = useRef<(x: number) => void>(() => {})
 
-  const x = useMotionValue(0)
-  const rotate = useTransform(x, [-200, 200], [-10, 10])
-  const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0])
-
-  // Opacity for the "Acertei" / "Errei" hints overlay
-  const rightHintOpacity = useTransform(x, [0, 50, 150], [0, 0.5, 1])
-  const leftHintOpacity = useTransform(x, [0, -50, -150], [0, 0.5, 1])
+  useGSAP(() => {
+    const node = panel.current!
+    const setX = gsap.quickSetter(node, 'x', 'px')
+    const setAngle = gsap.quickSetter(node, 'rotation', 'deg')
+    const setOpacity = gsap.quickSetter(node, 'opacity')
+    const setRight = rightHint.current && gsap.quickSetter(rightHint.current, 'opacity')
+    const setLeft = leftHint.current && gsap.quickSetter(leftHint.current, 'opacity')
+    const clamp = gsap.utils.clamp(0, 1)
+    draw.current = (x) => {
+      offset.current.x = x
+      setX(x)
+      setAngle(gsap.utils.clamp(-10, 10, x / 20))
+      setOpacity(clamp((200 - Math.abs(x)) / 100))
+      const hint = clamp(Math.abs(x) <= 50 ? Math.abs(x) / 100 : 0.5 + (Math.abs(x) - 50) / 200)
+      setRight?.(x > 0 ? hint : 0)
+      setLeft?.(x < 0 ? hint : 0)
+    }
+    draw.current(0)
+  }, { scope: panel, dependencies: [flipped, card.id], revertOnUpdate: true })
 
   const triggerConfetti = async () => {
     const confetti = (await import('canvas-confetti')).default
@@ -57,48 +70,53 @@ export default function Flashcard({
     feedback.click()
   }, [flipped, card.id])
 
-  const handleAnswer = useCallback(
-    async (knew: boolean) => {
-      const current = response.current
-      if (!flipped || current.answered || !current.active) return
-      // Claim the response synchronously, before keyboard, click or drag can race.
-      current.answered = true
-      const latencyMs = Date.now() - current.startedAt
-
-      // Animate out of screen before resolving
+  const handleAnswer = useCallback((knew: boolean) => {
+    const current = response.current
+    if (!flipped || current.answered || !current.active || panel.current?.closest('[inert]')) return
+    current.answered = true
+    const latencyMs = Date.now() - current.startedAt
+    animation.current?.kill()
+    const finish = () => {
+      if (!current.active) return
       if (knew) {
-        await controls.start({
-          x: reducedMotion ? 0 : 300,
-          opacity: 0,
-          transition: { duration: reducedMotion ? 0 : 0.2 },
-        })
-        if (!current.active) return
-        triggerConfetti()
+        void triggerConfetti()
         onCorrect(latencyMs)
       } else {
-        await controls.start({
-          x: reducedMotion ? 0 : -300,
-          opacity: 0,
-          transition: { duration: reducedMotion ? 0 : 0.2 },
-        })
-        if (!current.active) return
         onWrong(latencyMs)
       }
-    },
-    [onCorrect, onWrong, flipped, controls, reducedMotion],
-  )
+    }
+    if (reducedMotion) {
+      gsap.set(panel.current, { opacity: 0 })
+      finish()
+      return
+    }
+    animation.current = gsap.to(offset.current, {
+      x: knew ? 300 : -300, duration: 0.2, ease: 'power1.inOut',
+      onUpdate: () => draw.current(offset.current.x), onComplete: finish,
+    })
+  }, [flipped, onCorrect, onWrong, reducedMotion])
 
-  const handleDragEnd = useCallback(
-    (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-      if (!flipped) return
-      if (info.offset.x > 100) {
-        handleAnswer(true)
-      } else if (info.offset.x < -100) {
-        handleAnswer(false)
-      }
-    },
-    [flipped, handleAnswer],
-  )
+  const bindDrag = useDrag(({ first, last, xy, initial, canceled, event }) => {
+    if (response.current.answered || !response.current.active) return
+    if (first) animation.current?.kill()
+    const distance = xy[0] - initial[0]
+    if (!last) {
+      draw.current(distance * 0.8)
+      return
+    }
+    if (!canceled && event.type !== 'pointercancel' && event.type !== 'touchcancel' && Math.abs(distance) > 100) {
+      handleAnswer(distance > 0)
+      return
+    }
+    animation.current = gsap.to(offset.current, {
+      x: 0, duration: reducedMotion ? 0 : 0.4, ease: 'back.out(0.8)',
+      onUpdate: () => draw.current(offset.current.x),
+    })
+  }, { enabled: flipped, axis: 'x', filterTaps: true })
+
+  useEffect(() => {
+    if (reducedMotion) animation.current?.progress(1)
+  }, [reducedMotion])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -126,27 +144,21 @@ export default function Flashcard({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [flipped, handleFlip, handleAnswer])
 
-  // Reset animations when card changes
-  useEffect(() => {
+  useGSAP(() => {
     const current = { answered: false, active: true, startedAt: Date.now() }
     response.current = current
-    controls.set({ x: 0, opacity: 1, rotate: 0 })
-    x.set(0)
     return () => {
       current.active = false
-      controls.stop()
+      animation.current?.kill()
     }
-  }, [card.id, controls, x])
+  }, { scope: panel, dependencies: [card.id], revertOnUpdate: true })
 
   return (
     <div className="mx-auto w-full max-w-[760px] space-y-3 sm:space-y-5">
-      <m.div
-        animate={controls}
-        style={{ x, rotate, opacity, willChange: 'transform' }}
-        drag={flipped ? 'x' : false}
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.8}
-        onDragEnd={handleDragEnd}
+      <div
+        ref={panel}
+        {...bindDrag()}
+        style={{ willChange: 'transform', touchAction: flipped ? 'pan-y' : undefined }}
         onClick={!flipped ? handleFlip : undefined}
         role={flipped ? 'group' : 'button'}
         tabIndex={flipped ? -1 : 0}
@@ -164,24 +176,24 @@ export default function Flashcard({
         {flipped && (
           <>
             {/* Acertei Overlay */}
-            <m.div
-              style={{ opacity: rightHintOpacity }}
+            <div ref={rightHint}
+              style={{ opacity: 0 }}
               className="absolute inset-0 z-10 flex items-center justify-end bg-gradient-to-l from-[var(--color-primary)]/20 to-transparent pr-8 pointer-events-none"
             >
               <div className="rounded-full bg-primary p-4 text-on-primary shadow-lg transform rotate-12">
                 <ThumbsUp className="h-10 w-10" />
               </div>
-            </m.div>
+            </div>
 
             {/* Errei Overlay */}
-            <m.div
-              style={{ opacity: leftHintOpacity }}
+            <div ref={leftHint}
+              style={{ opacity: 0 }}
               className="absolute inset-0 z-10 flex items-center justify-start bg-gradient-to-r from-[var(--color-error)]/20 to-transparent pl-8 pointer-events-none"
             >
               <div className="rounded-full bg-[var(--color-error)] p-4 text-[var(--color-on-error)] shadow-lg transform -rotate-12">
                 <ThumbsDown className="h-10 w-10" />
               </div>
-            </m.div>
+            </div>
           </>
         )}
 
@@ -233,7 +245,7 @@ export default function Flashcard({
             </div>
           )}
         </div>
-      </m.div>
+      </div>
 
       {/* Two columns from the start: stacking them below `sm` added a whole button row, which is
           what put "Acertei" under the fold on a short phone. The drag arrows are decoration and

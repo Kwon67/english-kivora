@@ -44,7 +44,9 @@ import {
   selectedPill,
 } from '@/features/profile/lib/libraryUi'
 import { notify } from '@/lib/toast'
-import { m, AnimatePresence } from 'motion/react'
+import PressButton from '@/components/motion/PressButton'
+import TransitionSlot from '@/components/motion/TransitionSlot'
+import { useEntrance } from '@/components/motion/useEntrance'
 import UserPackFoldersOrganizer from './UserPackFoldersOrganizer'
 import { VOICES } from '@/lib/voices'
 
@@ -142,6 +144,8 @@ export default function UserPacksManager({ packs, creationOpen, onOpenCreate, on
       .filter((label) => label !== USER_MISC_PACK_FOLDER_LABEL)
       .sort((a, b) => a.localeCompare(b, 'pt-BR', { numeric: true }))
   }, [packs, extraFolders])
+
+  const enterForm = useEntrance(4, 0.94)
 
   function resolveFolderName(selection: string) {
     if (!selection || selection === USER_MISC_PACK_FOLDER_LABEL) return null
@@ -293,12 +297,9 @@ export default function UserPacksManager({ packs, creationOpen, onOpenCreate, on
         </div>
 
         {/* Message Banner */}
-        <AnimatePresence mode="wait">
+        <TransitionSlot duration={0.3} enterY={-4} enterOpacity={0.94} exitY={-10}>
           {message && (
-            <m.div 
-              initial={{ opacity: 0.94, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
+            <div key="message"
               className={`mt-5 flex items-start gap-2.5 rounded-container border px-4 py-3.5 font-body text-xs font-bold sm:text-sm ${ message.type === 'success' ? 'border-brand-dark/20 bg-brand-accent/25 text-brand-dark' : 'border-error/30 bg-error-soft text-error' }`}
             >
               {message.type === 'success' ? (
@@ -307,9 +308,9 @@ export default function UserPacksManager({ packs, creationOpen, onOpenCreate, on
                 <FileText className="h-4.5 w-4.5 shrink-0 text-error" />
               )}
               <span>{message.text}</span>
-            </m.div>
+            </div>
           )}
-        </AnimatePresence>
+        </TransitionSlot>
 
         <div className={`relative z-10 mt-6 ${modeToggleWrap} ${libraryFrostedSubtle}`}>
           <button
@@ -334,9 +335,7 @@ export default function UserPacksManager({ packs, creationOpen, onOpenCreate, on
 
         <div className="relative z-10 mt-6">
           {mode === 'manual' ? (
-            <m.form 
-              initial={{ opacity: 0.94, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
+            <form ref={enterForm}
               onSubmit={handleManualSubmit} 
               className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start"
             >
@@ -465,22 +464,20 @@ export default function UserPacksManager({ packs, creationOpen, onOpenCreate, on
                   </div>
                 </div>
 
-                <m.button 
+                <PressButton
                   type="submit" 
                   disabled={manualSaving} 
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
+                  hoverScale={1.01}
+                  pressedScale={0.99}
                   className={`${primaryBtn} w-full justify-center py-3 text-xs font-extrabold tracking-wider uppercase`}
                 >
                   {manualSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   {manualSaving ? 'Salvando...' : targetPackId === 'new' ? 'Criar Pack' : 'Adicionar Cards'}
-                </m.button>
+                </PressButton>
               </aside>
-            </m.form>
+            </form>
           ) : (
-            <m.div 
-              initial={{ opacity: 0.94, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
+            <div ref={enterForm}
               className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start"
             >
               <form onSubmit={handleAiPreview} className="space-y-4">
@@ -584,16 +581,16 @@ export default function UserPacksManager({ packs, creationOpen, onOpenCreate, on
                   </select>
                 </div>
 
-                <m.button 
+                <PressButton
                   type="submit" 
                   disabled={aiLoading} 
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
+                  hoverScale={1.01}
+                  pressedScale={0.99}
                   className={`${primaryBtn} py-3 px-5 text-xs font-extrabold tracking-wider uppercase`}
                 >
                   {aiLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
                   {aiLoading ? 'Gerando...' : 'Gerar com IA'}
-                </m.button>
+                </PressButton>
               </form>
 
               <aside className={`${nestedCardClass} ${libraryFrostedSubtle} order-last p-5 lg:order-none flex flex-col justify-between`}>
@@ -620,19 +617,19 @@ export default function UserPacksManager({ packs, creationOpen, onOpenCreate, on
                   </div>
                 </div>
 
-                <m.button
+                <PressButton
                   type="button"
                   disabled={previewCards.length === 0 || aiSaving}
                   onClick={handleAiSave}
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
+                  hoverScale={1.01}
+                  pressedScale={0.99}
                   className={`${primaryBtn} mt-4 w-full justify-center py-3 uppercase disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer`}
                 >
                   {aiSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   {aiSaving ? 'Salvando...' : 'Salvar na biblioteca'}
-                </m.button>
+                </PressButton>
               </aside>
-            </m.div>
+            </div>
           )}
         </div>
       </article>

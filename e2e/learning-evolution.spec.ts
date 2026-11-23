@@ -83,6 +83,69 @@ test('guided flashcard has no zero denominator and restores its phase', async ({
   await expect(page.getByRole('button', { name: 'Mostrar resposta', exact: true })).toHaveCount(0)
 })
 
+test('guided listening keeps the card visible while advancing', async ({ page, request, hasTouch }) => {
+  await request.post('/api/product-fixture', { data: { guidedListening: true } })
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  const manifest = JSON.parse(await readFile('audio/manifest.json', 'utf8')) as Record<string, { path: string }>
+  const recording = await readFile('public' + Object.values(manifest)[0].path)
+  await page.route('**/api/tts/preview?**', route => route.fulfill({ contentType: 'audio/mpeg', body: recording }))
+  await page.goto('/guided')
+
+  const input = page.getByTestId('listening-input')
+  await input.fill('How are you today?')
+  await page.getByTestId('listening-submit').click()
+  await expect(page.getByText('Você ouviu perfeitamente!')).toBeVisible()
+
+  const staysVisible = await page.getByRole('button', { name: 'Ir para a próxima' }).evaluate(async button => {
+    const panel = button.closest('.guided-review-prompt')
+    if (!(button instanceof HTMLButtonElement) || !panel) throw new Error('Missing guided review card')
+    const until = performance.now() + 400
+    let visible = true
+    button.click()
+    do {
+      await new Promise(requestAnimationFrame)
+      visible &&= panel.isConnected && getComputedStyle(panel).opacity === '1'
+    } while (performance.now() < until)
+    return visible
+  })
+
+  expect(staysVisible).toBe(true)
+  const grade = page.getByRole('button', { name: /\bBom\b/ })
+  if (hasTouch) await grade.tap()
+  else await grade.click()
+  await expect(input).toBeVisible()
+  await expect(input).toHaveValue('')
+  const state = await (await request.get('/api/product-fixture')).json()
+  expect(state.reviews).toMatchObject([{ cardId: 'card-0-0', practiceMode: 'listening', practiceOutcome: 'correct' }])
+})
+
+test('canceling a guided swipe leaves the card available for exactly one grade', async ({ page, request, browserName, hasTouch }) => {
+  test.skip(browserName !== 'chromium' || !hasTouch, 'CDP touch input on a touch viewport')
+  await page.goto('/guided')
+  await page.getByRole('button', { name: 'Mostrar resposta', exact: true }).click()
+  await page.getByRole('button', { name: 'Continuar', exact: true }).click()
+  const heading = page.locator('[style*="touch-action"] h2')
+  await heading.scrollIntoViewIfNeeded()
+  const bounds = await heading.boundingBox()
+  if (!bounds) throw new Error('Guided review card has no bounds')
+  const x = Math.round(bounds.x + bounds.width / 2)
+  const y = Math.round(bounds.y + bounds.height / 2)
+  const input = await page.context().newCDPSession(page)
+  for (const [distance, end] of [[110, 'touchCancel'], [50, 'touchEnd']] as const) {
+    await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y, id: 1 }] })
+    for (let step = 1; step <= 5; step++) {
+      await input.send('Input.dispatchTouchEvent', {
+        type: 'touchMove', touchPoints: [{ x: x + distance * step / 5, y, id: 1 }],
+      })
+    }
+    await input.send('Input.dispatchTouchEvent', { type: end, touchPoints: [] })
+  }
+  await expect.poll(async () => {
+    const state = await (await request.get('/api/product-fixture')).json()
+    return state.reviews.map((review: { quality: number }) => review.quality)
+  }).toEqual([4])
+})
+
 test('empty review offers one useful contextual next action', async ({ page, request }) => {
   await request.post('/api/product-fixture', { data: { empty: true } })
   await page.goto('/review')
@@ -390,6 +453,26 @@ test('onboarding recovers a disconnected submit and reaches today without an eli
   await expect(page.getByText(/Não encontramos packs públicos/)).toBeVisible()
   await page.getByTestId('onboarding-starter-pack-skip').click()
   await expect(page.getByRole('button', { name: 'Começar contexto' })).toBeEnabled()
+})
+
+test('Blitz mounts the selected first round without showing a provisional choice', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.addInitScript(() => {
+    // The opening draw is between multiple choice and matching. Select matching.
+    Math.random = () => 0.9
+    const observer = new MutationObserver(() => {
+      const heading = document.querySelector('.blitz-round h2')
+      if (!heading) return
+      document.documentElement.dataset.firstBlitzRound = heading.textContent ?? ''
+      observer.disconnect()
+    })
+    observer.observe(document, { childList: true, subtree: true })
+  })
+  await page.goto('/blitz/play')
+  const matching = 'Combine inglês e português'
+  await expect(page.locator('html')).toHaveAttribute('data-first-blitz-round', matching)
+  await expect(page.locator('.blitz-round')).toHaveCount(1)
+  await expect(page.getByRole('heading', { name: matching })).toBeVisible()
 })
 
 test('Blitz restores only the signed-in learner’s result after reopening the game', async ({ page }) => {

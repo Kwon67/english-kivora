@@ -1,10 +1,7 @@
 'use client'
 
-import {
-  m,
-  useAnimationFrame,
-  useMotionValue,
-} from 'motion/react'
+import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
 import { useLayoutEffect, useRef, useState } from 'react'
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 import { partners, type Partner } from '@/components/sections/trustLogos'
@@ -49,24 +46,29 @@ export default function TrustBar() {
   const [pageHidden, setPageHidden] = useState(false)
 
   const trackRef = useRef<HTMLDivElement>(null)
-  const halfWidthRef = useRef(0)
-  const offsetRef = useRef(0)
-  const x = useMotionValue(0)
-
-  useLayoutEffect(() => {
+  const belt = useRef<gsap.core.Tween | null>(null)
+  useGSAP(() => {
     const track = trackRef.current
-    if (!track) return
-
-    const measure = () => {
-      // Two identical groups → loop distance is half the track width
-      halfWidthRef.current = track.scrollWidth / 2
+    if (!track || reducedMotion) return
+    const resize = () => {
+      const width = track.scrollWidth / 2
+      if (width <= 0) return
+      const progress = belt.current?.progress() ?? 0
+      const paused = belt.current?.paused() ?? false
+      belt.current?.kill()
+      belt.current = gsap.fromTo(track, { x: 0 }, {
+        x: -width, duration: width / MARQUEE_SPEED_PX_S, ease: 'none', repeat: -1, paused,
+      }).progress(progress)
     }
-
-    measure()
-    const observer = new ResizeObserver(measure)
+    resize()
+    const observer = new ResizeObserver(resize)
     observer.observe(track)
-    return () => observer.disconnect()
-  }, [reducedMotion])
+    return () => {
+      observer.disconnect()
+      belt.current?.kill()
+      belt.current = null
+    }
+  }, { scope: trackRef, dependencies: [reducedMotion], revertOnUpdate: true })
 
   useLayoutEffect(() => {
     const sync = () => setPageHidden(document.visibilityState === 'hidden')
@@ -75,19 +77,9 @@ export default function TrustBar() {
     return () => document.removeEventListener('visibilitychange', sync)
   }, [])
 
-  useAnimationFrame((_, delta) => {
-    if (reducedMotion || paused || pageHidden) return
-
-    const half = halfWidthRef.current
-    if (half <= 0) return
-
-    offsetRef.current -= (delta / 1000) * MARQUEE_SPEED_PX_S
-    // Wrap seamlessly when one full group has scrolled past
-    if (offsetRef.current <= -half) {
-      offsetRef.current += half
-    }
-    x.set(offsetRef.current)
-  })
+  useLayoutEffect(() => {
+    belt.current?.paused(paused || pageHidden)
+  }, [paused, pageHidden, reducedMotion])
 
   return (
     <section
@@ -126,14 +118,13 @@ export default function TrustBar() {
             ))}
           </ul>
         ) : (
-          <m.div
+          <div
             ref={trackRef}
             className="flex w-max"
-            style={{ x }}
           >
             <PartnerGroup />
             <PartnerGroup ariaHidden />
-          </m.div>
+          </div>
         )}
       </div>
     </section>

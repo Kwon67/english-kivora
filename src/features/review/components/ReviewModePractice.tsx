@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Eye } from 'lucide-react'
-import { m } from 'motion/react'
+import PressButton from '@/components/motion/PressButton'
+import { useEntrance } from '@/components/motion/useEntrance'
 import { buildMultipleChoiceOptions } from '@/features/game/lib/multipleChoiceOptions'
 import MultipleChoice from '@/features/game/components/MultipleChoice'
 import TypingMode, { type TypingDirection } from '@/features/game/components/TypingMode'
@@ -79,6 +80,7 @@ function ReviewFlashcardPractice({
   direction: TypingDirection
   onComplete: () => void
 }) {
+  const enterAnswer = useEntrance(10)
   const [showAnswer, setShowAnswer] = useState(false)
   const recallsEnglish = direction === 'pt-to-en'
 
@@ -100,7 +102,7 @@ function ReviewFlashcardPractice({
         </h2>
 
         {showAnswer ? (
-          <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`${reviewMeaningCard} mt-5`}>
+          <div ref={enterAnswer} className={`${reviewMeaningCard} mt-5`}>
             <p className="font-heading text-[11px] font-bold uppercase tracking-widest text-brand-secondary">
               {recallsEnglish ? 'Em inglês' : 'Significado'}
             </p>
@@ -110,21 +112,21 @@ function ReviewFlashcardPractice({
             {recallsEnglish ? (
               <AudioButton url={card.audio_url} fallbackText={card.english_phrase} autoPlay variant="game" className="mx-auto mt-3" />
             ) : null}
-          </m.div>
+          </div>
         ) : null}
       </div>
 
       {!showAnswer ? (
-        <m.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+        <PressButton
+          hoverScale={1.02}
+          pressedScale={0.98}
           type="button"
           onClick={() => setShowAnswer(true)}
           className={`${reviewPrimaryBtn} mx-auto mt-4 w-full sm:mt-6 sm:w-auto`}
         >
           <Eye className="h-4 w-4" strokeWidth={2} />
           Mostrar resposta
-        </m.button>
+        </PressButton>
       ) : (
         <button type="button" onClick={onComplete} className={`${reviewPrimaryBtn} mt-2 w-full`}>
           Continuar

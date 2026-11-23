@@ -1,6 +1,9 @@
 'use client'
 
-import { m } from 'motion/react'
+import { useRef } from 'react'
+import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
+import { useEntrance } from '@/components/motion/useEntrance'
 import Link from 'next/link'
 import { ArrowRight, Check, Lock, Sparkles } from 'lucide-react'
 import SectionBadge from '@/components/ui/SectionBadge'
@@ -40,17 +43,43 @@ function toDisplayName(name: string | null | undefined): string | null {
   return trimmed.charAt(0).toUpperCase() + trimmed.slice(1)
 }
 
+function revealCheck(element: HTMLSpanElement | null) {
+  if (!element) return
+  const media = gsap.matchMedia()
+  media.add('(prefers-reduced-motion: no-preference)', () => {
+    gsap.from(element, { scale: 0, rotation: -30, duration: 0.52, ease: 'elastic.out(1,0.55)' })
+  })
+  return () => media.revert()
+}
+
 export default function FirstDayGuide({ plan, firstName }: FirstDayGuideProps) {
   const { steps, nextStep, doneCount, totalMinutes } = plan
   const progress = (doneCount / steps.length) * 100
   const displayName = toDisplayName(firstName)
 
+  const scope = useRef<HTMLElement>(null)
+  const fill = useRef<HTMLDivElement>(null)
+  const enterCta = useEntrance(6, 0, 0.35, 0.1)
+  useGSAP(() => {
+    const media = gsap.matchMedia()
+    media.add('(prefers-reduced-motion: no-preference)', () => {
+      gsap.from(scope.current, { opacity: 0, y: 12, duration: 0.45, ease: 'expo.out', clearProps: 'opacity,transform' })
+      gsap.from('ol > li', { opacity: 0, y: 10, duration: 0.4, stagger: 0.08, ease: 'expo.out' })
+    }, scope)
+    return () => media.revert()
+  }, { scope })
+  useGSAP(() => {
+    const media = gsap.matchMedia()
+    media.add({ full: '(prefers-reduced-motion: no-preference)', reduce: '(prefers-reduced-motion: reduce)' }, context => {
+      gsap.to(fill.current, { width: `${progress}%`, duration: context.conditions?.full ? 0.6 : 0, ease: 'expo.out' })
+    })
+    return () => media.revert()
+  }, { scope, dependencies: [progress], revertOnUpdate: true })
+
   return (
-    <m.section
+    <section ref={scope}
       data-testid="first-day-guide"
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+
       className={`${homeCardClass} home-frosted-surface p-6 sm:p-8`}
     >
       <div className="flex items-center justify-between gap-3">
@@ -68,12 +97,7 @@ export default function FirstDayGuide({ plan, firstName }: FirstDayGuideProps) {
 
       <div className="mt-6" aria-hidden="true">
         <div className={`h-2 w-full overflow-hidden ${homeNestedCardClass} p-0`}>
-          <m.div
-            className="h-full bg-brand-accent"
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          />
+          <div ref={fill} style={{ width: 0 }} className="h-full bg-brand-accent" />
         </div>
       </div>
       <p className="mt-2 font-body text-xs font-semibold text-brand-secondary">
@@ -85,24 +109,15 @@ export default function FirstDayGuide({ plan, firstName }: FirstDayGuideProps) {
           const isCurrent = nextStep?.id === step.id
 
           return (
-            <m.li
-              key={step.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: step.done || step.locked ? 0.55 : 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.08 * index, ease: [0.22, 1, 0.36, 1] }}
+            <li key={step.id} style={{ opacity: step.done || step.locked ? 0.55 : 1 }}
               className={`${homeNestedCardClass} p-4 sm:p-5 ${isCurrent ? 'bg-bg-primary' : ''}`}
             >
               <div className="flex items-start gap-3 sm:gap-4">
                 <span className={`${stepIconBoxClass} ${step.done ? 'bg-brand-accent' : 'bg-bg-primary'}`}>
                   {step.done ? (
-                    <m.span
-                      initial={{ scale: 0, rotate: -30 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                      transition={{ type: 'spring', stiffness: 420, damping: 18 }}
-                      className="flex"
-                    >
+                    <span ref={revealCheck} className="flex">
                       <Check className="h-4 w-4" strokeWidth={1.5} />
-                    </m.span>
+                    </span>
                   ) : step.locked ? (
                     <Lock className="h-3.5 w-3.5 text-brand-secondary" strokeWidth={1.5} />
                   ) : (
@@ -124,12 +139,7 @@ export default function FirstDayGuide({ plan, firstName }: FirstDayGuideProps) {
                   </p>
 
                   {isCurrent ? (
-                    <m.div
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.35, delay: 0.1 }}
-                      className="mt-4"
-                    >
+                    <div ref={enterCta} className="mt-4">
                       <Link
                         href={step.href}
                         transitionTypes={navForwardTransitionTypes}
@@ -140,11 +150,11 @@ export default function FirstDayGuide({ plan, firstName }: FirstDayGuideProps) {
                         {step.cta}
                         <ArrowRight className="h-4 w-4" />
                       </Link>
-                    </m.div>
+                    </div>
                   ) : null}
                 </div>
               </div>
-            </m.li>
+            </li>
           )
         })}
       </ol>
@@ -154,6 +164,6 @@ export default function FirstDayGuide({ plan, firstName }: FirstDayGuideProps) {
         As frases que você vir hoje voltam em 1 e em 10 minutos. Isso é de propósito: lembrar
         pouco antes de esquecer é o que fixa de verdade.
       </p>
-    </m.section>
+    </section>
   )
 }

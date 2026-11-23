@@ -10,13 +10,14 @@ import {
   Trophy,
   type LucideIcon,
 } from 'lucide-react'
-import { AnimatePresence, m } from 'motion/react'
-import { useRef, useState } from 'react'
+import TransitionSlot from '@/components/motion/TransitionSlot'
+import { useFlipSelection } from '@/components/motion/useFlipSelection'
+import gsap from 'gsap'
+import { useRef } from 'react'
 import LandingSectionHeader from '@/components/ui/LandingSectionHeader'
 import LandingSectionFrame from '@/components/ui/LandingSectionFrame'
 import RevealOnScroll from '@/components/ui/RevealOnScroll'
 import { landingRadiusLg } from '@/lib/landingStyles'
-import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion'
 
 type AudienceBenefit = {
   icon: LucideIcon
@@ -68,10 +69,18 @@ const audiences: Audience[] = [
   },
 ]
 
+function enterBenefits(grid: HTMLDivElement | null) {
+  if (!grid) return
+  const media = gsap.matchMedia()
+  media.add('(prefers-reduced-motion: no-preference)', () => {
+    gsap.from(grid.children, { y: 10, opacity: 0, duration: 0.25, stagger: 0.05, clearProps: 'opacity,transform' })
+  })
+  return () => media.revert()
+}
+
 export default function AudienceTabs() {
-  const [activeIndex, setActiveIndex] = useState(1)
+  const { index: activeIndex, select: setActiveIndex, indicator, id } = useFlipSelection(1, 0.42, 'back.out(0.08)')
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
-  const reducedMotion = useHydratedReducedMotion()
   const active = audiences[activeIndex]
 
   return (
@@ -118,10 +127,8 @@ export default function AudienceTabs() {
                   className={`relative min-h-14 overflow-hidden border-b border-brand-dark/15 px-4 py-4 text-left font-heading text-sm font-bold transition-colors last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0 ${selected ? 'text-white' : 'text-brand-secondary hover:bg-bg-primary hover:text-brand-dark'}`}
                 >
                   {selected ? (
-                    <m.span
-                      layoutId="audience-active-tab"
+                    <span ref={indicator} data-flip-id={id}
                       className="absolute inset-0 bg-primary"
-                      transition={{ type: 'spring', stiffness: 380, damping: 34 }}
                     />
                   ) : null}
                   <span className="relative z-10 flex items-center justify-between gap-3">
@@ -133,16 +140,12 @@ export default function AudienceTabs() {
             })}
           </div>
 
-          <AnimatePresence mode="wait" initial={false}>
-            <m.div
+          <TransitionSlot duration={0.28} enterY={8} exitY={-8} animateFirst={false}>
+            <div
               key={active.id}
               id="audience-panel"
               role="tabpanel"
               aria-labelledby={`audience-tab-${active.id}`}
-              initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={reducedMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
-              transition={{ duration: reducedMotion ? 0 : 0.28, ease: 'easeOut' }}
               className="grid lg:grid-cols-[0.82fr_1.18fr]"
             >
               <div className="landing-audience-pitch flex min-h-[270px] flex-col justify-between border-b border-brand-dark/20 p-6 sm:p-8 lg:border-b-0 lg:border-r">
@@ -158,15 +161,12 @@ export default function AudienceTabs() {
                   Montar minha rotina →
                 </a>
               </div>
-              <div className="grid sm:grid-cols-3">
-                {active.benefits.map((benefit, index) => {
+              <div ref={enterBenefits} className="grid sm:grid-cols-3">
+                {active.benefits.map((benefit) => {
                   const Icon = benefit.icon
                   return (
-                    <m.div
+                    <div
                       key={benefit.title}
-                      initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: reducedMotion ? 0 : index * 0.05, duration: 0.25 }}
                       className="group border-b border-brand-dark/15 p-6 last:border-b-0 hover:bg-bg-primary/65 sm:border-b-0 sm:border-r sm:last:border-r-0 sm:p-7"
                     >
                       <span className="flex h-11 w-11 items-center justify-center rounded-[13px] border border-brand-dark/25 bg-bg-primary transition-transform duration-200 group-hover:-translate-y-1 group-hover:border-brand-dark">
@@ -174,12 +174,12 @@ export default function AudienceTabs() {
                       </span>
                       <h3 className="mt-7 font-heading text-lg font-bold text-brand-dark">{benefit.title}</h3>
                       <p className="mt-3 text-sm leading-6 text-brand-secondary">{benefit.description}</p>
-                    </m.div>
+                    </div>
                   )
                 })}
               </div>
-            </m.div>
-          </AnimatePresence>
+            </div>
+          </TransitionSlot>
         </div>
       </RevealOnScroll>
     </LandingSectionFrame>

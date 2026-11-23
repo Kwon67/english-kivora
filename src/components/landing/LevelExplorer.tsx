@@ -42,18 +42,18 @@ export default function LevelExplorer() {
     if (lite) return
     const media = gsap.matchMedia()
     media.add('(prefers-reduced-motion: no-preference)', () => {
-      const card = panel.current
+      const stamp = panel.current?.querySelector('[data-level-stamp]')
       const chip = selectedChip.current
-      if (!card || !chip) return
-      // Expand the selected stop into the example card using transform-only FLIP.
-      const fit = Flip.fit(card, chip, { getVars: true, scale: true })
-      if (fit) gsap.from(card, { ...fit, duration: duration.panel, ease: ease.reveal, clearProps: 'transform' })
+      if (!stamp || !chip) return
+      // Only the level stamp travels. The example and signup target stay in place.
+      const fit = Flip.fit(stamp, chip, { getVars: true, scale: true })
+      if (fit) gsap.from(stamp, { ...fit, duration: duration.panel, ease: ease.reveal, clearProps: 'transform' })
     })
     return () => media.revert()
   }, { scope: panel, dependencies: [index, lite], revertOnUpdate: true })
   const current = levels[index]
   return <div className={styles.pathExplorer}>
-    <div ref={rail} className={styles.levels} aria-label="Explore os níveis de inglês"
+    <div ref={rail} data-level-rail className={styles.levels} aria-label="Explore os níveis de inglês"
       onPointerDown={() => { fromSwipe.current = true }} onScrollEnd={() => {
         if (!rail.current || !fromSwipe.current) return
         fromSwipe.current = false
@@ -74,7 +74,7 @@ export default function LevelExplorer() {
         rail.current?.querySelectorAll('button')[next]?.focus({ preventScroll: true })
       }}>{levels.map((item, i) => <button key={item.level} data-tone={item.tone} aria-pressed={index === i} aria-controls="level-example" onClick={() => { fromSwipe.current = false; activate(i) }}><span>{item.level}</span><small>{i < 2 ? 'Base' : i < 4 ? 'Autonomia' : 'Proficiência'}</small></button>)}</div>
     <div ref={panel} id="level-example" className={styles.levelExample} data-tone={current.tone} aria-live="polite" aria-atomic="true">
-      <div className={styles.levelStamp} aria-hidden="true"><Compass size={24} /><strong>{current.level}</strong></div>
+      <div data-level-stamp className={styles.levelStamp} aria-hidden="true"><Compass size={24} /><strong>{current.level}</strong></div>
       <div><p className={styles.exampleLabel}>{current.label}</p><h3 lang="en">“{current.phrase}”</h3><p>{current.goal}</p></div>
       <Link href="/register" transitionTypes={['kivora-auth']} className={styles.roundLink} aria-label={`Começar a aprender inglês: ${current.level}`}><ArrowRight size={23} /></Link>
     </div>

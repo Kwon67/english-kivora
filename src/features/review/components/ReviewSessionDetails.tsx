@@ -10,7 +10,7 @@ import {
   Target,
   Zap,
 } from 'lucide-react'
-import { m, AnimatePresence } from 'motion/react'
+import TransitionSlot from '@/components/motion/TransitionSlot'
 import SectionBadge from '@/components/ui/SectionBadge'
 import { landingRadius } from '@/lib/landingStyles'
 import { homeIconGlyph } from '@/lib/homeStyles'
@@ -125,14 +125,10 @@ export default function ReviewSessionDetails({
   activeReviewModes,
 }: ReviewSessionDetailsProps) {
   return (
-    <AnimatePresence initial={false}>
+    <TransitionSlot duration={0.22} ease="expo.out" expand animateFirst={false}>
       {isOpen ? (
-        <m.div
+        <div key="details"
           id="review-session-details"
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
           className="overflow-hidden"
         >
           <div className="space-y-3 pt-1 sm:space-y-4">
@@ -258,8 +254,8 @@ export default function ReviewSessionDetails({
               </div>
             </section>
           </div>
-        </m.div>
+        </div>
       ) : null}
-    </AnimatePresence>
+    </TransitionSlot>
   )
 }

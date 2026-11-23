@@ -42,7 +42,6 @@ As versões abaixo são as resolvidas pelo pnpm. As dependências diretas fora d
 | `gsap` | 3.15.1 | 3.15.1 | Coreografia e scroll |
 | `@gsap/react` | 2.1.2 | 2.1.2 | Coreografia e scroll |
 | `lenis` | 1.3.27 | 1.3.27 | Coreografia e scroll |
-| `motion` | 14.14.0 | 14.14.0 | Coreografia e scroll |
 | `@rive-app/canvas` | 2.51.0 | 2.51.0 | Ilustrações e embeds |
 | `@rive-app/react-canvas` | — | 4.39.0 | Ilustrações e embeds |
 | `@lottiefiles/dotlottie-react` | — | 0.22.3 | Ilustrações e embeds |
@@ -65,13 +64,13 @@ As versões abaixo são as resolvidas pelo pnpm. As dependências diretas fora d
 | `@gltf-transform/functions` | — | 4.5.1 | Pipeline GLB · dev |
 | `meshoptimizer` | — | 1.3.0 | Pipeline GLB |
 | `draco3dgltf` | — | 1.5.9 | Pipeline GLB |
-| `next-sanity` | — | 13.5.1 | CMS opcional |
+| `@sanity/client` | — | 8.16.0 | Cliente de conteúdo no servidor |
 | `@sanity/image-url` | — | 2.2.0 | CMS opcional |
 
 ### Compatibilidade
 
 - Next e React já estavam nas versões estáveis solicitadas. O Tailwind já estava na série 4. O React Compiler usa `compilationMode: "annotation"` e a diretiva `"use memo"` no explorador de níveis.
-- Nenhuma dependência direta foi removida. O projeto já usava `motion/react` e Lenis. Motion traz `framer-motion` transitivamente. O player dotLottie usa o pacote distinto `@lottiefiles/dotlottie-web`. A landing usa o adaptador React do Rive e continua servindo o WASM da mesma origem. O override restrito ao adaptador mantém o canvas e o binário em 2.51.0.
+- GSAP e Lenis controlam as animações e a rolagem. O player dotLottie usa o pacote distinto `@lottiefiles/dotlottie-web`. A landing usa o adaptador React do Rive e continua servindo o WASM da mesma origem. O override restrito ao adaptador mantém o canvas e o binário em 2.51.0.
 - Theatre R3F 0.7.2 declara Fiber 8 como peer. O projeto usa uma única instalação de Fiber 9.8.2. O ensaio com `SheetProvider` e `editable.mesh` montou um objeto Theatre junto de um material TSL e uma textura comprimida. A compatibilidade oficial do adaptador com toda a API do Fiber 9 continua em aberto.
 - O perfil CSP específico de `/` permite WASM, workers locais/blob dos decoders e leitura de projetos publicados em assets.unicorn.studio. A política das outras rotas mantém seus valores anteriores. A configuração do compilador está no arquivo central do Next.
 
@@ -80,8 +79,8 @@ As versões abaixo são as resolvidas pelo pnpm. As dependências diretas fora d
 | Entrada | Como usar |
 | --- | --- |
 | `lib/gsap.ts` | Importe `gsap`, `useGSAP`, `ScrollTrigger`, `SplitText` ou `Flip` deste módulo em um cliente. ScrollTrigger, SplitText, Flip, ScrambleText, CustomEase e DrawSVG são registrados no navegador. Aguarde `loadInteractionPlugins()` para Observer, Draggable, Inertia e MorphSVG. |
-| `lib/motion-tokens.ts` | Durações em segundos e curvas compartilhadas entre GSAP e Motion. O FAQ carrega `domAnimation` e a projeção de layout com LazyMotion ao se aproximar da tela. Se um toque começa durante o carregamento, o controle nativo continua ativo até o leitor sair do FAQ. |
-| `JourneyMotion`, `LandingLenis`, `JourneyRibbon` | O contêiner de `/` controla SplitText por linha, interações do ponteiro, loops visíveis e ViewTransition. Lenis React usa o ticker do GSAP somente em ponteiro fino com movimento permitido. A onda é um único path com DrawSVG e scrub. A altura das respostas abertas do FAQ fica fora da escala vertical da onda. Com movimento reduzido, o caminho inteiro fica visível. |
+| `lib/motion-tokens.ts` | Durações e curvas GSAP. O FAQ aprimora os controles nativos quando se aproxima da tela e anima a posição das perguntas vizinhas. Se um toque começa durante o carregamento, o controle nativo continua ativo até o leitor sair do FAQ. |
+| `JourneyMotion`, `LandingLenis`, `JourneyRibbon` | Na versão atual, a entrada de 720 ms coordena as três linhas do título, a expansão de “aberto.”, o subtítulo e a seta do CTA. A cortina cobre apenas a ilustração. Um ScrollTrigger sincroniza a planta e o sublinhado de “floresce.”. O contêiner também controla as interações do ponteiro, os loops visíveis e a ViewTransition. Lenis React usa o ticker do GSAP somente em ponteiro fino com movimento permitido. A onda é um único path com DrawSVG e scrub. A altura das respostas abertas do FAQ fica fora da escala vertical da onda. Com movimento reduzido, o caminho inteiro fica visível. |
 | `JourneyRive` | Passe `src`, um poster como filho e, quando o arquivo oferecer uma máquina de estados, `stateMachine`. O poster entra no HTML. O canvas carrega após decodificação e tempo ocioso, pausa ao sair da janela e libera a instância pelo hook do Rive. Os três arquivos atuais animam os ornamentos. Os personagens e o globo permanecem nas artes originais. Piscar e acenar exigiriam um rig separado. |
 | `scenes/LandingScene` | Passe `src` (GLB), `label`, `style` com dimensões e um `fallback` estático. Também aceita filhos R3F. O Canvas carrega quando entra na tela, inicializa WebGPURenderer de forma assíncrona e usa o backend WebGL2 quando necessário. Alterna entre renderização contínua, sob demanda com movimento reduzido e pausa fora da tela. O carregador configura Draco, Meshopt e KTX2, cancela o carregamento ao desmontar e libera os recursos do modelo. |
 | `scenes/PaletteMaterial` | Dentro de um `mesh`, use `<PaletteMaterial tint="#8ed462" />` com uma geometria. O material usa um nó TSL. Para física opcional, monte `Physics` e `RigidBody` de Rapier dentro do Canvas. O EffectComposer de postprocessing precisa de um renderer WebGL compatível. |

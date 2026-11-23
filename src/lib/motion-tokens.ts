@@ -8,5 +8,4 @@ export const duration = {
 export const ease = {
   title: 'power4.out', reveal: 'power3.out', out: 'power2.out', in: 'power2.in',
   inOut: 'power2.inOut', loop: 'sine.inOut', linear: 'none',
-  motionOut: (progress: number) => 1 - (1 - progress) ** 3,
 } as const
