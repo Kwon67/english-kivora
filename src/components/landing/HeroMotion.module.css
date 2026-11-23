@@ -1,9 +1,21 @@
-.headline [data-title-line] {
-  transform-origin: left 80%;
+@media (prefers-reduced-motion: no-preference) {
+  script[data-hero-reveal] + .headline .word {
+    opacity: 0;
+  }
 }
 
-.keyword {
+.wordMask {
+  display: inline-block;
+  vertical-align: top;
+  overflow: clip;
+  padding: .12em .06em .22em;
+  margin: -.12em -.06em -.22em;
+}
+
+.word {
+  display: block;
   position: relative;
+  white-space: nowrap;
 }
 
 .underline {
@@ -15,5 +27,4 @@
   border-top: .045em solid var(--ink);
   border-radius: 80% 40% 0 0;
   pointer-events: none;
-  transform-origin: left center;
 }

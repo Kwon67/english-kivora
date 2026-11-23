@@ -37,11 +37,7 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
   const lite = useLandingLite()
 
   // The short headline sequence does not require the full scrolling or Rive runtime.
-  useGSAP(() => {
-    const media = gsap.matchMedia()
-    media.add('(prefers-reduced-motion: no-preference)', () => setupHeroMotion(root.current!))
-    return () => media.revert()
-  }, { scope: root })
+  useGSAP(() => setupHeroMotion(root.current!), { scope: root })
 
   useGSAP(() => {
     if (!signed) {
