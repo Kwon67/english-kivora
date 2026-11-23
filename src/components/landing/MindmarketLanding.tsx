@@ -55,19 +55,6 @@ function HeroWord({ children, underline = false }: { children: string; underline
 
 export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<Record<'memory' | 'conversation', string>> }) {
   return <JourneyMotion>
-    {/* Map the shared illustration and its animated layers to the same print colors. */}
-    <svg aria-hidden="true" focusable="false" width="0" height="0" className={styles.printColors}>
-      <defs>
-        <filter id="landing-print-colors" colorInterpolationFilters="sRGB">
-          <feColorMatrix type="saturate" values="0" />
-          <feComponentTransfer>
-            <feFuncR type="table" tableValues="0.0980 0.1255 0.6784 0.9176 1.0000" />
-            <feFuncG type="table" tableValues="0.2196 0.3059 0.5569 0.8627 0.9961" />
-            <feFuncB type="table" tableValues="0.2627 0.3294 0.4549 0.7804 0.9725" />
-          </feComponentTransfer>
-        </filter>
-      </defs>
-    </svg>
     <LandingNavigation links={links} />
     <div className={styles.journey} data-ribbon-journey>
     <main id="main-content">
