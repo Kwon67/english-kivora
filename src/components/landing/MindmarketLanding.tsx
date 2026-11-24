@@ -184,7 +184,7 @@ function Colophon() {
         <nav aria-label="Explore a Kivora">{links.map(link => <Link key={link.href} href={link.href}>{link.label}</Link>)}</nav>
         <nav aria-label="Conta e informações"><Link href="/login">Entrar</Link><Link href="/privacy">Privacidade</Link><Link href="/terms">Termos de uso</Link></nav>
       </div>
-      <div className={layout.credit}><span>© {new Date().getFullYear()} Kivora English</span><a href="https://storyset.com/illustration/learning-languages/bro">Ilustração por Storyset</a><Link href="#hero-title">Voltar ao início ↑</Link></div>
+      <div className={layout.credit}><span>© {new Date().getFullYear()} Kivora English</span><Link href="#hero-title">Voltar ao início ↑</Link></div>
     </footer>
   )
 }
