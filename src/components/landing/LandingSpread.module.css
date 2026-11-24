@@ -35,7 +35,7 @@
 }
 .landscape,.landscape svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
 .student {
-  position:absolute; inset:-3% 13% 7% 56%; background:url('/images/hero/learning-languages.ca66b095b928.svg') center bottom/contain no-repeat;
+  position:absolute; inset:-3% 13% 7% 56%;
 }
 .ticket { position:absolute; left:max(var(--gutter),calc(50% - 400px)); bottom:8%; width:clamp(265px,25vw,390px); perspective:1000px; transform:rotate(-5deg); }
 .ticket button { min-height:clamp(98px,8vw,132px); }
