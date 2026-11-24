@@ -77,11 +77,7 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
             </div>
           </div>
           <figure className={styles.heroVisual} data-hero-art>
-            <div className={styles.travelBook} aria-hidden="true" />
-            <svg className={styles.speech} data-hero-glint aria-hidden="true" viewBox="0 0 62 46" fill="none">
-              <path d="M18 4h28c9 0 13 7 13 15s-5 15-14 15H29L15 43l2-10C7 32 3 27 3 18S9 4 18 4Z" fill="var(--paper)" stroke="currentColor" strokeWidth="2.4" />
-              <path d="M18 19h3m8 0h3m8 0h3" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-            </svg>
+            <div className={styles.languageArt} data-hero-glint aria-hidden="true" />
             <figcaption className={styles.cardStage} data-hero-card-stage><HeroFlashcard /></figcaption>
           </figure>
         </section>
@@ -137,7 +133,7 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<
       <nav aria-label="Explore a Kivora">
         {links.map(link => <Link key={link.href} href={link.href}>{link.label}<ArrowUpRight size={18} aria-hidden="true" /></Link>)}
       </nav>
-    </div><div className={styles.footerBottom}><span>© {new Date().getFullYear()} Kivora English</span><div><Link href="/privacy" prefetch={false}>Privacidade</Link><Link href="/terms" prefetch={false}>Termos de uso</Link><Link href="/login" transitionTypes={['kivora-auth']}>Entrar</Link></div><span>Feito para quem tem curiosidade.</span></div></footer>
+    </div><div className={styles.footerBottom}><span>© {new Date().getFullYear()} Kivora English</span><div><Link href="/privacy" prefetch={false}>Privacidade</Link><Link href="/terms" prefetch={false}>Termos de uso</Link><Link href="/login" transitionTypes={['kivora-auth']}>Entrar</Link></div><span>Feito para quem tem curiosidade. <a href="https://storyset.com/illustration/learning-languages/bro">Ilustração por Storyset</a></span></div></footer>
     </div>
     <div className={styles.mobileDock} data-hero-dock><Action>Começar grátis</Action></div>
   </JourneyMotion>
