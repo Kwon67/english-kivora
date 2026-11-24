@@ -4,13 +4,13 @@ import dynamic from 'next/dynamic'
 import { createContext, useContext, useRef, useState, ViewTransition, type ReactNode } from 'react'
 import type Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
-import { gsap, ScrollTrigger, useGSAP } from '@/lib/gsap'
+import { gsap, useGSAP } from '@/lib/gsap'
 import { duration, ease } from '@/lib/motion-tokens'
 import styles from './MindmarketLanding.module.css'
 import { playLandingSound } from './landingSound'
 import { useLandingLite } from './useLandingLite'
 import { setupHeroMotion } from './HeroMotion'
-import { setupPlanHover, setupSectionMotion } from './JourneySectionMotion'
+import { setupSectionMotion } from './JourneySectionMotion'
 
 const LandingLenis = dynamic(() => import('./LandingLenis'), { ssr: false })
 let signed = false
@@ -70,7 +70,7 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
       setSmooth(true)
       // Each layer owns one transform. Travel, floating and pointer response
       // act on separate nodes so scrolling never fights the cursor.
-      const cleanups: (() => void)[] = [setupPlanHover(container)]
+      const cleanups: (() => void)[] = []
       for (const area of select('[data-pointer-area], [data-tilt], [data-magnetic]') as HTMLElement[]) {
         const isCard = area.hasAttribute('data-tilt')
         const magnet = area.hasAttribute('data-magnetic')
@@ -127,31 +127,8 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
         const illustration = scene.querySelector('[data-art-motion="illustration"]')
         loop(scene, gsap.to(illustration, { y: -7, rotation: .35, duration: duration.illustration, ease: ease.loop, repeat: -1, yoyo: true }))
       }
-      for (const element of select('[data-scene-travel]')) {
-        gsap.fromTo(element, { y: 15 }, { y: -22, ease: ease.linear,
-          scrollTrigger: { trigger: element.closest('section'), start: 'top bottom', end: 'bottom top', scrub: .35 } })
-      }
       const hero = container.querySelector('[aria-labelledby="hero-title"]')!
       loop(hero, gsap.to(select('[data-hero-glint]'), { y: -5, rotation: 3, duration: 4, ease: 'sine.inOut', repeat: -1, yoyo: true }))
-      for (const element of select('#faq [data-float]')) {
-        loop(element, gsap.to(element, { y: -8, rotation: 2, duration: duration.float, ease: ease.loop, repeat: -1, yoyo: true }))
-      }
-      const belt = select('[data-word-belt]')[0]
-      if (belt) {
-        const marquee = gsap.to(belt, { xPercent: -50, duration: duration.belt, repeat: -1, ease: ease.linear,
-          onReverseComplete: () => { marquee.totalTime(marquee.duration() * 100) } })
-        loop(belt, marquee)
-        const speed = gsap.quickTo(marquee, 'timeScale', { duration: .3 })
-        ScrollTrigger.create({ trigger: belt.parentElement, start: 'top bottom', end: 'bottom top',
-          onUpdate(trigger) { speed(trigger.direction * (1 + Math.min(3, Math.abs(trigger.getVelocity()) / 900))) },
-        })
-        const settle = () => speed(marquee.timeScale() < 0 ? -1 : 1)
-        ScrollTrigger.addEventListener('scrollEnd', settle)
-        return () => {
-          ScrollTrigger.removeEventListener('scrollEnd', settle)
-          observer.disconnect(); document.removeEventListener('visibilitychange', sync)
-        }
-      }
       return () => { observer.disconnect(); document.removeEventListener('visibilitychange', sync) }
     })
     return () => {

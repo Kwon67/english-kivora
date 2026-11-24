@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import layout from './LandingSpread.module.css'
+import StreetScene from './StreetScene'
 import SpotIllustration from '@/components/illustrations/SpotIllustration'
 import { ArrowRight, ArrowUpRight, Check } from 'lucide-react'
 import LandingFAQ from './LandingFAQ'
@@ -11,7 +13,7 @@ import HeroFlashcard from './HeroFlashcard'
 import heroStyles from './HeroMotion.module.css'
 import JourneyRibbon from './JourneyRibbon'
 import JourneyMotion from './JourneyMotion'
-import { ConversationScene, JourneyMotif, JourneySpark, MemoryScene } from './JourneyArt'
+import { ConversationScene, MemoryScene } from './JourneyArt'
 
 // Runs as HTML is parsed, before the heading paints. Failed or late chunks leave readable text.
 const heroRevealBootstrap = `(() => {
@@ -41,10 +43,6 @@ function Action({ href = '/register', children, className = '', magnetic }: { hr
   return <Link href={href} data-magnetic={magnetic ? true : undefined} className={`${styles.action} ${className}`}><span>{children}</span><span data-action-icon className={styles.actionIcon}><ArrowUpRight size={22} strokeWidth={1.8} aria-hidden="true" /></span></Link>
 }
 
-function Eyebrow({ number, children }: { number?: string; children: React.ReactNode }) {
-  return <p className={styles.eyebrow}>{number && <span>{number}</span>}{children}</p>
-}
-
 function HeroWord({ children, underline = false }: { children: string; underline?: boolean }) {
   return <span className={heroStyles.wordMask}>
     <span className={heroStyles.word} data-title-word data-hero-keyword={underline || undefined}>
@@ -53,88 +51,167 @@ function HeroWord({ children, underline = false }: { children: string; underline
   </span>
 }
 
-export default function MindmarketLanding({ riveAssets }: { riveAssets: Partial<Record<'memory' | 'conversation', string>> }) {
-  return <JourneyMotion>
-    <LandingNavigation links={links} />
-    <div className={styles.journey} data-ribbon-journey>
-    <main id="main-content">
-      <JourneyRibbon />
-        <section className={styles.hero} aria-labelledby="hero-title">
-          <div className={styles.heroCopy} data-hero-copy>
-            <Eyebrow>PRÁTICA DE VOCABULÁRIO</Eyebrow>
-            <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: heroRevealBootstrap }} />
-            <h1 id="hero-title" className={heroStyles.headline} aria-label="Seu inglês. Um mundo mais aberto.">
-              <span data-title-ink aria-hidden="true">
-                <span data-title-line><HeroWord>Seu</HeroWord>{' '}<HeroWord>inglês.</HeroWord></span>{' '}
-                <span data-title-line><HeroWord>Um</HeroWord>{' '}<HeroWord>mundo</HeroWord></span>{' '}
-                <span data-title-line><HeroWord>mais</HeroWord>{' '}<HeroWord underline>aberto.</HeroWord></span>
-              </span>
-            </h1>
-            <p className={styles.heroSubtitle}>Treine o ouvido com frases em inglês e revise o vocabulário com flashcards.</p>
-            <div className={styles.heroActions}>
-              <Action>Começar grátis</Action>
-              <Link href="#como-funciona">Como funciona <span aria-hidden="true">↓</span></Link>
-            </div>
-          </div>
-          <figure className={styles.heroVisual} data-hero-art>
-            <div className={styles.languageArt} data-hero-glint aria-hidden="true" />
-            <figcaption className={styles.cardStage} data-hero-card-stage><HeroFlashcard /></figcaption>
-          </figure>
-        </section>
-
-        <section id="seu-caminho" className={styles.pathSection} aria-labelledby="path-title">
-          <div className={styles.sectionIntro} data-reveal><Eyebrow number="01">O MUNDO NÃO TEM LEGENDA</Eyebrow><h2 id="path-title"><span data-title-ink>Mas você pode<br /><span className={styles.softText}>encontrar sua voz.</span></span></h2><p>Da primeira palavra à conversa que flui.<br />Um caminho de inglês que começa onde você está.</p></div>
-          <div className={styles.levelWrap} data-tilt data-reveal><LevelExplorer /></div>
-          <div className={styles.smallManifesto}><span>Seis níveis.</span><span>Muitas descobertas.</span><span>Um caminho seu. <ArrowUpRight size={20} aria-hidden="true" /></span></div>
-        </section>
-
-        <section data-pointer-area id="como-funciona" className={styles.practiceSection} aria-labelledby="practice-title">
-          <div className={styles.storyCardShell}><div className={styles.practiceCopy} data-tilt data-story-card><Eyebrow number="02">APRENDA COLOCANDO EM PRÁTICA</Eyebrow><h2 id="practice-title"><span data-title-ink>Menos decorar.<br />Mais{' '}<span data-mark className={styles.highlightPink}>descobrir.</span></span></h2><p>É usando o inglês que ele começa a fazer sentido.</p><div className={styles.practiceActions}><Link href="#practice-demo" className={styles.textLink}>Experimente <ArrowRight size={22} aria-hidden="true" /></Link><JourneyMotif kind="pencil" className={styles.practiceProp} /></div></div></div>
-          <div id="practice-demo" data-tilt className={styles.demoWrap} data-reveal><span className={styles.demoSticker} aria-hidden="true">sua vez!</span><PracticePreview /></div>
-        </section>
-
-      <section id="revisoes" className={styles.memorySection} aria-labelledby="memory-title"><div className={styles.storyStage} data-pointer-area>
-        <div className={styles.memoryArtWrap} data-scene-travel><MemoryScene riveSrc={riveAssets.memory} footer={<span className={styles.wordTag} data-float lang="en">remember <ArrowUpRight size={20} strokeWidth={1.8} aria-hidden="true" /></span>} /></div>
-        <div className={styles.storyCardShell}><div className={styles.memoryCopy} data-tilt data-story-card><Eyebrow number="03">O QUE VOCÊ APRENDE FICA</Eyebrow><h2 id="memory-title"><span data-title-ink>Uma memória<br />que <span data-mark className={styles.highlightYellow}>floresce.</span></span></h2><p>A revisão espaçada usa suas respostas para trazer cada palavra de volta na hora certa.</p><Link href="/register" transitionTypes={['kivora-auth']} className={styles.textLink}>Cultivar meu vocabulário <ArrowUpRight size={22} aria-hidden="true" /></Link></div></div>
-        </div>
-      </section>
-
-      <section id="conversacao" className={styles.conversationSection} aria-labelledby="conversation-title"><div className={styles.storyStage} data-pointer-area>
-        <div className={styles.storyCardShell}><div className={styles.conversationCopy} data-tilt data-story-card><Eyebrow number="04">DO SEU MUNDO PARA O MUNDO</Eyebrow><h2 id="conversation-title"><span data-title-ink>Uma conversa.<br /><span data-mark className={styles.blueText}>Tantas portas.</span></span></h2><p>Um café. Uma viagem. Uma nova oportunidade. Pratique situações reais por voz ou texto com o tutor de IA.</p><Action>Dar voz ao meu inglês</Action></div></div>
-        <div className={styles.conversationVisual} data-scene-travel><ConversationScene riveSrc={riveAssets.conversation} /><div className={styles.conversationBubble} data-float><span lang="en" data-type>“I’d like a coffee, please.”</span><small>Seu próximo pedido pode ser em inglês.</small></div></div>
-        </div>
-      </section>
-
-      <section className={styles.blitzBand} data-pointer-area data-reveal aria-labelledby="blitz-title"><div><Eyebrow>POUCOS MINUTOS. MUITA ENERGIA.</Eyebrow><h2 id="blitz-title"><span data-title-ink>O seu inglês<br />entra no jogo<span className={styles.blitzDot}>.</span></span></h2></div><div className={styles.blitzMark} data-cursor data-float aria-hidden="true"><SpotIllustration motif="bolt" /></div><div className={styles.blitzCopy}><p>Desafios rápidos, combos e ranking semanal. Uma dose de diversão para manter a prática viva.</p><Link href="/register" transitionTypes={['kivora-auth']} className={styles.lightLink}>Conhecer o Blitz <ArrowUpRight size={24} aria-hidden="true" /></Link></div>
-        <div className={styles.ranking} data-ranking>
-          <p>Ranking simulado <span>PTS</span></p>
-          <ol>{[['Lia', '320'], ['Você', '280'], ['Caio', '240']].map(([name, score]) =>
-            <li key={name}><span>{name}</span><strong data-score={score}>{score}</strong></li>
-          )}</ol>
-          <div className={styles.combo}><span>Combo simulado</span><strong data-score="008">008</strong></div>
-        </div>
-      </section>
-
-      <section id="precos" className={styles.pricingSection} aria-labelledby="pricing-title"><div className={styles.pricingHeading} data-reveal><Eyebrow>ESPAÇO PARA O SEU PRÓXIMO PASSO</Eyebrow><h2 id="pricing-title"><span data-title-ink>Seu ritmo.<br /><span className={styles.softText}>Seu plano.</span></span></h2><p>Crie sua conta e use as ferramentas de estudo.</p></div><div className={styles.plans} data-plan-stack>
-        <article className={styles.plan} data-tilt data-landing-plan="standard"><div className={styles.planTop}><h3>Free</h3><span>O primeiro passo</span></div><p className={styles.price}>R$0<span>para sempre</span></p><ul>{includedFeatures.map(feature => <li key={feature}><Check size={17} aria-hidden="true" />{feature}</li>)}</ul><Action className={styles.outlineAction}>Começar grátis</Action></article>
-        <article className={`${styles.plan} ${styles.proPlan}`} data-tilt data-landing-plan="featured"><div className={styles.planTop}><h3>Pro<JourneySpark /></h3><span className={styles.comingSoon}>Em breve</span></div><p className={styles.featureNote}>Novas assinaturas indisponíveis no momento.</p><ul aria-label="Recursos do Free incluídos">{includedFeatures.map(feature => <li key={feature}><Check size={17} aria-hidden="true" />{feature}</li>)}</ul></article>
-      </div></section>
-
-      <section id="faq" className={styles.faqSection} aria-labelledby="faq-title"><div><Eyebrow>A CURIOSIDADE É BEM-VINDA</Eyebrow><h2 id="faq-title"><span data-title-ink>Mais alguma<br /><span className={styles.softText}>descoberta?</span></span></h2><div className={styles.questionDoodle} data-float aria-hidden="true"><SpotIllustration motif="question" /></div></div><LandingFAQ items={faqs} /></section>
-
-      <section className={styles.finalCta} data-reveal aria-labelledby="final-title"><p className={styles.eyebrow}>O PRÓXIMO CAPÍTULO É SEU</p><h2 id="final-title"><span data-title-ink>Um pequeno <span lang="en">hello.</span><br />Um mundo de <span data-mark className={styles.finalPossibility}>possibilidades</span>.</span></h2><Action>Começar minha jornada</Action><div className={styles.finalStar} data-spin><JourneySpark /></div><div className={styles.finalSpark} data-float><SpotIllustration motif="moon" /></div></section>
-    </main>
-    <footer className={styles.footer}><div className={styles.wordBelt} aria-hidden="true"><div data-word-belt>{[0, 1].map(copy => <div key={copy}><span>hello, world</span><JourneySpark /><span>um mundo mais aberto</span><JourneySpark /></div>)}</div></div><div className={styles.footerTop}><Link href="/" aria-label="Kivora English, início"><LandingWordmark /></Link><p>Inglês para a vida acontecer.</p><Link href="#hero-title" className={styles.backTop}>Voltar ao início <ArrowUpRight size={21} aria-hidden="true" /></Link></div><div className={styles.footerExplore}>
-      <div>
-        <h2>Inglês para o seu dia a dia.</h2>
-        <p>Pratique com frases reais, volte ao que está aprendendo e ganhe confiança para conversar.</p>
+function Opening() {
+  return (
+    <section className={layout.opening} aria-labelledby="hero-title">
+      <div className={layout.headline} data-hero-copy>
+        <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: heroRevealBootstrap }} />
+        <h1 id="hero-title" className={heroStyles.headline} aria-label="Seu inglês. Um mundo mais aberto.">
+          <span data-title-line><HeroWord>Seu</HeroWord>{' '}<HeroWord>inglês.</HeroWord></span>{' '}
+          <span data-title-line><HeroWord>Um</HeroWord>{' '}<HeroWord>mundo</HeroWord></span>{' '}
+          <span data-title-line><HeroWord>mais</HeroWord>{' '}<HeroWord underline>aberto.</HeroWord></span>
+        </h1>
+        <p>Treine o ouvido com frases em inglês e revise o vocabulário com flashcards.</p>
         <Action>Começar grátis</Action>
       </div>
-      <nav aria-label="Explore a Kivora">
-        {links.map(link => <Link key={link.href} href={link.href}>{link.label}<ArrowUpRight size={18} aria-hidden="true" /></Link>)}
+      <figure className={layout.panorama} data-hero-art>
+        <div className={layout.landscape}><StreetScene /></div>
+        <div className={layout.student} data-hero-glint aria-hidden="true" />
+        <figcaption className={layout.ticket} data-hero-card-stage><HeroFlashcard /></figcaption>
+      </figure>
+      <nav className={layout.index} aria-label="Percorrer a jornada">
+        {[
+          ['Praticar', '#como-funciona'], ['Revisar', '#revisoes'], ['Conversar', '#conversacao'],
+        ].map(([label, href]) => <Link key={href} href={href}>{label}<ArrowRight aria-hidden="true" size={18} /></Link>)}
       </nav>
-    </div><div className={styles.footerBottom}><span>© {new Date().getFullYear()} Kivora English</span><div><Link href="/privacy" prefetch={false}>Privacidade</Link><Link href="/terms" prefetch={false}>Termos de uso</Link><Link href="/login" transitionTypes={['kivora-auth']}>Entrar</Link></div><span>Feito para quem tem curiosidade. <a href="https://storyset.com/illustration/learning-languages/bro">Ilustração por Storyset</a></span></div></footer>
+    </section>
+  )
+}
+
+function PracticeDesk() {
+  return (
+    <section id="como-funciona" className={layout.desk} aria-labelledby="practice-title">
+      <div className={layout.deskIntro}>
+        <p className={layout.label}>Prática de inglês</p>
+        <h2 id="practice-title">Menos decorar.<br />Mais descobrir.</h2>
+        <p>É usando o inglês que ele começa a fazer sentido.</p>
+        <Link href="#practice-demo" className={layout.underlink}>Experimente <ArrowRight size={18} /></Link>
+      </div>
+      <div className={layout.notebook}>
+        <div className={layout.binding} aria-hidden="true">{[0, 1, 2, 3, 4].map(i => <i key={i} />)}</div>
+        <div id="practice-demo" className={styles.demoWrap}><PracticePreview /></div>
+      </div>
+    </section>
+  )
+}
+
+function FieldNotes({ riveAssets }: { riveAssets: SceneAssets }) {
+  return (
+    <div className={layout.fieldNotes}>
+      <section id="revisoes" className={layout.field} aria-labelledby="memory-title">
+        <figure className={layout.plate}><MemoryScene riveSrc={riveAssets.memory} /></figure>
+        <div className={layout.caption}>
+          <p className={layout.label}>Revisão espaçada</p>
+          <h2 id="memory-title">Uma memória que <span data-mark>floresce.</span></h2>
+          <p>A revisão espaçada usa suas respostas para trazer cada palavra de volta na hora certa.</p>
+          <Link href="/register" className={layout.underlink}>Cultivar meu vocabulário <ArrowUpRight size={17} /></Link>
+        </div>
+      </section>
+      <section id="conversacao" className={layout.field} aria-labelledby="conversation-title">
+        <figure className={layout.plate}>
+          <ConversationScene riveSrc={riveAssets.conversation} />
+          <figcaption><span lang="en" data-type>“I’d like a coffee, please.”</span><small>Seu próximo pedido pode ser em inglês.</small></figcaption>
+        </figure>
+        <div className={layout.caption}>
+          <p className={layout.label}>Conversação com IA</p>
+          <h2 id="conversation-title">Uma conversa. <span data-mark>Tantas portas.</span></h2>
+          <p>Um café. Uma viagem. Uma nova oportunidade. Pratique situações reais por voz ou texto com o tutor de IA.</p>
+          <Link href="/register" className={layout.underlink}>Dar voz ao meu inglês <ArrowUpRight size={17} /></Link>
+        </div>
+      </section>
     </div>
-    <div className={styles.mobileDock} data-hero-dock><Action>Começar grátis</Action></div>
-  </JourneyMotion>
+  )
+}
+
+function CourseGuide() {
+  return (
+    <section id="seu-caminho" className={layout.guide} aria-labelledby="path-title">
+      <div className={layout.guideIntro}>
+        <p className={layout.label}>Seu caminho · A1 a C2</p>
+        <h2 id="path-title">Encontre{' '}<br />sua voz.</h2>
+        <p>Da primeira palavra à conversa que flui. Um caminho de inglês que começa onde você está.</p>
+      </div>
+      <div className={styles.levelWrap}><LevelExplorer /></div>
+    </section>
+  )
+}
+
+function BlitzBoard() {
+  return (
+    <section className={layout.blitz} aria-labelledby="blitz-title">
+      <div>
+        <p className={layout.label}>Blitz</p>
+        <h2 id="blitz-title">O seu inglês<br />entra no jogo.</h2>
+        <p>Desafios rápidos, combos e ranking semanal. Uma dose de diversão para manter a prática viva.</p>
+        <Link href="/register" className={layout.underlink}>Conhecer o Blitz <ArrowUpRight size={17} /></Link>
+      </div>
+      <div className={layout.scoreboard} data-ranking>
+        <header>Ranking simulado <span>PTS</span></header>
+        <ol>{[['Lia', '320'], ['Você', '280'], ['Caio', '240']].map(([name, score]) =>
+          <li key={name}><span>{name}</span><strong data-score={score}>{score}</strong></li>
+        )}</ol>
+        <p>Combo simulado <strong data-score="008">008</strong></p>
+      </div>
+    </section>
+  )
+}
+
+function Membership() {
+  return (
+    <section id="precos" className={layout.membership} aria-labelledby="pricing-title">
+      <header><p className={layout.label}>Planos</p><h2 id="pricing-title">Seu ritmo. Seu plano.</h2><p>Crie sua conta e use as ferramentas de estudo.</p></header>
+      <div className={layout.comparison}>
+        <table>
+          <caption className="sr-only">Recursos incluídos nos planos Free e Pro</caption>
+          <thead><tr><td /><th scope="col" data-landing-plan="standard">Free<small>R$0 para sempre</small></th><th scope="col" data-landing-plan="featured">Pro<small>Em breve</small></th></tr></thead>
+          <tbody>{includedFeatures.map(feature => <tr key={feature}><th scope="row">{feature}</th>{['Free', 'Pro'].map(plan => <td key={plan}><Check size={20} aria-hidden="true" /><span className="sr-only">Incluído</span></td>)}</tr>)}</tbody>
+        </table>
+        <div className={layout.planNote}><span>Novas assinaturas Pro indisponíveis no momento.</span><Action>Começar grátis</Action></div>
+      </div>
+    </section>
+  )
+}
+
+function Colophon() {
+  return (
+    <footer className={layout.colophon}>
+      <div className={layout.signoff}>
+        <h2>Um pequeno <i lang="en">hello.</i><br />Um mundo de possibilidades.</h2>
+        <Action>Começar minha jornada</Action>
+      </div>
+      <div className={layout.footerMap}>
+        <Link href="/" aria-label="Kivora English, início"><LandingWordmark /></Link>
+        <nav aria-label="Explore a Kivora">{links.map(link => <Link key={link.href} href={link.href}>{link.label}</Link>)}</nav>
+        <nav aria-label="Conta e informações"><Link href="/login">Entrar</Link><Link href="/privacy">Privacidade</Link><Link href="/terms">Termos de uso</Link></nav>
+      </div>
+      <div className={layout.credit}><span>© {new Date().getFullYear()} Kivora English</span><a href="https://storyset.com/illustration/learning-languages/bro">Ilustração por Storyset</a><Link href="#hero-title">Voltar ao início ↑</Link></div>
+    </footer>
+  )
+}
+
+type SceneAssets = Partial<Record<'memory' | 'conversation', string>>
+
+export default function MindmarketLanding({ riveAssets }: { riveAssets: SceneAssets }) {
+  return (
+    <JourneyMotion>
+      <LandingNavigation links={links} />
+      <div className={styles.journey} data-ribbon-journey>
+        <main id="main-content" className={layout.spread}>
+          <JourneyRibbon />
+          <Opening />
+          <PracticeDesk />
+          <FieldNotes riveAssets={riveAssets} />
+          <CourseGuide />
+          <BlitzBoard />
+          <Membership />
+          <section id="faq" className={layout.questions} aria-labelledby="faq-title">
+            <div><SpotIllustration motif="question" /><h2 id="faq-title">Mais alguma descoberta?</h2></div>
+            <LandingFAQ items={faqs} />
+          </section>
+        </main>
+        <Colophon />
+      </div>
+      <div className={styles.mobileDock} data-hero-dock><Action>Começar grátis</Action></div>
+    </JourneyMotion>
+  )
 }

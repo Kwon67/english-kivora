@@ -179,8 +179,7 @@ test('cada linha cabe com a fonte de fallback e após carregar a fonte da págin
   await page.goto('/', { waitUntil: 'domcontentloaded' })
   const title = await checkHeading(page)
   const emphasis = title.locator('[data-hero-keyword]')
-  await expect(emphasis).toHaveCSS('font-style', 'italic')
-  expect(await emphasis.evaluate(el => getComputedStyle(el).fontSynthesis)).toContain('style')
+  await expect(emphasis).toHaveCSS('font-style', 'normal')
   const widths = isMobile ? [360, 375, 390, 402, 430] : [768, 834, 1440, 2560]
   const evidence = []
   try {
@@ -200,7 +199,8 @@ test('cada linha cabe com a fonte de fallback e após carregar a fonte da págin
           expect(line.right).toBeLessThanOrEqual(width + 1)
         }
         expect(layout[0].top).toBeLessThan(layout[1].top)
-        expect(layout[1].top).toBeLessThan(layout[2].top)
+        if (width <= 600) expect(layout[1].top).toBeLessThan(layout[2].top)
+        else expect(layout[2].top).toBeGreaterThanOrEqual(layout[1].top - 1)
         evidence.push({ phase, width, layout })
       }
     }

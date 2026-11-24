@@ -48,7 +48,7 @@ for (const [width, height] of [[390, 844], [768, 1024], [1440, 900]]) {
       for (const scene of ['#revisoes', '#conversacao']) {
         await expect(page.locator(scene).locator('[data-art-motion="illustration"]').first()).toHaveCSS('filter', 'none')
       }
-      await expect(page.locator('footer')).toHaveCSS('background-color', 'rgb(44, 46, 42)')
+      await expect(page.locator('footer')).toHaveCSS('background-color', 'rgb(245, 226, 17)')
       const violations = new Set<string>()
       await visitPaintStates(page, samples => samples.forEach(sample => {
         if (!allowed(sample.color)) violations.add(`#${sample.color} · ${sample.property} · ${sample.element}`)
