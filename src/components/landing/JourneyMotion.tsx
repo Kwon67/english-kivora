@@ -36,16 +36,6 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
   const [smooth, setSmooth] = useState(false)
   const lite = useLandingLite()
 
-  useGSAP(() => {
-    const hero = root.current!.querySelector('[aria-labelledby="hero-title"]')!
-    const dock = root.current!.querySelector<HTMLElement>('[data-hero-dock]')!
-    const observer = new IntersectionObserver(([entry]) => {
-      dock.toggleAttribute('data-visible', !entry.isIntersecting && entry.boundingClientRect.bottom <= 0)
-    })
-    observer.observe(hero)
-    return () => { observer.disconnect(); dock.removeAttribute('data-visible') }
-  }, { scope: root })
-
   // The short headline sequence does not require the full scrolling or Rive runtime.
   useGSAP(() => setupHeroMotion(root.current!), { scope: root })
 

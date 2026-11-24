@@ -100,16 +100,21 @@ test('movimento reduzido revela a tradução com fade, sem girar o cartão', asy
   await expect(card).toHaveAccessibleDescription('Este lugar está ocupado?')
 })
 
-test('o CTA flutuante aparece apenas depois do hero no celular', async ({ page, isMobile }) => {
-  test.skip(!isMobile, 'CTA flutuante mobile')
+test('o cabeçalho do celular mantém logo e Menu durante a rolagem', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
-  const dock = page.locator('[data-hero-dock]')
-  await expect(primaryLink(page)).toBeInViewport()
-  await expect(dock).toBeHidden()
-  await page.locator('#como-funciona').scrollIntoViewIfNeeded()
-  await expect(dock).toBeVisible()
-  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
-  await expect(dock).toBeHidden()
+  const nav = page.getByRole('navigation', { name: 'Navegação principal' })
+  const menu = nav.getByRole('button', { name: 'Abrir menu' })
+  const signup = nav.locator('a[href="/register"]')
+
+  await expect(nav.getByRole('link', { name: 'Kivora English, início' })).toBeVisible()
+  await expect(menu).toHaveText('Menu')
+  await expect(signup).toBeHidden()
+  await page.locator('#practice-demo').scrollIntoViewIfNeeded()
+  await expect(menu).toBeInViewport()
+  await expect(signup).toBeHidden()
+  await menu.click()
+  await expect(page.getByRole('dialog').getByRole('link', { name: 'Começar grátis' })).toBeVisible()
 })
 
 test('o brilho pausa fora da tela e respeita movimento reduzido', async ({ page }) => {
