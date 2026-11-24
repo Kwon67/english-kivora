@@ -41,10 +41,10 @@ for (const [width, height] of [[390, 844], [768, 1024], [1440, 900]]) {
       const hero = page.getByRole('region', { name: 'Seu inglês. Um mundo mais aberto.' })
       expect(await hero.evaluate(el => getComputedStyle(el, '::before').backgroundColor)).toBe(cream)
       const cta = hero.getByRole('link', { name: 'Começar grátis' })
-      await expect(cta).toHaveCSS('background-color', 'rgb(35, 71, 207)')
+      await expect(cta).toHaveCSS('background-color', 'rgb(57, 86, 61)')
       await expect(cta).toHaveCSS('color', 'rgb(255, 254, 248)')
-      await expect(hero.locator('[data-hero-keyword]')).toHaveCSS('color', 'rgb(191, 48, 46)')
-      await expect(hero.locator('figcaption button')).toHaveCSS('background-color', 'rgb(255, 207, 53)')
+      await expect(hero.locator('[data-hero-keyword]')).toHaveCSS('color', 'rgb(57, 86, 61)')
+      await expect(hero.locator('figcaption button')).toHaveCSS('background-color', 'rgb(243, 233, 181)')
       for (const scene of ['#revisoes', '#conversacao']) {
         await expect(page.locator(scene).locator('[data-art-motion="illustration"]').first()).toHaveCSS('filter', 'none')
       }

@@ -4,7 +4,7 @@ import { useRef } from 'react'
 import { useLandingLite } from './useLandingLite'
 import { gsap, useGSAP } from '@/lib/gsap'
 
-const colors = ['var(--red)', 'var(--sky)', 'var(--yellow)', 'var(--cobalt)', 'var(--paper)', 'var(--ink)']
+const colors = ['var(--landing-green)', 'var(--landing-surface-leaf)', 'var(--yellow)', 'var(--landing-forest)', 'var(--paper)', 'var(--ink)']
 export default function FeedbackConfetti() {
   const ref = useRef<HTMLSpanElement>(null)
   const lite = useLandingLite()

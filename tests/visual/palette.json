@@ -1,17 +1,23 @@
 {
   "colors": [
     "000000",
-    "202139",
-    "2347cf",
-    "bf302e",
-    "c9deff",
-    "ffcf35",
+    "2c2e2a",
+    "39563d",
+    "477c2d",
+    "595d51",
+    "74796c",
+    "773f35",
+    "8ed462",
+    "cedfc1",
+    "d0cdbf",
+    "e1ead7",
+    "eee8d8",
+    "f3e9b5",
+    "f4ded6",
+    "f5e211",
     "f5f4eb",
     "fffef8",
-    "ffffff",
-    "2c2e2a",
-    "8ed462",
-    "477c2d"
+    "ffffff"
   ],
   "artwork": {
     "/images/journey-2026/conversation-1536.avif": "9711cc0bc7eb455035aefab6b84dedd204460d6e2e01dc28e8d3b115b1da7785",
