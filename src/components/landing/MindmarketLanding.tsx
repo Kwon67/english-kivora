@@ -211,7 +211,6 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: SceneAss
         </main>
         <Colophon />
       </div>
-      <div className={styles.mobileDock} data-hero-dock><Action>Começar grátis</Action></div>
     </JourneyMotion>
   )
 }

@@ -206,3 +206,8 @@
 @media(prefers-reduced-motion:reduce) {
   .primary,.levels button,.heroChoices button { transition:none; } .primary:hover:not(:disabled),.primary:active:not(:disabled),.levels button:hover { transform:none; }
 }
+
+@container practice (max-width:19rem) {
+  .demoGrades { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .labTabs button { flex:1 0 max-content; }
+}
