@@ -65,3 +65,22 @@ for (const [width, height] of [[320, 568], [667, 375], [844, 390]]) {
     await expect(trigger).toBeFocused()
   })
 }
+
+test('o aviso de atualização e o rodapé são acessíveis juntos', async ({ page }) => {
+  await page.setViewportSize({ width: 430, height: 932 })
+  await page.goto('/')
+  await page.evaluate(() => {
+    if (document.querySelector('.pwa-notice')) return
+    const notice = document.createElement('div')
+    notice.className = 'pwa-notice'
+    notice.style.height = '120px'
+    notice.textContent = 'Atualização pronta'
+    document.body.append(notice)
+  })
+  await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }))
+  const link = page.getByRole('link', { name: 'Voltar ao início' })
+  await expect(link).toBeInViewport({ ratio: 1 })
+  await expect(page.locator('.pwa-notice').first()).toBeInViewport()
+  await link.click()
+  await expect(page.locator('#hero-title')).toBeInViewport()
+})
