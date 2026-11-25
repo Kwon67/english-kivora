@@ -25,6 +25,6 @@ export default async function ContextPracticeHistory({ db, userId }: { db: Supab
               <h3 className="mt-3 font-semibold">Versão revisada</h3><p lang="en" className="whitespace-pre-wrap break-words">{attempt.revision}</p>
             </details>
           </li>)}</ul>}
-    <Link href="/today" className="product-text-link mt-4 inline-block">Abrir prática de hoje</Link>
+    <Link href="/practice-context" className="product-text-link mt-4 inline-block">Abrir prática em contexto</Link>
   </article>
 }

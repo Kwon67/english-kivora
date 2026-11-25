@@ -3,9 +3,11 @@ import { studyReturnPath } from './studyReturnPath'
 
 it('retoma a atividade com os filtros usados pela página', () => {
   expect(studyReturnPath('/today?unit=travel&unused=private')).toBe('/today?unit=travel')
+  expect(studyReturnPath('/practice-context?level=B1')).toBe('/practice-context?level=B1')
   expect(studyReturnPath('/tutor/meet-and-greet')).toBe('/tutor/meet-and-greet')
   const id = 'abcabcab-abcd-4aaa-8aaa-abcdef123456'
   expect(studyReturnPath('/review?source=problem&mode=guided&cards=' + id)).toBe('/review?mode=guided&source=problem&cards=' + id)
+  expect(studyReturnPath('/review?source=phrases&cards=' + id)).toBe('/review?source=phrases&cards=' + id)
   expect(studyReturnPath('/history?date=2026-03-31')).toBe('/history?date=2026-03-31')
 })
 it('descarta destinos externos, administrativos ou inválidos', () => {

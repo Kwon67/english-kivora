@@ -8,13 +8,15 @@ describe('workspace navigation', () => {
     expect(learner.map(item => item.href)).toEqual(expect.arrayContaining(['/home', '/add', '/courses', '/explore', '/tutor', '/blitz', '/history', '/problem-words', '/library', '/settings']))
     expect(learner.some(item => item.href.startsWith('/admin'))).toBe(false)
     expect(new Set(learner.map(item => item.href)).size).toBe(learner.length)
-    expect(learningPrimary.map(item => item.href)).toEqual(['/today', '/home', '/add'])
+    expect(learningPrimary.map(item => item.href)).toEqual(['/home', '/review', '/add'])
   })
   it('matches nested destinations without matching similarly named siblings', () => {
     const explore = learner.find(item => item.href === '/explore')!
     expect(destinationIsActive('/explore/pack/123', explore)).toBe(true)
     expect(destinationIsActive('/explorer', explore)).toBe(false)
-    const review = learner.find(item => item.href === '/home')!
+    expect(learningPrimary[0]).toMatchObject({ href: '/home', label: 'Hoje' })
+    expect(learner.find(item => item.href === '/practice-context')?.label).toBe('Prática em contexto')
+    const review = learner.find(item => item.href === '/review')!
     expect(destinationIsActive('/review', review)).toBe(true)
   })
   it('selects exactly one admin area for a member details route', () => {

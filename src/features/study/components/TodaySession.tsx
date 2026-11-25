@@ -73,7 +73,7 @@ export default function TodaySession({ userId, level, initialDraft = null, persi
   return <div className="study-desk study-desk--today" data-testid="today-session">
     <StudioHero
       compact
-      label={`Hoje · Faixa ${band}`}
+      label={`Prática em contexto · Faixa ${band}`}
       title={lesson.title}
       description={draft.step === 0 ? lesson.preparation : undefined}
       headingId={draft.step === 0 ? 'today-step-heading' : undefined}
@@ -135,7 +135,7 @@ export default function TodaySession({ userId, level, initialDraft = null, persi
       {draft.step >= (lesson.transfer ? 3 : 2) && <ShadowingPractice voiceName={practiceVoice(lesson.id)} text={lesson.shadowing} />}
       {draft.step === 4 && <section className="study-insight" aria-label="Evidências desta tentativa"><p>Compreensão: {draft.firstChoice === null ? 'primeira resposta não registrada' : draft.firstChoice === lesson.answer ? 'primeira escolha correta' : 'primeira escolha precisou de revisão'}. {draft.hintsUsed ? 'Você consultou apoio durante a produção.' : 'Nenhuma consulta de apoio foi registrada durante a produção.'}</p><p>Escrita e fala: critérios informados por você, sem avaliação externa.{draft.spoken ? ' Você informou que praticou em voz alta.' : ' Não há relato de prática oral nesta tentativa.'}</p></section>}
       <details className="study-insight"><summary>Objetivos e evidências desta faixa</summary><p>Esta matriz inicial orienta tarefas. Uma única sessão não cobre todas as habilidades nem certifica CEFR. Interação real exige resposta de outra pessoa; escrever uma mensagem é apenas preparação.</p><dl>{COMMUNICATIVE_CURRICULUM.filter(objective => objective.level === level).map(objective => <div key={objective.id} className="mt-4"><dt className="font-semibold">{SKILL_LABELS[objective.skill]}</dt><dd>{objective.goal}<br /><span className="text-sm">Critérios: {objective.criteria.join(' ')}</span></dd></div>)}</dl><Link href="/courses" className="product-text-link mt-4">Ver progresso da trilha</Link></details>
-      <details className="study-insight"><summary>Ajustar faixa de prática</summary><p>Escolher outra faixa muda a tarefa, não seu nível estimado.</p><div className="today-bands">{CEFR_LEVELS.map(item => <Link key={item} aria-current={item === level ? 'page' : undefined} className="product-text-link" href={`/today?level=${item}`}>{item}</Link>)}</div></details>
+      <details className="study-insight"><summary>Ajustar faixa de prática</summary><p>Escolher outra faixa muda a tarefa, não seu nível estimado.</p><div className="today-bands">{CEFR_LEVELS.map(item => <Link key={item} aria-current={item === level ? 'page' : undefined} className="product-text-link" href={`/practice-context?level=${item}`}>{item}</Link>)}</div></details>
     </div>
     <Link href="/practice-path" className="product-text-link today-path-link">
       Continuar por competências <ArrowRight size={16} aria-hidden="true" />

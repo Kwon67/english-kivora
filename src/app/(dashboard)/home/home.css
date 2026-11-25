@@ -1,4 +1,4 @@
-/* /home shares the review engine. Keep its landing treatment local to this route. */
+/* Surfaces and spacing for the daily summary. */
 body.premium-theme:has(.learning-home) {
   --home-paper: #f5f1e4;
   --home-ink: #2c2e2a;
@@ -209,4 +209,18 @@ body.premium-theme:has(.learning-home) {
     & .review-session [data-studio-hero] > img { width: min(100%, 190px); justify-self: start; }
     & .study-desk:has(> .review-exercise) > :is(.study-footnote, details) { grid-column: 2; }
   }
+}
+
+.learning-home .daily-summary-section {
+  margin-block: 1rem;
+  padding: clamp(1rem, 3vw, 1.75rem);
+  border: 1px solid var(--home-line);
+  border-radius: 1.25rem;
+  background: var(--kivora-paper);
+  color: var(--home-ink);
+}
+.learning-home .daily-summary-section a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }

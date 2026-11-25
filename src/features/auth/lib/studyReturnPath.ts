@@ -3,12 +3,12 @@ import { parseReviewCardIds } from '@/features/review/lib/reviewCardIds'
 /** Preserve a learning destination across login without forwarding arbitrary URLs or query parameters. */
 export function studyReturnPath(value: unknown): string | null {
   if (typeof value !== 'string' || value.length > 2048) return null
-  const match = /^(\/(?:today|history|review|practice-path|home|tutor(?:\/[\w-]+)?|blitz(?:\/(?:play|ranking))?|play\/[\w-]+|exam\/[A-C][12]))(?:\?([^#]*))?$/.exec(value)
+  const match = /^(\/(?:today|practice-context|history|review|practice-path|home|tutor(?:\/[\w-]+)?|blitz(?:\/(?:play|ranking))?|play\/[\w-]+|exam\/[A-C][12]))(?:\?([^#]*))?$/.exec(value)
   if (!match) return null
   const [, path, query] = match
   const source = new URLSearchParams(query)
   const next = new URLSearchParams()
-  if (path === '/today') {
+  if (path === '/today' || path === '/practice-context') {
     if (source.get('unit') === 'travel') next.set('unit', 'travel')
     const level = source.get('level')
     if (level && /^[A-C][12]$/.test(level)) next.set('level', level)
@@ -17,7 +17,7 @@ export function studyReturnPath(value: unknown): string | null {
     if (source.get('mode') === 'guided') next.set('mode', 'guided')
     const origin = source.get('source')
     const cards = parseReviewCardIds(source.get('cards'))
-    if ((origin === 'problem' || origin === 'blitz') && cards.length) {
+    if ((origin === 'problem' || origin === 'blitz' || origin === 'phrases') && cards.length) {
       next.set('source', origin)
       next.set('cards', cards.join(','))
     }

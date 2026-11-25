@@ -101,7 +101,7 @@ export default function LibraryWorkspace({
                   <div className="collection-words">
                     {pack.words.length > 0 && <ul>
                       {pack.words.map(word => (
-                        <li key={word.id} className="collection-word"><strong lang="en">{word.en}</strong><span>{word.pt}</span></li>
+                        <li key={word.id} className="collection-word"><strong lang="en">{word.en}</strong><span>{word.pt}</span><Link href={`/review?source=phrases&cards=${word.id}`}>Praticar frase</Link></li>
                       ))}
                     </ul>}
                     {!pack.words.length && <p>Nenhuma palavra neste grupo.</p>}

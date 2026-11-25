@@ -11,8 +11,10 @@ import { getCurriculumGate, getPackLockReason } from '@/features/learning/lib/le
 import { getAppDateString } from '@/lib/timezone'
 import { homeShellClass } from '@/lib/homeStyles'
 
-export default async function PackDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PackDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ page?: string }> }) {
   const { id } = await params
+  const page = Math.min(10000, Math.max(1, Number.parseInt((await searchParams).page || '1', 10) || 1))
+  const pageSize = 20
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -26,11 +28,11 @@ export default async function PackDetailPage({ params }: { params: Promise<{ id:
   if (error && !['PGRST116','22P02'].includes(error.code)) throw new Error('Não foi possível carregar este pack. Tente novamente.')
   if (!pack) notFound()
 
-  const { data: cards, error: sampleError } = await supabase
+  const { data: cards, count, error: sampleError } = await supabase
     .from('cards')
-    .select('english_phrase, portuguese_translation')
+    .select('id,english_phrase,portuguese_translation', { count: 'exact' })
     .eq('pack_id', pack.id)
-    .limit(5)
+    .order('curriculum_position', { ascending: true, nullsFirst: false }).order('id').range((page - 1) * pageSize, page * pageSize - 1)
 
   const today = getAppDateString()
   const { data: assignments } = await supabase
@@ -64,7 +66,7 @@ export default async function PackDetailPage({ params }: { params: Promise<{ id:
             <h2 id="pack-status-title"><StatusIcon size={16} aria-hidden="true" />{status}</h2>
             <p>{lockReason ?? (isSubscribed
               ? 'Esta coleção faz parte do seu plano de hoje.'
-              : 'O plano diário pode incluir esta coleção em uma próxima prática.')}</p>
+              : 'Escolha uma frase abaixo ou pratique as frases desta página.')}</p>
           </div>
           {isSubscribed && !lockReason && (
             <Link href="/home" className="product-primary">
@@ -74,21 +76,25 @@ export default async function PackDetailPage({ params }: { params: Promise<{ id:
         </section>
 
         <section aria-labelledby="pack-sample-title">
-          <h2 id="pack-sample-title" className="pack-sample-title">Amostra do conteúdo</h2>
+          <h2 id="pack-sample-title" className="pack-sample-title">Frases da coleção</h2>
           {sampleError ? (
             <p role="alert" className="pack-sample-note">Não foi possível carregar os exemplos. Atualize a página para tentar novamente.</p>
           ) : cards?.length ? (
             <ul role="list" className="pack-sample">
-              {cards.map((card, index) => (
-                <li key={index}>
+              {cards.map((card) => (
+                <li key={card.id}>
                   <p lang="en">{card.english_phrase}</p>
                   <p lang="pt-BR">{card.portuguese_translation}</p>
+                  {!lockReason && <Link className="product-text-link" href={`/review?source=phrases&cards=${card.id}`}>Praticar frase</Link>}
                 </li>
               ))}
             </ul>
           ) : (
             <p className="pack-sample-note">Esta coleção ainda não tem exemplos disponíveis.</p>
           )}
+          {!lockReason && Boolean(cards?.length) && <Link className="product-primary" href={`/review?source=phrases&cards=${cards!.map(card => card.id).join(',')}`}>Praticar estas frases</Link>}
+          {page > 1 && <Link href={`?page=${page - 1}`}>Anterior</Link>}
+          {page * pageSize < (count ?? 0) && <Link href={`?page=${page + 1}`}>Próxima</Link>}
         </section>
       </div>
     </div>

@@ -138,7 +138,7 @@ export default function ReviewClient({ userId, initialDueCards, initialStats, pa
   if (!active) return <div className="study-desk study-desk--review">
     <StudioHero ornament={completed ? 'sunflower' : 'sun'} label={completed ? 'Sessão concluída' : 'Revisão em dia'} title={completed ? 'Bom trabalho.' : 'Tudo em dia.'}
       description={completed ? `${completed} ${completed === 1 ? 'resposta salva' : 'respostas salvas'}.` : 'Sua revisão está em dia. Experimente usar o inglês em uma situação nova.'}>
-      <Link href="/today">Praticar em contexto <ArrowRight size={16} /></Link>
+      <Link href="/practice-context">Praticar em contexto <ArrowRight size={16} /></Link>
       <Link href="/library">Abrir coleção</Link>
       {completed > 0 && <button onClick={() => window.location.reload()}>Ver próximas revisões</button>}
     </StudioHero><PracticeRoutes />
@@ -183,7 +183,7 @@ export default function ReviewClient({ userId, initialDueCards, initialStats, pa
       </div>
       <details className="study-insight"><summary><Sparkles size={16} aria-hidden="true" /> Por que revisar esta palavra?</summary><p>{active.selectionReason || 'Esta palavra faz parte da sua fila de hoje. A repetição espaçada combina seu histórico com a dificuldade que você informa para calcular o próximo intervalo.'}</p></details>
     </section>
-    <footer className="study-footnote"><Link href="/today">Prática de hoje</Link><Link href="/review?mode=guided">Prática guiada <ArrowRight size={14} /></Link></footer>
+    <footer className="study-footnote"><Link href="/practice-context">Prática em contexto</Link><Link href="/review?mode=guided">Prática guiada <ArrowRight size={14} /></Link></footer>
     <PracticeRoutes collapsible />
   </div>
 }

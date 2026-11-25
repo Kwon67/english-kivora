@@ -16,9 +16,10 @@ export type WorkspaceNavigationGroup = { label: string; items: WorkspaceDestinat
 
 export const learningNavigation: WorkspaceNavigationGroup[] = [
   { label: 'Seu inglês', items: [
-    { href: '/today', label: 'Hoje', description: 'Uma situação para usar seu inglês', icon: Home },
-    { href: '/home', label: 'Revisão', description: 'Relembre suas palavras e frases', icon: Brain, children: ['/review'] },
+    { href: '/home', label: 'Hoje', description: 'Resumo do dia e tarefas pendentes', icon: Home },
+    { href: '/review', label: 'Revisão', description: 'Relembre suas palavras e frases', icon: Brain },
     { href: '/courses', label: 'Trilhas', description: 'Seu caminho do A1 ao C2', icon: BookOpen, children: ['/study', '/exam'] },
+    { href: '/practice-context', label: 'Prática em contexto', description: 'Use seu inglês em uma situação do seu nível', icon: MessageSquare },
     { href: '/practice-path', label: 'Prática por competências', description: 'Leia, converse e aplique em novos contextos', icon: BookText },
     { href: '/tutor', label: 'Conversar', description: 'Inglês em situações reais', icon: MessageSquare },
   ] },

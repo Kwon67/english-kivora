@@ -14,6 +14,7 @@ export default function QuickAdd({ userId, packs, loadError = false }: { userId:
   const [target, setTarget] = useState(packs.find(p => p.name === 'Minhas palavras')?.id || packs[0]?.id || 'new')
   const [pending, setPending] = useState(false), [ready, setReady] = useState(false)
   const [error, setError] = useState(''), [saved, setSaved] = useState('')
+  const [savedId, setSavedId] = useState('')
   const lock = useRef(false), english = useRef<HTMLInputElement>(null)
   const attempt = useRef<QuickWordInput | null>(null), newPack = useRef('')
   useEffect(() => {
@@ -46,7 +47,7 @@ export default function QuickAdd({ userId, packs, loadError = false }: { userId:
     try {
       const result = await addQuickWord(parsed.data)
       if (!result.success) { if (!('retryable' in result) || !result.retryable) { attempt.current = null; try { sessionStorage.setItem(STORAGE, JSON.stringify({ en, pt, target })) } catch {} } setError(result.error); return }
-      attempt.current = null; setSaved(parsed.data.en); setEn(''); setPt(''); requestAnimationFrame(() => english.current?.focus())
+      attempt.current = null; setSaved(parsed.data.en); setSavedId(parsed.data.cardId); setEn(''); setPt(''); requestAnimationFrame(() => english.current?.focus())
       try { sessionStorage.removeItem(STORAGE) } catch {}
     } catch { setError('Envio não confirmado. Tente novamente; a palavra não será duplicada.') }
     finally { lock.current = false; setPending(false) }
@@ -91,7 +92,7 @@ export default function QuickAdd({ userId, packs, loadError = false }: { userId:
           <Plus size={19} aria-hidden="true" />
         </button>
         <div className={styles.confirmation} role="status" aria-live="polite">
-          {saved && <><Check size={18} aria-hidden="true" /><span><strong>{saved}</strong> adicionada</span><Link href="/review">Revisar <ArrowRight size={16} aria-hidden="true" /></Link></>}
+          {saved && <><Check size={18} aria-hidden="true" /><span><strong>{saved}</strong> adicionada</span><Link href={`/review?source=phrases&cards=${savedId}`}>Praticar agora <ArrowRight size={16} aria-hidden="true" /></Link></>}
         </div>
         <noscript>Ative o JavaScript para adicionar palavras.</noscript>
       </form>

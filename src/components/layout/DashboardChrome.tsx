@@ -1,3 +1,5 @@
+import MemberAssignments from './MemberAssignments'
+import { getAssignedTasks } from '@/features/study/lib/memberTasks'
 import WorkspaceNavigationSkeleton from '@/components/navigation/WorkspaceNavigationSkeleton'
 import Navbar from '@/components/layout/Navbar'
 import type { NavbarProfile } from '@/components/layout/Navbar'
@@ -20,7 +22,7 @@ export async function DashboardChrome() {
     return <DashboardChromeFallback />
   }
 
-  const profile = await withTimeout(
+  const profilePromise = withTimeout(
     Promise.resolve(
       supabase
         .from('profiles')
@@ -33,6 +35,10 @@ export async function DashboardChrome() {
     null,
   )
 
+  const [profile, tasks] = await Promise.all([
+    profilePromise,
+    withTimeout(getAssignedTasks(supabase, user.id), AUTH_TIMEOUT_MS, null),
+  ])
   if (!profile) {
     return <DashboardChromeFallback />
   }
@@ -40,6 +46,7 @@ export async function DashboardChrome() {
   return (
     <>
       <Navbar profile={profile as NavbarProfile} />
+      <MemberAssignments key={user.id} userId={user.id} initial={tasks} />
     </>
   )
 }

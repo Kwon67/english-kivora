@@ -1,7 +1,9 @@
+import { getCurriculumState } from '@/features/curriculum/lib/curriculumState'
+import { getCurriculumGate, getPackLockReason } from '@/features/learning/lib/levelGate'
 import { parseReviewCardIds } from '@/features/review/lib/reviewCardIds'
 import { after } from 'next/server'
 import { ensureDailyPlanForUser } from '@/features/study/lib/ensureDailyPlan'
-import { redirect } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { materializeScheduledReviewReleasesForUser } from '@/app/actions'
 import { getUserCefrProfile } from '@/features/cefr/lib/cefrAssessment'
 import { buildReviewSessionPayload, buildTargetedReviewSessionPayload } from '@/features/review/lib/reviewSession'
@@ -101,8 +103,19 @@ export default async function ReviewPage({
   void materializeScheduledReviewReleasesForUser(user.id).catch(() => undefined)
 
   const source = params?.source
-  const targetedSource = source === 'blitz' || source === 'problem' ? source : null
+  const targetedSource = source === 'blitz' || source === 'problem' || source === 'phrases' ? source : null
   const targetedCardIds = targetedSource ? parseReviewCardIds(params?.cards) : []
+  if (source === 'phrases') {
+    if (!targetedCardIds.length) notFound()
+    const { data, error } = await supabase.from('cards').select('id,packs!inner(level,owner_id,is_public)').in('id', targetedCardIds)
+    if (error) throw new Error('Não foi possível abrir as frases.')
+    const rows = data as unknown as { id: string; packs: { level: string | null; owner_id: string | null; is_public: boolean | null } }[]
+    if (rows.length !== targetedCardIds.length) notFound()
+    if (rows.some(row => row.packs.owner_id !== user.id)) {
+      const gate = getCurriculumGate((await getCurriculumState(user.id)).currentLevel)
+      if (rows.some(({ packs }) => packs.owner_id !== user.id && (packs.is_public === false || getPackLockReason(packs.level, gate)))) notFound()
+    }
+  }
   const isTargetedReview = targetedCardIds.length > 0
 
   const queuePromise = isTargetedReview
@@ -128,11 +141,11 @@ export default async function ReviewPage({
       ? 'Revisão do Blitz'
       : targetedSource === 'problem'
         ? 'Revisão de dificuldades'
-        : undefined
+        : targetedSource === 'phrases' ? 'Prática de frases' : undefined
 
   const Client = params?.mode === 'guided' ? GuidedReviewClient : ReviewClient
   return (
-    <Client
+    <Client key={isTargetedReview ? targetedCardIds.join(',') : 'daily'}
       userId={user.id}
       initialDueCards={initialDueCards}
       initialStats={buildInitialStats(initialDueCards, queue.sessionLimit || 0)}

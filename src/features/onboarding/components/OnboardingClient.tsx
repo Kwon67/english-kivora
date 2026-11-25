@@ -76,7 +76,7 @@ export default function OnboardingClient({
     notify.success('Configuração concluída', {
       description: 'Sua jornada no Kivora começa agora.',
     })
-    router.replace('/today')
+    router.replace('/home')
     router.refresh()
   }, [router])
 
