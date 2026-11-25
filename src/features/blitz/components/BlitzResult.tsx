@@ -216,7 +216,7 @@ export default function BlitzResult({
       aria-modal="true"
       aria-labelledby="blitz-result-title"
     >
-      <header className="blitz-result-header" style={{ backgroundColor: 'var(--brand-sage)' }}>
+      <header className="blitz-result-header">
         <div>
           <p className={blitzKicker}>{isNewRecord ? <Trophy size={15} aria-hidden="true" /> : <Zap size={15} aria-hidden="true" />} Fim de jogo</p>
           <h1 id="blitz-result-title">{isNewRecord ? 'Novo recorde!' : 'Boa partida!'}</h1>

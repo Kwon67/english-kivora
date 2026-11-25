@@ -136,8 +136,10 @@
 
 .flushPanel {
   min-width: 0;
-  padding-block: 16px;
-  border-top: 1px solid var(--kivora-line);
+  padding: var(--workspace-surface-padding);
+  background: var(--kivora-surface);
+  border: 1px solid var(--kivora-line);
+  border-radius: var(--workspace-radius);
 }
 
 .dialog {

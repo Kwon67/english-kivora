@@ -85,7 +85,7 @@ export default function NavWayfindingHint() {
         <button
           type="button"
           onClick={dismiss}
-          className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-full border border-border-muted/20 bg-card px-3 py-1.5 text-xs font-bold text-text-muted transition-colors hover:text-primary"
+          className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-label border border-border-muted/20 bg-card px-3 py-1.5 text-xs font-bold text-text-muted transition-colors hover:text-primary"
         >
           <X className="h-3.5 w-3.5" />
           Entendi

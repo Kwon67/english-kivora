@@ -31,7 +31,7 @@ export const adminReportsStatusPill = adminDashboardStatusPill
 export const adminReportsNested = `${homeNestedCardClass} ${adminFrostedSubtle}`
 export const adminReportsInsightCard = 'admin-intel-insight'
 
-export const adminReportsAccentPill = `inline-flex items-center rounded-full border border-brand-dark bg-brand-accent px-2.5 py-1 font-heading text-2xs font-bold uppercase tracking-widest text-brand-dark`
+export const adminReportsAccentPill = `inline-flex items-center rounded-label border border-brand-dark bg-brand-accent px-2.5 py-1 font-heading text-2xs font-bold uppercase tracking-widest text-brand-dark`
 
 export const adminReportsNeutralPill = `${adminReportsStatusPill} bg-bg-primary text-brand-secondary`
 

@@ -3,12 +3,12 @@
   .pointer[data-visible] {
     display:flex; align-items:center; justify-content:center; position:fixed; z-index:30;
     inset:0 auto auto 0; width:14px; height:14px; border:1px solid var(--ink,#2c2e2a); border-radius:99px;
-    background:var(--green,#8ed462); color:var(--ink,#2c2e2a); pointer-events:none;
+    background:var(--green,var(--brand-highlight)); color:var(--ink,#2c2e2a); pointer-events:none;
     translate:calc(var(--cursor-x) - 7px) calc(var(--cursor-y) - 7px);
   }
   .pointer[data-label]::after {
     content:attr(data-label); position:absolute; left:5px; top:15px; white-space:nowrap;
-    padding:5px 9px; border-radius:99px; background:var(--ink,#2c2e2a); color:var(--paper,#fffef8);
+    padding:5px 9px; border-radius:8px; corner-shape:squircle; background:var(--ink,#2c2e2a); color:var(--paper,#fffef8);
     font:500 11px/1.2 var(--font-kivora-mono),monospace;
     animation:cursor-label 160ms ease-out both;
   }

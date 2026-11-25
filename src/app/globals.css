@@ -8,8 +8,22 @@
 @import "./refinement.css";
 @import "./product.css"; /* Shared editorial system */
 @import "./workspace-editorial.css";
+@import "./site-surfaces.css";
 
 @source "../";
+
+@layer base {
+  /* The radius sets the size. The continuous curve softens its transition to each edge. */
+  :where(.premium-theme) :where(div, section, article, aside, header, footer, main, nav,
+    form, fieldset, figure, img, details, summary, ul, ol, li, table, a, button,
+    input, textarea, select, dialog, label, span, [data-slot]) {
+    corner-shape: squircle;
+  }
+
+  :where(.premium-theme) .rounded-full {
+    corner-shape: round;
+  }
+}
 
 @theme inline {
   --color-white: var(--surface-white);
@@ -759,7 +773,8 @@ select:focus-visible {
   justify-content: center;
   gap: 0.5rem;
   min-height: 2.75rem;
-  border-radius: 999px;
+  border-radius: 16px;
+  corner-shape: squircle;
   padding: 0.7rem 1.15rem;
   font-size: 0.9rem;
   font-weight: 550;
@@ -787,7 +802,8 @@ select:focus-visible {
   justify-content: center;
   gap: 0.6rem;
   min-height: 2.75rem;
-  border-radius: 999px;
+  border-radius: 16px;
+  corner-shape: squircle;
   padding: 0.78rem 1rem;
   font-size: 0.9rem;
   font-weight: 500;
@@ -813,11 +829,21 @@ select:focus-visible {
   }
 }
 
+@utility rounded-label {
+  border-radius: 8px;
+  corner-shape: squircle;
+}
+
+@utility rounded-action {
+  border-radius: 16px;
+  corner-shape: squircle;
+}
+
 @utility badge {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  border-radius: 9999px;
+  border-radius: 8px; corner-shape: squircle;
   padding: 0.35rem 0.78rem;
   background: var(--color-surface-container);
   border: 1px solid var(--color-border);
@@ -1049,7 +1075,7 @@ button.card:hover {
 .section-kicker {
   display: inline-flex;
   align-items: center;
-  border-radius: 9999px;
+  border-radius: 8px; corner-shape: squircle;
   padding: 0.34rem 0.72rem;
   background: var(--color-surface-container);
   color: var(--color-primary);
@@ -2123,8 +2149,8 @@ html.kivora-landing-scroll {
   place-items: center;
   flex: 0 0 40px;
   height: 40px;
-  border-radius: 50%;
-  background: #eaf4e1;
+  border-radius: 50%; corner-shape:round;
+  background: var(--kivora-paper);
 }
 .pwa-notice-title { font-size: .875rem; font-weight: 650; }
 .pwa-notice-description { font-size: .8125rem; line-height: 1.45; color: var(--kivora-muted); }
@@ -2133,7 +2159,7 @@ html.kivora-landing-scroll {
   min-height: 44px;
   padding-inline: 16px;
   border-radius: 24px;
-  background: #8ed462;
+  background: var(--brand-highlight);
   font-size: .8125rem;
   font-weight: 650;
 }
@@ -2154,7 +2180,7 @@ html.kivora-landing-scroll {
   outline-offset:4px;
 }
 @media (hover:hover) and (pointer:fine) {
-  html { scrollbar-width:thin; scrollbar-color:#477c2d66 transparent; }
+  html { scrollbar-width:thin; scrollbar-color:var(--kivora-line) transparent; }
 }
 @media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
   html[data-kivora-pointer], html[data-kivora-pointer] * { cursor:none !important; }
@@ -2170,7 +2196,7 @@ html.kivora-landing-scroll {
 
 @media (prefers-reduced-motion:no-preference) {
   html:not(.kivora-landing-lite)::view-transition-group(.kivora-auth-exit) {
-    background:#f5f4eb;
+    background:var(--kivora-paper);
     animation:kivora-auth-curtain 470ms cubic-bezier(.65,0,.24,1) both;
   }
   html:not(.kivora-landing-lite)::view-transition-old(.kivora-auth-exit) {

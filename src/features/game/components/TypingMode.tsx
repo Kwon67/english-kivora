@@ -298,7 +298,7 @@ export default function TypingMode({
                       : 'O sentido bate, mas a forma ainda não está exata.'}
                   </p>
                 </div>
-                <span className="inline-flex shrink-0 rounded-full home-frosted-subtle px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent)]">
+                <span className="inline-flex shrink-0 rounded-label home-frosted-subtle px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent)]">
                   Parcial
                 </span>
               </div>

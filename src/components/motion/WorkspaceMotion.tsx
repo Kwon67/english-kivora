@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { finishFocusedMotion } from './finishFocusedMotion'
 
 gsap.registerPlugin(useGSAP, ScrollTrigger)
 
@@ -19,19 +18,29 @@ export default function WorkspaceMotion({ children }: { children: ReactNode }) {
     const media = gsap.matchMedia()
     media.add('(prefers-reduced-motion: no-preference)', context => {
       const seen = new WeakSet<Element>()
-      const animations = new Set<gsap.core.Tween>()
+      const animations = new Set<Animation>()
       const reveal = context.add('revealPanel', (container: Element) => {
         const candidates = [container, ...container.querySelectorAll(targets)]
         candidates.forEach(element => {
           if (!element.matches(targets) || seen.has(element) || element.closest('[data-product-motion], [data-motion-surface]')) return
-          if (element.parentElement?.closest(targets)) return
+          if (element.parentElement?.closest(targets) || element.closest('details:not([open])')) return
           seen.add(element)
-          const tween = gsap.from(element, {
-            y: 28, opacity: 0, duration: .75, ease: 'power3.out',
-            clearProps: 'transform,opacity',
-            scrollTrigger: { trigger: element, start: 'top 94%', once: true },
+          ScrollTrigger.create({
+            trigger: element,
+            start: 'top 94%',
+            once: true,
+            onEnter: () => {
+              if (element.contains(document.activeElement)) return
+              // A streamed panel can be visible before React hydrates it. A native
+              // animation leaves the server-rendered style attribute untouched.
+              const animation = element.animate(
+                [{ opacity: 0, transform: 'translateY(24px)' }, { opacity: 1, transform: 'translateY(0)' }],
+                { id: 'workspace-entry', duration: 560, easing: 'cubic-bezier(.2,.75,.3,1)' },
+              )
+              animations.add(animation)
+              animation.onfinish = () => animations.delete(animation)
+            },
           })
-          animations.add(tween)
         })
       })
       if (root.current) reveal(root.current)
@@ -44,10 +53,14 @@ export default function WorkspaceMotion({ children }: { children: ReactNode }) {
       if (root.current) observer.observe(root.current, { childList: true, subtree: true })
       return () => {
         observer.disconnect()
-        animations.forEach(tween => { tween.scrollTrigger?.kill(); tween.revert() })
+        animations.forEach(animation => animation.cancel())
       }
     })
     return () => media.revert()
   }, { scope: root, dependencies: [pathname], revertOnUpdate: true })
-  return <div ref={root} onFocusCapture={finishFocusedMotion} className="workspace-motion">{children}</div>
+  return <div ref={root} onFocusCapture={event => {
+    for (const animation of event.currentTarget.getAnimations({ subtree: true })) {
+      if (animation.id === 'workspace-entry') animation.finish()
+    }
+  }} className="workspace-motion">{children}</div>
 }

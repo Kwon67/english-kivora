@@ -376,4 +376,4 @@
   color: var(--tone-ink);
 }
 .admin-premium-shell .admin-metric-value { color: var(--kivora-ink); }
-.admin-premium-shell .admin-workspace-label { background: var(--brand-sage); color: var(--kivora-success); }
+.admin-premium-shell .admin-workspace-label { background: var(--brand-highlight); color: var(--kivora-success); }

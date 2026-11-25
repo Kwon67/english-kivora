@@ -36,9 +36,9 @@ export const adminAssignNested = `${homeNestedCardClass} ${adminFrostedSubtle}`
 export const adminAssignInnerPanel = `${landingRadiusLg} ${adminFrostedSubtle} border border-brand-dark/25 p-4 sm:p-5`
 export const adminAssignTicket = 'admin-dispatch-ticket'
 
-export const adminAssignKicker = `inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark`
+export const adminAssignKicker = `inline-flex items-center rounded-label border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark`
 
-export const adminAssignAccentPill = `inline-flex items-center rounded-full border border-brand-dark bg-brand-accent px-2.5 py-1 font-heading text-2xs font-bold uppercase tracking-widest text-brand-dark`
+export const adminAssignAccentPill = `inline-flex items-center rounded-label border border-brand-dark bg-brand-accent px-2.5 py-1 font-heading text-2xs font-bold uppercase tracking-widest text-brand-dark`
 
 export const adminAssignFieldLabel = 'font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary'
 

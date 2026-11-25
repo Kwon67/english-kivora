@@ -82,7 +82,7 @@ export default function SessionErrorsViewer({
                       {err.cards?.portuguese_translation ?? 'Desconhecido'}
                     </p>
                   </div>
-                  <div className="flex shrink-0 items-center self-start gap-1.5 rounded-full border border-brand-border bg-bg-card px-2.5 py-1 font-heading text-2xs font-bold text-brand-secondary">
+                  <div className="flex shrink-0 items-center self-start gap-1.5 rounded-label border border-brand-border bg-bg-card px-2.5 py-1 font-heading text-2xs font-bold text-brand-secondary">
                     <Clock className="h-3 w-3" strokeWidth={1.5} />
                     {formatAppDateTime(err.created_at, {
                       hour: '2-digit',

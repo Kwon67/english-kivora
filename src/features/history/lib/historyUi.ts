@@ -35,4 +35,4 @@ export const historyCefrTrack = `grid gap-4 sm:grid-cols-2 ${landingRadiusLg} bo
 
 export const historyMilestoneBar = `mt-3 h-2 overflow-hidden rounded-full border border-brand-dark bg-bg-primary`
 
-export const historyChartBadge = `inline-flex shrink-0 items-center rounded-full border border-brand-dark bg-brand-accent px-3 py-1.5 font-heading text-[0.65rem] font-bold uppercase tracking-widest text-brand-dark sm:px-4 sm:py-2 sm:text-xs`
+export const historyChartBadge = `inline-flex shrink-0 items-center rounded-label border border-brand-dark bg-brand-accent px-3 py-1.5 font-heading text-[0.65rem] font-bold uppercase tracking-widest text-brand-dark sm:px-4 sm:py-2 sm:text-xs`

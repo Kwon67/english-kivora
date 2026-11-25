@@ -24,9 +24,9 @@ export const onboardingLevelOptionClass = `flex w-full min-h-11 min-w-0 touch-ma
 
 export const onboardingLevelLabelClass = 'flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-2'
 
-export const onboardingComingSoonPill = `inline-flex w-fit shrink-0 items-center rounded-full border border-brand-dark/40 bg-bg-card px-2 py-0.5 font-heading text-[0.625rem] font-bold uppercase tracking-widest text-brand-secondary`
+export const onboardingComingSoonPill = `inline-flex w-fit shrink-0 items-center rounded-label border border-brand-dark/40 bg-bg-card px-2 py-0.5 font-heading text-[0.625rem] font-bold uppercase tracking-widest text-brand-secondary`
 
-export const onboardingAiBadge = `inline-flex w-fit shrink-0 items-center gap-1 rounded-full border border-brand-dark/40 bg-brand-accent/60 px-2 py-0.5 font-heading text-[0.625rem] font-bold uppercase tracking-widest text-brand-dark`
+export const onboardingAiBadge = `inline-flex w-fit shrink-0 items-center gap-1 rounded-label border border-brand-dark/40 bg-brand-accent/60 px-2 py-0.5 font-heading text-[0.625rem] font-bold uppercase tracking-widest text-brand-dark`
 
 export const onboardingProgressStrip = `flex w-full min-w-0 items-center justify-between gap-3 overflow-hidden ${landingRadiusLg} border border-brand-dark bg-brand-accent/55 px-4 py-3`
 

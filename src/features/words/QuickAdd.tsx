@@ -2,10 +2,11 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, Check, Plus } from 'lucide-react'
+import { ArrowRight, Check, FolderOpen, Plus } from 'lucide-react'
 import { addQuickWord } from '@/app/quick-word-actions'
 import { QuickWordSchema, type QuickWordInput } from './quickWord'
 import { wordId } from './wordId'
+import styles from './QuickAdd.module.css'
 export default function QuickAdd({ userId, packs, loadError = false }: { userId: string; packs: { id: string; name: string }[]; loadError?: boolean }) {
   const STORAGE = `kivora-word-draft-v2:${userId}`
   const [storageFailed, setStorageFailed] = useState(false)
@@ -50,20 +51,50 @@ export default function QuickAdd({ userId, packs, loadError = false }: { userId:
     } catch { setError('Envio não confirmado. Tente novamente; a palavra não será duplicada.') }
     finally { lock.current = false; setPending(false) }
   }
-  return <div className="word-workspace word-workspace--quick-add"><header className="product-heading"><h1>Adicionar palavra</h1></header>
-    <div className="word-composition"><div>
-    <form className="word-form" onSubmit={submit} method="post" aria-busy={pending}>
-      <fieldset disabled={!ready || pending || Boolean(attempt.current && error)}><label htmlFor="word-en">Em inglês</label><input ref={english} id="word-en" value={en} onChange={e => setEn(e.target.value)} maxLength={200} placeholder="e.g. take a break" autoComplete="off" required lang="en" />
-      <label htmlFor="word-pt">Significado</label><input id="word-pt" value={pt} onChange={e => setPt(e.target.value)} maxLength={240} placeholder="fazer uma pausa" autoComplete="off" required />
-      <label htmlFor="word-collection">Coleção</label><select id="word-collection" value={target} onChange={e => setTarget(e.target.value)}>{packs.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}<option value="new">Minhas palavras · nova coleção</option></select></fieldset>
-      {storageFailed && <p role="status">Não foi possível guardar o rascunho nesta aba. Copie os campos antes de sair.</p>}
-      {loadError && <p role="status">Não foi possível listar suas coleções. Você pode criar uma nova.</p>}
-      {error && <div className="product-error" role="alert"><p>{error}</p>{attempt.current && <Link className="product-text-link" href="/library">Conferir coleção</Link>}</div>}
-      <button className="product-primary" type="submit" disabled={!ready || pending}>{pending ? 'Salvando…' : error && attempt.current ? 'Tentar novamente' : 'Adicionar palavra'}<Plus size={19} /></button>
-      <noscript>Ative o JavaScript para adicionar palavras.</noscript>
-    </form>
-    <div className="word-confirmation" role="status" aria-live="polite">{saved && <><Check size={18} /><span><strong>{saved}</strong> adicionada</span><Link href="/review">Revisar <ArrowRight size={16} /></Link></>}</div>
-    <Link className="product-text-link" href="/library">Abrir coleção <ArrowRight size={16} /></Link>
-    </div><aside className="word-discovery"><Image src="/images/mindmarket/memory.png" alt="Uma estudante cuida de uma planta de palavras" width={1536} height={1024} unoptimized loading="lazy" /></aside></div>
-  </div>
+  return (
+    <div className={styles.workspace}>
+      <header className={styles.heading}>
+        <div>
+          <h1>Adicionar palavra</h1>
+          <Link href="/library">Abrir coleção <ArrowRight size={16} aria-hidden="true" /></Link>
+        </div>
+        <Image src="/images/mindmarket/memory.png" alt="" width={1536} height={1024}
+          sizes="(max-width: 799px) 130px, 280px" className={styles.art} />
+      </header>
+
+      <form className={styles.form} onSubmit={submit} method="post" aria-busy={pending} aria-label="Adicionar palavra">
+        <fieldset disabled={!ready || pending || Boolean(attempt.current && error)}>
+          <div className={styles.field}>
+            <label htmlFor="word-en">Em inglês</label>
+            <input ref={english} id="word-en" value={en} onChange={e => setEn(e.target.value)}
+              maxLength={200} placeholder="take a break" autoComplete="off" required lang="en" />
+          </div>
+          <div className={styles.field}>
+            <label htmlFor="word-pt">Significado em português</label>
+            <input id="word-pt" value={pt} onChange={e => setPt(e.target.value)}
+              maxLength={240} placeholder="fazer uma pausa" autoComplete="off" required />
+          </div>
+          <div className={`${styles.field} ${styles.collection}`}>
+            <label htmlFor="word-collection"><FolderOpen size={17} aria-hidden="true" /> Coleção</label>
+            <select id="word-collection" value={target} onChange={e => setTarget(e.target.value)}>
+              {packs.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              <option value="new">Minhas palavras · nova coleção</option>
+            </select>
+          </div>
+        </fieldset>
+
+        {storageFailed && <p role="status" className={styles.notice}>Não foi possível guardar o rascunho nesta aba. Copie os campos antes de sair.</p>}
+        {loadError && <p role="status" className={styles.notice}>Não foi possível listar suas coleções. Você pode criar uma nova.</p>}
+        {error && <div className="product-error" role="alert"><p>{error}</p>{attempt.current && <Link className="product-text-link" href="/library">Conferir coleção</Link>}</div>}
+        <button className={`product-primary ${styles.submit}`} type="submit" disabled={!ready || pending}>
+          {pending ? 'Salvando…' : error && attempt.current ? 'Tentar novamente' : 'Adicionar palavra'}
+          <Plus size={19} aria-hidden="true" />
+        </button>
+        <div className={styles.confirmation} role="status" aria-live="polite">
+          {saved && <><Check size={18} aria-hidden="true" /><span><strong>{saved}</strong> adicionada</span><Link href="/review">Revisar <ArrowRight size={16} aria-hidden="true" /></Link></>}
+        </div>
+        <noscript>Ative o JavaScript para adicionar palavras.</noscript>
+      </form>
+    </div>
+  )
 }

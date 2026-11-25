@@ -118,104 +118,111 @@ export default function SkillTree({
 
   return (
     <div className="space-y-4">
-      {(recommendedLevel || assessing) && (
-        <div className="discovery-scope">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
+      <div className="catalog-controls">
+        {(recommendedLevel || assessing) && (
+          <div className="discovery-scope">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
 
-              <h3 className="font-heading text-base font-semibold text-brand-dark">
-                {assessing
-                  ? 'Estamos medindo seu nível nas revisões e lições'
-                  : `Nível atual: ${recommendedLevel}`}
-              </h3>
-              <p className="mt-2 font-body text-sm text-brand-secondary">
-                {assessing
-                  ? 'Continue praticando para acompanhar sua evolução nos níveis A1 a C2.'
-                  : nextStepLevel
-                    ? `Avance nas lições do seu nível antes de passar para ${nextStepLevel}.`
-                    : 'Continue consolidando as habilidades do seu nível.'}
-              </p>
-            </div>
-            {!assessing && recommendedLevel ? (
-              <div className="flex flex-wrap gap-2 sm:justify-end">
-                <button
-                  type="button"
-                  onClick={() => setCatalogMode('recommended')}
-                  aria-pressed={showingRecommended}
-                  className={filterBtnBase}
-                >
-                  <Target className="h-3.5 w-3.5" />
-                  Recomendados
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCatalogMode('full')}
-                  aria-pressed={!showingRecommended}
-                  className={filterBtnBase}
-                >
-                  <BookOpen className="h-3.5 w-3.5" />
-                  Todos os packs
-                </button>
+                <h3 className="font-heading text-base font-semibold text-brand-dark">
+                  {assessing
+                    ? 'Estamos medindo seu nível nas revisões e lições'
+                    : `Nível atual: ${recommendedLevel}`}
+                </h3>
+                <p className="mt-2 font-body text-sm text-brand-secondary">
+                  {assessing
+                    ? 'Continue praticando para acompanhar sua evolução nos níveis A1 a C2.'
+                    : nextStepLevel
+                      ? `Avance nas lições do seu nível antes de passar para ${nextStepLevel}.`
+                      : 'Continue consolidando as habilidades do seu nível.'}
+                </p>
               </div>
+              {!assessing && recommendedLevel ? (
+                <div className="flex flex-wrap gap-2 sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setCatalogMode('recommended')}
+                    aria-pressed={showingRecommended}
+                    className={filterBtnBase}
+                  >
+                    <Target className="h-3.5 w-3.5" />
+                    Recomendados
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCatalogMode('full')}
+                    aria-pressed={!showingRecommended}
+                    className={filterBtnBase}
+                  >
+                    <BookOpen className="h-3.5 w-3.5" />
+                    Todos os packs
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        )}
+
+        <div className="discovery-search-panel space-y-3">
+          <div className="relative" role="search" aria-label="Catálogo">
+            <Search aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-secondary" />
+            <input
+              id="catalog-search"
+              ref={searchRef}
+              type="search"
+              value={busca}
+              onChange={(event) => setBusca(event.target.value)}
+              placeholder="Buscar por tema, situação ou nível..."
+              aria-label="Buscar no catálogo"
+              className="discovery-search"
+            />
+            {busca ? (
+              <button
+                type="button"
+                onClick={() => { setBusca(''); searchRef.current?.focus() }}
+                aria-label="Limpar busca"
+                className="discovery-clear"
+              >
+                <X className="h-4 w-4" />
+              </button>
             ) : null}
           </div>
-        </div>
-      )}
 
-      <div className="discovery-search-panel space-y-3">
-        <div className="relative" role="search" aria-label="Catálogo">
-          <Search aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-secondary" />
-          <input
-            ref={searchRef}
-            type="search"
-            value={busca}
-            onChange={(event) => setBusca(event.target.value)}
-            placeholder="Buscar por tema, situação ou nível..."
-            aria-label="Buscar no catálogo"
-            className="discovery-search"
-          />
-          {busca ? (
-            <button
-              type="button"
-              onClick={() => { setBusca(''); searchRef.current?.focus() }}
-              aria-label="Limpar busca"
-              className="discovery-clear"
-            >
-              <X className="h-4 w-4" />
-            </button>
+          <details className="catalog-themes">
+            <summary>Filtrar por tema{categoria && <strong>{categoria}</strong>}<ChevronDown size={16} aria-hidden="true" /></summary>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setCategoria(null)}
+                aria-pressed={categoria === null}
+                className={filterBtnBase}
+              >
+                Todos os temas
+              </button>
+              {categorias.map((item) => (
+                <button
+                  key={item.name}
+                  type="button"
+                  onClick={() => setCategoria(categoria === item.name ? null : item.name)}
+                  aria-pressed={categoria === item.name}
+                  className={filterBtnBase}
+                >
+                  {item.name}
+                  <span className="font-body text-[11px] opacity-70">{item.count}</span>
+                </button>
+              ))}
+            </div>
+          </details>
+
+          {filtroAtivo ? (
+            <p className="font-body text-xs text-brand-secondary" aria-live="polite">
+              {filtrados.length === 0
+                ? 'Nenhuma coleção encontrada.'
+                : `${filtrados.length} ${filtrados.length === 1 ? 'coleção encontrada' : 'coleções encontradas'}.`}
+            </p>
           ) : null}
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setCategoria(null)}
-            aria-pressed={categoria === null}
-            className={filterBtnBase}
-          >
-            Todos os temas
-          </button>
-          {categorias.map((item) => (
-            <button
-              key={item.name}
-              type="button"
-              onClick={() => setCategoria(categoria === item.name ? null : item.name)}
-              aria-pressed={categoria === item.name}
-              className={filterBtnBase}
-            >
-              {item.name}
-              <span className="font-body text-[11px] opacity-70">{item.count}</span>
-            </button>
-          ))}
-        </div>
-
-        {filtroAtivo ? (
-          <p className="font-body text-xs text-brand-secondary" aria-live="polite">
-            {filtrados.length === 0
-              ? 'Nenhuma coleção encontrada.'
-              : `${filtrados.length} ${filtrados.length === 1 ? 'coleção encontrada' : 'coleções encontradas'}.`}
-          </p>
-        ) : null}
       </div>
 
       {showingRecommended && visiblePacks.length === 0 ? (

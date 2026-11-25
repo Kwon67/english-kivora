@@ -105,7 +105,7 @@ function AssignSectionHeading({
 }) {
   return (
     <div className="mb-5 flex items-start gap-3">
-      <span className={adminAssignIconBox}>
+      <span className={`assign-section-icon ${adminAssignIconBox}`}>
         <Icon className={homeIconGlyphSm} strokeWidth={1.5} />
       </span>
       <div className="min-w-0">

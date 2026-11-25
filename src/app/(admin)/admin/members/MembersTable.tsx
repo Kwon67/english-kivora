@@ -1,6 +1,5 @@
 'use client'
 
-import styles from '@/features/admin/components/AdminWorkspace.module.css'
 
 import { WorkspaceList } from '@/components/ui/WorkspacePagination'
 import { useMemo, useState } from 'react'
@@ -77,7 +76,7 @@ export default function MembersTable({
   return (
     <section
       id="diretorio"
-      className={`${styles.flushPanel} member-directory scroll-mt-4`}
+      className={`dashboard-panel member-directory scroll-mt-4`}
     >
       <div className={`${adminMembersSectionHeader} member-directory-heading`}>
         <div>
@@ -138,7 +137,7 @@ export default function MembersTable({
           return (
             <li key={member.id}>
               <article
-                className="member-directory-card"
+                className="dashboard-insight member-directory-card"
                 aria-label={`Membro ${member.username}`}
               >
                 <header className="member-directory-card-heading">

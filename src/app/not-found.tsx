@@ -1,11 +1,12 @@
 import { Card } from '@/components/shadcn/card'
-import Link from 'next/link'
+import PublicPageNavigation from '@/components/navigation/PublicPageNavigation'
 import { SearchX } from 'lucide-react'
 import { homeCardClass, homeFrostedSurface } from '@/lib/homeStyles'
 
 export default function NotFound() {
   return (
-    <main className="flex min-h-screen min-h-[100svh] items-center justify-center bg-[var(--color-background)] px-6 py-16">
+    <main id="main-content" className="public-feedback-page">
+      <PublicPageNavigation href="/home" />
       <Card asChild unstyled><section className={`${homeCardClass} ${homeFrostedSurface} w-full max-w-md p-8 text-center`}>
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary-light text-primary">
           <SearchX className="h-5 w-5" aria-hidden="true" />
@@ -16,12 +17,7 @@ export default function NotFound() {
         <p className="mt-3 text-sm leading-6 text-text-muted">
           O endereço acessado não existe ou foi movido.
         </p>
-        <Link
-          href="/home"
-          className="mt-8 inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
-        >
-          Voltar ao início
-        </Link>
+
       </section></Card>
     </main>
   )

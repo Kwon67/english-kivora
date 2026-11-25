@@ -1,0 +1,60 @@
+.card {
+  --inset: clamp(18px, 4vw, 38px);
+  min-width: 0;
+  margin-top: 12px;
+  padding-inline: var(--inset);
+  background: var(--kivora-surface);
+  border: 1px solid var(--kivora-line);
+  border-radius: var(--workspace-radius);
+  corner-shape: squircle;
+  color: var(--kivora-ink);
+}
+
+.card > summary {
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 12px;
+  list-style: none;
+  cursor: pointer;
+  font-size: clamp(1rem, 2vw, 1.125rem);
+  font-weight: 600;
+  letter-spacing: -.025em;
+}
+.card > summary::-webkit-details-marker { display: none; }
+.card > summary svg { flex: none; color: var(--kivora-muted); }
+.card[open] > summary svg { transform: rotate(180deg); }
+
+.list { padding-bottom: 8px; }
+.list a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(10px, 2vw, 16px);
+  min-height: 64px;
+  padding: 12px 2px;
+  border-top: 1px solid var(--kivora-line);
+  color: inherit;
+  text-decoration: none;
+}
+.list strong, .list small { display: block; overflow-wrap: anywhere; }
+.list strong { font-size: 1rem; font-weight: 550; letter-spacing: -.025em; }
+.list small { margin-top: 2px; color: var(--kivora-muted); font-size: .8125rem; line-height: 1.45; }
+.list a > svg { color: var(--kivora-muted); }
+.icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  corner-shape: squircle;
+  background: var(--kivora-paper);
+}
+.list [data-tone='review'] .icon { background: var(--brand-highlight); }
+.list [data-tone='tutor'] .icon { background: var(--brand-coral); }
+.list a:focus-visible strong { text-decoration: underline; text-underline-offset: 3px; }
+@media (hover: hover) {
+  .list a:hover strong { text-decoration: underline; text-underline-offset: 3px; }
+}

@@ -9,7 +9,6 @@ import { AdminMotionItem, AdminMotionSection } from '@/features/admin/components
 import {
   adminMembersPrimaryBtn,
   adminMembersShell,
-  adminMembersSpotlightCard,
   adminMembersMemberAvatar,
   adminMembersTelemetryBand,
 } from '@/features/admin/lib/adminMembersUi'
@@ -113,7 +112,7 @@ export default async function MembersPage() {
     .slice(0, 3)
 
   return (
-    <div className={`${adminMembersShell} ${styles.workspace}`}>
+    <div className={`${adminMembersShell} dashboard-landing ${styles.workspace}`}>
       <div className="relative z-10 mx-auto w-full min-w-0 max-w-full space-y-6 pb-8 sm:space-y-8">
 <AdminMotionSection>
           <MembersHeader
@@ -152,7 +151,7 @@ export default async function MembersPage() {
           </AdminMotionItem>
         </AdminMotionSection>{newestMembers.length > 0 ? (
           <AdminMotionSection>
-            <section className={styles.flushPanel}>
+            <section className="dashboard-panel">
               <div className="mb-5 flex items-center gap-3">
                 <span className={adminDashboardIconBox}>
                   <UserRound className={homeIconGlyphSm} strokeWidth={1.5} />
@@ -165,7 +164,7 @@ export default async function MembersPage() {
 
               <div className="grid gap-3 sm:grid-cols-3">
                 {newestMembers.map((member) => (
-                  <div key={member.id} className={adminMembersSpotlightCard}>
+                  <div key={member.id} className="dashboard-insight">
                     <Link
                       href={`/admin/members/${member.id}`}
                       transitionTypes={navForwardTransitionTypes}

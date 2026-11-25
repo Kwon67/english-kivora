@@ -144,7 +144,7 @@ export default function WeeklyReport({
 const styles = {
   body: {
     margin: 0,
-    backgroundColor: '#f7f8f6',
+    backgroundColor: '#f5f1e4',
     color: '#18201d',
     fontFamily: 'Arial, sans-serif',
   },
@@ -158,7 +158,7 @@ const styles = {
     textAlign: 'center' as const,
     padding: '28px 24px',
     backgroundColor: '#ffffff',
-    border: '1px solid #dce3df',
+    border: '1px solid #c7c1b1',
     borderRadius: '16px',
   },
   logo: {
@@ -180,7 +180,7 @@ const styles = {
     marginTop: '18px',
     padding: '28px 24px',
     backgroundColor: '#ffffff',
-    border: '1px solid #dce3df',
+    border: '1px solid #c7c1b1',
     borderRadius: '16px',
     textAlign: 'center' as const,
   },
@@ -200,7 +200,7 @@ const styles = {
     marginTop: '18px',
     padding: '18px 12px',
     backgroundColor: '#ffffff',
-    border: '1px solid #dce3df',
+    border: '1px solid #c7c1b1',
     borderRadius: '16px',
   },
   metricColumn: {
@@ -225,7 +225,7 @@ const styles = {
     marginTop: '18px',
     padding: '22px 24px',
     backgroundColor: '#ffffff',
-    border: '1px solid #dce3df',
+    border: '1px solid #c7c1b1',
     borderRadius: '16px',
   },
   levelText: {
@@ -237,7 +237,7 @@ const styles = {
   progressTrack: {
     height: '12px',
     overflow: 'hidden',
-    backgroundColor: '#edf2ef',
+    backgroundColor: '#f5f1e4',
     borderRadius: '999px',
   },
   progressFill: {
@@ -272,7 +272,7 @@ const styles = {
     textDecoration: 'none',
   },
   hr: {
-    borderColor: '#dce3df',
+    borderColor: '#c7c1b1',
     margin: '24px 0',
   },
   footer: {

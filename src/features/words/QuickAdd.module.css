@@ -1,0 +1,89 @@
+.workspace {
+  display: grid;
+  align-items: start;
+  gap: clamp(16px, 3vw, 32px);
+  max-width: 68rem;
+  margin-inline: auto;
+  padding-block: 8px 32px;
+  color: var(--kivora-ink);
+}
+.heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(76px, 25vw, 135px);
+  align-items: center;
+  gap: 12px;
+}
+.workspace .heading h1 {
+  margin: 0;
+  max-width: 12ch;
+  font-size: clamp(2.15rem, 4.8vw, 4rem);
+  font-weight: 550;
+  line-height: 1.03;
+  letter-spacing: -.055em;
+  text-wrap: balance;
+}
+.heading a, .confirmation a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: .875rem;
+  font-weight: 550;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--brand-highlight);
+  text-decoration-thickness: 2px;
+}
+.art { display: block; width: 100%; height: auto; }
+.form {
+  min-width: 0;
+  display: grid;
+  gap: 20px;
+  padding: clamp(18px, 4vw, 38px);
+  background: var(--kivora-surface);
+  border: 1px solid var(--kivora-line);
+  border-radius: var(--workspace-radius);
+  corner-shape: squircle;
+}
+.form fieldset { min-width: 0; display: grid; gap: 18px; margin: 0; border: 0; padding: 0; }
+.field { display: grid; min-width: 0; gap: 7px; }
+.field label { display: flex; gap: 8px; align-items: center; font-size: .875rem; font-weight: 600; }
+.field :is(input, select) {
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  min-height: 50px;
+  padding: 11px 14px;
+  background: var(--kivora-inset);
+  color: var(--kivora-ink);
+  border: 1px solid var(--kivora-line);
+  border-radius: var(--workspace-inset-radius);
+  font: inherit;
+  font-size: 1rem;
+}
+.field :is(input, select):focus-visible { outline: 2px solid var(--brand-green); outline-offset: 2px; }
+.field input::placeholder { color: var(--kivora-muted); }
+.collection { padding-top: 18px; border-top: 1px solid var(--kivora-line); }
+.form .submit { justify-content: space-between; width: 100%; }
+.notice, .confirmation:not(:empty) {
+  border-inline-start: 3px solid var(--brand-coral);
+  background: var(--kivora-paper);
+  padding: 8px 12px;
+  font-size: .875rem;
+}
+.confirmation:not(:empty) {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  border-color: var(--brand-highlight);
+  overflow-wrap: anywhere;
+}
+.confirmation:empty { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.confirmation a { margin-inline-start: auto; }
+@media (min-width: 800px) {
+  .workspace {
+    grid-template-columns: minmax(0, .82fr) minmax(0, 1.4fr);
+    gap: clamp(32px, 5vw, 72px);
+    padding-top: 20px;
+  }
+  .heading { grid-template-columns: 1fr; gap: 16px; }
+  .art { width: min(100%, 280px); }
+}

@@ -70,7 +70,7 @@
   border-color: var(--kivora-ink);
 }
 
-.assessment-option:has(input:checked) { background: var(--brand-sage); }
+.assessment-option:has(input:checked) { background: var(--brand-highlight); }
 .assessment-option:has(input:focus-visible) { outline: 2px solid var(--kivora-ink); outline-offset: 2px; }
 .assessment-option:has(input:disabled) { cursor: default; }
 .assessment-input:focus-visible { border-color: var(--kivora-ink); }

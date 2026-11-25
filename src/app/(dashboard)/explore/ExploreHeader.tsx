@@ -13,8 +13,10 @@ type PackRow = {
 
 export default function ExploreHeader({
   featuredPack,
+  hasSearch,
 }: {
   featuredPack?: PackRow
+  hasSearch: boolean
 }) {
   return (
     <WorkspaceHeading
@@ -31,9 +33,9 @@ export default function ExploreHeader({
           >
             <BookOpen size={16} /> Plano de hoje
           </Link>
-          <a href="#packs" className={homeSecondaryButton}>
+          {hasSearch && <a href="#catalog-search" className={homeSecondaryButton}>
             <List size={16} /> Ir para busca
-          </a>
+          </a>}
         </>
       }
       aside={

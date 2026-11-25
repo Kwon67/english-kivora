@@ -32,18 +32,18 @@ export default function PracticeSequence({ level, records, ready, onLevelChange,
   const completed = units.filter(item => practiceStatus(item, records[item.lesson.id]) === 'completed').length
 
   return <>
-    <div className="competency-controls">
-      <div className="competency-level">
-        <label htmlFor="practice-level">Faixa de prática</label>
-        <select id="practice-level" value={level} aria-describedby="practice-level-note" onChange={event => onLevelChange(event.target.value as CefrLevel)}>
-          {CEFR_LEVELS.map(item => <option key={item}>{item}</option>)}
-        </select>
-      </div>
-      <p id="practice-level-note">A escolha vale só para esta sequência. Seu nível na conta continua o mesmo.</p>
-    </div>
-
     <section className="competency-next" aria-labelledby="practice-next-title" aria-busy={!ready}>
-      <div>
+      <div className="competency-controls">
+        <div className="competency-level">
+          <label htmlFor="practice-level">Faixa de prática</label>
+          <select id="practice-level" value={level} aria-describedby="practice-level-note" onChange={event => onLevelChange(event.target.value as CefrLevel)}>
+            {CEFR_LEVELS.map(item => <option key={item}>{item}</option>)}
+          </select>
+        </div>
+        <p id="practice-level-note">Esta faixa vale apenas para a sequência de prática.</p>
+      </div>
+
+      <div className="competency-next-body">
         <p className="product-kicker">{next ? 'PRÓXIMO PASSO' : 'SEQUÊNCIA REGISTRADA'} · {level}</p>
         <h2 id="practice-next-title">{next ? next.lesson.title : 'Você registrou todas as práticas'}</h2>
         {next && (
@@ -55,13 +55,13 @@ export default function PracticeSequence({ level, records, ready, onLevelChange,
       <div className="competency-progress">
         <p><strong>{completed} / {units.length}</strong> práticas registradas</p>
         <div className="competency-progress-track" role="progressbar" aria-label={`Práticas registradas na faixa ${level}`} aria-valuenow={ready ? completed : undefined} aria-valuemin={0} aria-valuemax={units.length}>
-          <span style={{ width: `${completed / units.length * 100}%` }} />
+          {units.map((item, index) => <span key={item.lesson.id} data-filled={index < completed} />)}
         </div>
         {!ready && <p role="status">Abrindo seu progresso…</p>}
       </div>
     </section>
 
-    <section aria-labelledby="practice-sequence-title">
+    <section className="competency-route" aria-labelledby="practice-sequence-title">
       <h2 id="practice-sequence-title" className="competency-section-heading">Situações da faixa {level}</h2>
       <ol className="competency-units" role="list">
         {units.map((item, index) => {

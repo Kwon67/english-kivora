@@ -12,7 +12,7 @@ export default function LevelSelector({ englishLevel, action }: { englishLevel: 
     <select id="member-level" name="level" defaultValue={englishLevel} disabled={pending} className={`${fieldClass} mt-2`}>
       {['A1','A2','B1','B2','C1','C2'].map(level => <option key={level}>{level}</option>)}
     </select>
-    <button type="submit" disabled={pending} className="mt-3 min-h-11 rounded-full border border-brand-dark bg-primary-light px-5 py-2 font-semibold">{pending ? 'Salvando…' : 'Salvar nível'}</button>
+    <button type="submit" disabled={pending} className="mt-3 min-h-11 rounded-action border border-brand-dark bg-primary-light px-5 py-2 font-semibold">{pending ? 'Salvando…' : 'Salvar nível'}</button>
     <p role="status" className="mt-2 text-sm">{state.error || (state.success ? 'Nível atualizado.' : '')}</p>
   </form>
 }

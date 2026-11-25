@@ -144,42 +144,46 @@ export default function ReviewClient({ userId, initialDueCards, initialStats, pa
     </StudioHero><PracticeRoutes />
   </div>
   return <div ref={reviewRoot} className="study-desk study-desk--review" data-testid="review-page">
-    <StudioHero title="Revisão" ornament="pencil" compact>
-      <Link href="/add"><Plus size={16} />Adicionar palavra</Link>
-    </StudioHero>
-    <div className="study-session-line"><span>{sessionTitle || 'Sua sessão de hoje'}</span><span aria-live="polite">{completed} / {total} respostas</span><Link href="/library" aria-label="Pausar revisão" aria-disabled={saving} onClick={e => { if (saving) e.preventDefault() }}><X size={19} /></Link></div>
-    <div className="study-progress" role="progressbar" aria-label="Revisão diária" aria-valuenow={completed} aria-valuemin={0} aria-valuemax={total}><span style={{ transform: `scaleX(${total ? completed / total : 0})` }} /></div>
-    {challenge && <div className="review-mode-picker" role="group" aria-label="Formato da revisão">
-      <button type="button" aria-pressed={!isCloze} disabled={revealed || saving} onClick={() => setMode('flashcard')}>Flashcard</button>
-      <button type="button" aria-pressed={isCloze} disabled={revealed || saving || !challenge} onClick={() => setMode('cloze')}>Completar frase</button>
-    </div>}
-    <ProductMotion motionKey={`${active.card_id}-${isCloze}`} className="memory-card review-card" subtle>
-      <div className="memory-card-top"><span className="tone-chip" data-tone={active.isNew ? 'vocabulary' : 'review'}>{active.isNew ? 'Nova descoberta' : active.selectionTag || 'Hora de relembrar'}</span>{(!isCloze || revealed) && <AudioButton url={active.cards.audio_url} fallbackText={active.cards.english_phrase} autoPlay={false} variant="game" />}</div>
-      {isCloze && challenge ? <>
-        <span className="product-kicker">COMPLETE A FRASE ORIGINAL</span>
-        <p className="review-cloze-hint">{active.cards.portuguese_translation}</p>
-        <h2 className="review-cloze-sentence" lang="en" aria-live="polite" aria-atomic="true">{challenge.answers.map((answer, index) => <Fragment key={index}>
-          {challenge.segments[index]}
-          {revealed ? <span className="review-cloze-blank">{answer}</span> : <button type="button" className="review-cloze-blank" aria-label={`Lacuna ${index + 1} de ${challenge.answers.length}: ${selected[index] || 'vazia'}`} aria-pressed={activeGap === index} disabled={saving || !ready} onClick={() => setActiveGap(index)}>{selected[index] || '____'}</button>}
-        </Fragment>)}{challenge.segments[challenge.answers.length]}</h2>
-        <div className="review-cloze-options" role="group" aria-label={`Palavras para a lacuna ${activeGap + 1}`}>{challenge.options.map(option => <button key={option} type="button" lang="en" aria-pressed={selected.includes(option)} disabled={revealed || saving || !ready} onClick={() => chooseWord(option)}>{option}</button>)}</div>
-        <p className="memory-instruction review-cloze-feedback" aria-live="polite">{revealed ? outcome === 'correct' ? 'Muito bem! Você completou a frase.' : `Confira a frase corrigida acima. Escolha “De novo” para praticá-la outra vez.` : allGapsFilled ? 'Tudo preenchido. Você pode tocar nas lacunas para trocar as palavras ou confirmar sua resposta.' : `Escolha uma palavra para a lacuna ${activeGap + 1} de ${challenge.answers.length}. Toque em uma lacuna para editá-la.`}</p>
-      </> : <>
-        <span className="product-kicker">COMO VOCÊ DIRIA EM PORTUGUÊS?</span>
-        <h2 lang="en">{active.cards.english_phrase}</h2>
-        <div className="memory-answer" aria-live="polite">{revealed ? <p>{active.cards.portuguese_translation}</p> : <span aria-hidden="true">•••</span>}</div>
-        <p className="memory-instruction">{revealed ? 'Avalie sua lembrança com sinceridade. O intervalo se adapta a você.' : 'Tente lembrar antes de revelar. Sem pressa.'}</p>
-      </>}
-    </ProductMotion>
-    <div className="study-response">
-      {revealed ? <>
-        <div className="study-grades">{grades.map((grade, index) => <button key={grade.value} type="button" disabled={saving || !ready || !isGradeAllowedAfterPractice(grade.value, outcome)} onClick={() => void rate(grade.value)} data-grade={index}><strong>{grade.label}</strong><span>{formatMinutesEstimate(scheduleReview(grade.value, toSchedulingState(active)).intervalMinutes)}</span><kbd aria-hidden="true">{index + 1}</kbd></button>)}</div>
-        <p className="study-save-state" role="status">{saving ? 'Salvando resposta…' : 'Sua resposta define quando esta palavra volta.'}</p>
-      </> : isCloze && challenge ? <button ref={revealButton} className="product-primary study-reveal" disabled={!ready || !allGapsFilled} onClick={() => { setOutcome(challenge.answers.every((answer, index) => selected[index] === answer) ? 'correct' : 'wrong'); setRevealed(true) }}>Confirmar resposta <ArrowRight size={18} /></button> : <button ref={revealButton} className="product-primary study-reveal" disabled={!ready} onClick={() => setRevealed(true)}>Mostrar resposta <ArrowRight size={18} /></button>}
-      {error && <div className="product-error" role="alert"><p>{error}</p><button onClick={() => window.location.reload()}>Recarregar</button></div>}
+    <div className="review-session">
+      <StudioHero title="Revisão" ornament="pencil" compact>
+        <Link href="/add"><Plus size={16} />Adicionar palavra</Link>
+      </StudioHero>
+      <div className="study-session-line"><span>{sessionTitle || 'Sua sessão de hoje'}</span><span aria-live="polite">{completed} / {total} respostas</span><Link href="/library" aria-label="Pausar revisão" aria-disabled={saving} onClick={e => { if (saving) e.preventDefault() }}><X size={19} /></Link></div>
+      <div className="study-progress" role="progressbar" aria-label="Revisão diária" aria-valuenow={completed} aria-valuemin={0} aria-valuemax={total}><span style={{ transform: `scaleX(${total ? completed / total : 0})` }} /></div>
     </div>
-    <details className="study-insight"><summary><Sparkles size={16} aria-hidden="true" /> Por que revisar esta palavra?</summary><p>{active.selectionReason || 'Esta palavra faz parte da sua fila de hoje. A repetição espaçada combina seu histórico com a dificuldade que você informa para calcular o próximo intervalo.'}</p></details>
+    <section className="review-exercise" aria-label="Exercício de revisão">
+      {challenge && <div className="review-mode-picker" role="group" aria-label="Formato da revisão">
+        <button type="button" aria-pressed={!isCloze} disabled={revealed || saving} onClick={() => setMode('flashcard')}>Flashcard</button>
+        <button type="button" aria-pressed={isCloze} disabled={revealed || saving || !challenge} onClick={() => setMode('cloze')}>Completar frase</button>
+      </div>}
+      <ProductMotion motionKey={`${active.card_id}-${isCloze}`} className="memory-card review-card" subtle>
+        <div className="memory-card-top"><span className="tone-chip" data-tone={active.isNew ? 'vocabulary' : 'review'}>{active.isNew ? 'Nova descoberta' : active.selectionTag || 'Hora de relembrar'}</span>{(!isCloze || revealed) && <AudioButton url={active.cards.audio_url} fallbackText={active.cards.english_phrase} autoPlay={false} variant="game" />}</div>
+        {isCloze && challenge ? <>
+          <span className="product-kicker">COMPLETE A FRASE ORIGINAL</span>
+          <p className="review-cloze-hint">{active.cards.portuguese_translation}</p>
+          <h2 className="review-cloze-sentence" lang="en" aria-live="polite" aria-atomic="true">{challenge.answers.map((answer, index) => <Fragment key={index}>
+            {challenge.segments[index]}
+            {revealed ? <span className="review-cloze-blank">{answer}</span> : <button type="button" className="review-cloze-blank" aria-label={`Lacuna ${index + 1} de ${challenge.answers.length}: ${selected[index] || 'vazia'}`} aria-pressed={activeGap === index} disabled={saving || !ready} onClick={() => setActiveGap(index)}>{selected[index] || '____'}</button>}
+          </Fragment>)}{challenge.segments[challenge.answers.length]}</h2>
+          <div className="review-cloze-options" role="group" aria-label={`Palavras para a lacuna ${activeGap + 1}`}>{challenge.options.map(option => <button key={option} type="button" lang="en" aria-pressed={selected.includes(option)} disabled={revealed || saving || !ready} onClick={() => chooseWord(option)}>{option}</button>)}</div>
+          <p className="memory-instruction review-cloze-feedback" aria-live="polite">{revealed ? outcome === 'correct' ? 'Muito bem! Você completou a frase.' : `Confira a frase corrigida acima. Escolha “De novo” para praticá-la outra vez.` : allGapsFilled ? 'Tudo preenchido. Você pode tocar nas lacunas para trocar as palavras ou confirmar sua resposta.' : `Escolha uma palavra para a lacuna ${activeGap + 1} de ${challenge.answers.length}. Toque em uma lacuna para editá-la.`}</p>
+        </> : <>
+          <span className="product-kicker">COMO VOCÊ DIRIA EM PORTUGUÊS?</span>
+          <h2 lang="en">{active.cards.english_phrase}</h2>
+          <div className="memory-answer" aria-live="polite">{revealed && <p>{active.cards.portuguese_translation}</p>}</div>
+          <p className="memory-instruction">{revealed ? 'Avalie sua lembrança com sinceridade. O intervalo se adapta a você.' : 'Tente lembrar antes de revelar. Sem pressa.'}</p>
+        </>}
+      </ProductMotion>
+      <div className="study-response">
+        {revealed ? <>
+          <div className="study-grades">{grades.map((grade, index) => <button key={grade.value} type="button" disabled={saving || !ready || !isGradeAllowedAfterPractice(grade.value, outcome)} onClick={() => void rate(grade.value)} data-grade={index}><strong>{grade.label}</strong><span>{formatMinutesEstimate(scheduleReview(grade.value, toSchedulingState(active)).intervalMinutes)}</span><kbd aria-hidden="true">{index + 1}</kbd></button>)}</div>
+          <p className="study-save-state" role="status">{saving ? 'Salvando resposta…' : 'Sua resposta define quando esta palavra volta.'}</p>
+        </> : isCloze && challenge ? <button ref={revealButton} className="product-primary study-reveal" disabled={!ready || !allGapsFilled} onClick={() => { setOutcome(challenge.answers.every((answer, index) => selected[index] === answer) ? 'correct' : 'wrong'); setRevealed(true) }}>Confirmar resposta <ArrowRight size={18} /></button> : <button ref={revealButton} className="product-primary study-reveal" disabled={!ready} onClick={() => setRevealed(true)}>Mostrar resposta <ArrowRight size={18} /></button>}
+        {error && <div className="product-error" role="alert"><p>{error}</p><button onClick={() => window.location.reload()}>Recarregar</button></div>}
+      </div>
+      <details className="study-insight"><summary><Sparkles size={16} aria-hidden="true" /> Por que revisar esta palavra?</summary><p>{active.selectionReason || 'Esta palavra faz parte da sua fila de hoje. A repetição espaçada combina seu histórico com a dificuldade que você informa para calcular o próximo intervalo.'}</p></details>
+    </section>
     <footer className="study-footnote"><Link href="/today">Prática de hoje</Link><Link href="/review?mode=guided">Prática guiada <ArrowRight size={14} /></Link></footer>
-    <details className="workspace-disclosure"><summary>Outras formas de praticar</summary><PracticeRoutes /></details>
+    <PracticeRoutes collapsible />
   </div>
 }

@@ -16,6 +16,7 @@ export type TutorScenario = {
   description: string
   icon: LucideIcon
   color: string
+  group: 'daily' | 'work'
   level: string
   duration: string
   focus: string
@@ -30,6 +31,7 @@ const scenarioIconClass =
 export const TUTOR_SCENARIOS: TutorScenario[] = [
   {
     id: 'meet-and-greet',
+    group: 'daily',
     name: 'Apresentações',
     description: 'Cumprimentos, nomes, origem e perguntas simples do dia a dia.',
     icon: MessageSquare,
@@ -44,6 +46,7 @@ export const TUTOR_SCENARIOS: TutorScenario[] = [
   },
   {
     id: 'coffee-shop',
+    group: 'daily',
     name: 'Na cafeteria',
     description: 'Peça sua bebida e um lanche em uma cafeteria movimentada.',
     icon: Coffee,
@@ -57,6 +60,7 @@ export const TUTOR_SCENARIOS: TutorScenario[] = [
   },
   {
     id: 'job-interview',
+    group: 'work',
     name: 'Entrevista de emprego',
     description: 'Pratique uma entrevista técnica para vaga de desenvolvedor.',
     icon: Briefcase,
@@ -72,6 +76,7 @@ export const TUTOR_SCENARIOS: TutorScenario[] = [
   },
   {
     id: 'professional-pitch',
+    group: 'work',
     name: 'Apresentação profissional',
     description: 'Apresente um projeto, resultados e impacto para stakeholders.',
     icon: Sparkles,
@@ -87,6 +92,7 @@ export const TUTOR_SCENARIOS: TutorScenario[] = [
   },
   {
     id: 'negotiation',
+    group: 'work',
     name: 'Negociação',
     description: 'Negocie prazo, escopo ou orçamento com um cliente exigente.',
     icon: Handshake,
@@ -102,6 +108,7 @@ export const TUTOR_SCENARIOS: TutorScenario[] = [
   },
   {
     id: 'giving-opinion',
+    group: 'work',
     name: 'Dar opinião',
     description: 'Expresse opinião fundamentada sobre um tema atual no trabalho.',
     icon: Scale,
@@ -117,6 +124,7 @@ export const TUTOR_SCENARIOS: TutorScenario[] = [
   },
   {
     id: 'workplace-problem',
+    group: 'work',
     name: 'Resolver problema no trabalho',
     description: 'Explique um incidente, ações tomadas e próximos passos.',
     icon: Briefcase,
@@ -132,6 +140,7 @@ export const TUTOR_SCENARIOS: TutorScenario[] = [
   },
   {
     id: 'airport',
+    group: 'daily',
     name: 'Check-in no aeroporto',
     description: 'Lide com problemas de bagagem e mudança de portão em Heathrow.',
     icon: Plane,
@@ -146,6 +155,7 @@ export const TUTOR_SCENARIOS: TutorScenario[] = [
   },
   {
     id: 'first-date',
+    group: 'daily',
     name: 'Primeiro encontro',
     description: 'Conversa casual para conhecer alguém em um restaurante.',
     icon: Heart,

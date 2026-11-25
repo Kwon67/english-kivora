@@ -7,12 +7,11 @@ const WORD_START_Y_PERCENT = 110
 const WORD_START_OPACITY = .25
 
 export function setupHeroMotion(container: HTMLElement) {
-  const bootstrap = container.querySelector<HTMLScriptElement>('script[data-hero-reveal]')
+  const bootstrap = container.querySelector<HTMLElement>('#hero-title[data-hero-reveal]')
   if (!bootstrap) return
 
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)')
   const showTitle = () => {
-    clearTimeout(Number(bootstrap.dataset.heroReveal))
     delete bootstrap.dataset.heroReveal
   }
 
@@ -24,7 +23,11 @@ export function setupHeroMotion(container: HTMLElement) {
   const context = gsap.context(() => {}, container)
   // Let StrictMode finish its setup/cleanup cycle before consuming the page's one reveal.
   const frame = requestAnimationFrame(() => {
-    if (bootstrap.dataset.heroReveal === undefined) return
+    const firstWord = bootstrap.querySelector('[data-title-word]')
+    if (!firstWord || getComputedStyle(firstWord).opacity !== '0') {
+      showTitle()
+      return
+    }
     try {
       context.add(() => {
         const select = gsap.utils.selector(container)

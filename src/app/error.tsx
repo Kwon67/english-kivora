@@ -30,7 +30,7 @@ export default function Error({
         <button
           type="button"
           onClick={retry}
-          className="mt-8 inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
+          className="mt-8 inline-flex items-center justify-center rounded-action bg-primary px-6 py-3 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
         >
           Tentar novamente
         </button>

@@ -6,6 +6,8 @@ import { CEFR_LEVELS, type CefrLevel } from '@/features/ai/lib/deckGeneration'
 import { useRouter } from 'next/navigation'
 import {
   CheckCircle2,
+  ChevronDown,
+  Plus,
   FileText,
   Hash,
   ListPlus,
@@ -30,7 +32,6 @@ import {
   userFolderNameToStorage,
 } from '@/features/cards/lib/packFolders'
 import {
-  accentBadge,
   cardClass,
   LibraryBadge,
   libraryFrostedSubtle,
@@ -279,7 +280,16 @@ export default function UserPacksManager({ packs, creationOpen, onOpenCreate, on
 
   return (
     <section id="packs" className={`space-y-6 ${sectionScrollMt}`} aria-labelledby="saved-packs-title">
-      <button type="button" className="product-text-link" onClick={() => { setMode('manual'); setTargetPackId('new'); onOpenCreate() }}>Criar pack</button>
+      <header className="pack-manager-header">
+        <div>
+          <h2 id="saved-packs-title">Packs e pastas</h2>
+          <p>{packs.length} {packs.length === 1 ? 'pack' : 'packs'} na sua conta</p>
+        </div>
+        <button type="button" className="pack-create-action" aria-controls="pack-creation" aria-expanded={creationOpen}
+          onClick={() => { setMode('manual'); setTargetPackId('new'); onOpenCreate() }}>
+          <Plus size={16} aria-hidden="true" /> Criar pack
+        </button>
+      </header>
       <article id="pack-creation" hidden={!creationOpen} className={`${cardClass} ${libraryFrostedSurface} relative overflow-hidden p-5 sm:p-7`}>
         <div className="relative z-10 flex flex-col gap-4 border-b border-brand-dark/15 pb-5 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -634,28 +644,13 @@ export default function UserPacksManager({ packs, creationOpen, onOpenCreate, on
         </div>
       </article>
 
-      <article className={`${cardClass} ${libraryFrostedSurface} overflow-hidden p-5 sm:p-7`}>
-        <button
-          type="button"
-          onClick={() => setLibraryExpanded((current) => !current)}
-          className="flex w-full items-center justify-between gap-3 text-left"
-          aria-expanded={libraryExpanded}
-        >
-          <div>
-            <h2 id="saved-packs-title" className="font-heading text-xl font-bold text-brand-dark">
-              Packs e pastas
-            </h2>
-            <p className="mt-1 font-body text-sm text-brand-secondary">
-              {packs.length} {packs.length === 1 ? 'pack' : 'packs'} na sua conta
-            </p>
-          </div>
-          <span className={accentBadge}>
-            {libraryExpanded ? 'Ocultar' : 'Mostrar'}
-          </span>
+      <div className="pack-folders">
+        <button type="button" className="pack-folders-toggle" aria-expanded={libraryExpanded}
+          onClick={() => setLibraryExpanded(current => !current)}>
+          Suas pastas <ChevronDown size={18} aria-hidden="true" />
         </button>
-
         {libraryExpanded && (
-          <div className="mt-5 border-t border-brand-dark/15 pt-5">
+          <div className="pack-folders-content">
             <UserPackFoldersOrganizer
               packs={packs}
               extraFolders={extraFolders}
@@ -671,7 +666,7 @@ export default function UserPacksManager({ packs, creationOpen, onOpenCreate, on
             />
           </div>
         )}
-      </article>
+      </div>
 	      {packToDelete && (
 	        <ConfirmDialog
 	          title="Excluir pack"

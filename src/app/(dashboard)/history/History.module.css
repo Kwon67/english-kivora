@@ -26,7 +26,13 @@
 .history .stack h2 { font-size: clamp(20px, 3.25vw, 27px); line-height: 1.2; }
 .metrics, .report, .levels, .charts { display: grid; min-width: 0; gap: 14px 20px; }
 .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 12px; }
-.metrics > div, .report > div { border-top: 1px solid var(--kivora-line); padding-top: 8px; }
+.metrics > div {
+  padding: var(--workspace-card-padding);
+  border: 1px solid var(--kivora-line);
+  border-radius: var(--workspace-radius);
+  background: var(--kivora-surface);
+}
+.report > div { border-top: 1px solid var(--kivora-line); padding-top: 8px; }
 .metrics dt, .report dt, .hint { font-size: .875rem; color: var(--kivora-muted); }
 .metrics dd, .report dd, .emphasis { font-size: 1.55rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .hint { margin-top: 6px; }
@@ -36,7 +42,7 @@
 .method { margin-top: 8px; font-size: .875rem; }
 .method summary { min-height: 44px; display: list-item; padding-block: 12px; cursor: pointer; }
 .bar { margin-top: 8px; height: 6px; overflow: hidden; border-radius: 999px; background: var(--kivora-line); }
-.bar span { display: block; height: 100%; background: var(--brand-sage); }
+.bar span { display: block; height: 100%; background: var(--brand-highlight); }
 .history :global(.study-heatmap),
 .history :global(.study-insight) { border-radius: 0; background: transparent; }
 .history :global(.study-heatmap) { padding-inline: 0; border-inline: 0; }

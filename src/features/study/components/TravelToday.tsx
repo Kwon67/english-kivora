@@ -37,7 +37,7 @@ export default function TravelToday({ userId, persistenceEnabled = false, initia
   if (!ready) return <p className="study-save-state" role="status">Retomando sua próxima situação…</p>
   const lesson = TRAVEL_LESSONS[episode]
   return <>
-    <div className="mx-auto mb-3 max-w-[880px] text-sm text-brand-secondary" data-testid="travel-unit-status">
+    <div className="today-travel-status" data-testid="travel-unit-status">
       <p>{TRAVEL_UNIT.title} · {Math.min(episode + 1, 3)}/3 episódios{episode === 3 ? ' · transferência' : ''}</p>
       {storageError && <p role="status">O navegador não guardou a sequência. Você pode continuar, mas copie seus textos antes de sair.</p>}
     </div>

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import PublicPageNavigation from '@/components/navigation/PublicPageNavigation'
 import { landingFrostedSubtle, landingFrostedSurface, landingRadiusLg, landingSurfaceClass } from '@/lib/landingStyles'
 
 export const metadata: Metadata = {
@@ -34,11 +35,9 @@ const practices = [
 
 export default function PrivacyPage() {
   return (
-    <main className="landing-light min-h-screen bg-bg-primary px-4 py-10 font-body text-brand-dark sm:px-6 lg:px-8">
+    <main className="landing-light min-h-screen bg-bg-primary px-4 pb-10 font-body text-brand-dark sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
-        <Link href="/#como-funciona" className="font-heading text-sm font-bold text-brand-dark underline underline-offset-4">
-          ← Voltar para a landing
-        </Link>
+        <PublicPageNavigation href="/#como-funciona" label="Voltar para a landing" />
 
         <section className={`mt-8 ${landingSurfaceClass} ${landingFrostedSurface} p-6 sm:p-10`}>
           <p className="font-heading text-xs font-bold uppercase tracking-widest text-brand-secondary">

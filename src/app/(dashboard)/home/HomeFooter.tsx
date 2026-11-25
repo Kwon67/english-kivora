@@ -107,7 +107,7 @@ export default function HomeFooter() {
                   Continue de onde parou e mantenha o inglês em movimento.
                 </p>
               </div>
-              <span className="shrink-0 rounded-full border border-brand-dark/40 bg-brand-accent px-2.5 py-1 font-heading text-[9px] font-bold uppercase tracking-wider text-brand-dark">
+              <span className="shrink-0 rounded-label border border-brand-dark/40 bg-brand-accent px-2.5 py-1 font-heading text-[9px] font-bold uppercase tracking-wider text-brand-dark">
                 Sua jornada
               </span>
             </div>
@@ -143,7 +143,7 @@ export default function HomeFooter() {
               href="/settings"
               transitionTypes={navForwardTransitionTypes}
               prefetch={false}
-              className="inline-flex min-h-7 shrink-0 items-center gap-1.5 rounded-full border border-brand-dark/20 bg-bg-card/35 px-2.5 text-brand-dark backdrop-blur-sm transition-colors hover:border-brand-dark hover:bg-bg-primary"
+              className="inline-flex min-h-7 shrink-0 items-center gap-1.5 rounded-label border border-brand-dark/20 bg-bg-card/35 px-2.5 text-brand-dark backdrop-blur-sm transition-colors hover:border-brand-dark hover:bg-bg-primary"
             >
               <Settings2 className="h-3 w-3" strokeWidth={1.5} />
               Conta
@@ -161,7 +161,7 @@ export default function HomeFooter() {
           <div className="grid min-w-0 items-start gap-8 lg:grid-cols-[1.1fr_1.55fr] lg:gap-12">
             <section className="min-w-0 p-0">
               <div className="flex min-w-0 flex-col gap-3">
-                <span className="w-fit rounded-full border border-brand-dark/40 bg-brand-accent px-3 py-1 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
+                <span className="w-fit rounded-label border border-brand-dark/40 bg-brand-accent px-3 py-1 font-heading text-[10px] font-bold uppercase tracking-widest text-brand-dark">
                   Sua jornada
                 </span>
                 <h3 className="font-heading text-xl font-bold text-brand-dark">Continue em movimento.</h3>

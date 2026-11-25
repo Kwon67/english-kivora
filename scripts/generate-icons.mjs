@@ -1,84 +1,38 @@
-import sharp from 'sharp';
-import fs from 'fs';
-import path from 'path';
+import { writeFile } from 'node:fs/promises'
+import sharp from 'sharp'
 
-const SVG_PATH = path.resolve('src/app/icon.svg');
-const DARK_BG = '#050704'; // Dark forest green background of Kivora
+const icon = 'src/app/icon.svg'
+const png = (source, size) => sharp(source).resize(size, size).png().toBuffer()
 
-const targets = [
-  // PWA & Manifest icons (solid background)
-  { dest: 'public/icon-192.png', size: 192, type: 'bg' },
-  { dest: 'public/icon-512.png', size: 512, type: 'bg' },
-  { dest: 'public/apple-touch-icon.png', size: 180, type: 'bg' },
-  { dest: 'public/pwa-192x192.png', size: 192, type: 'bg' },
-  { dest: 'public/pwa-512x512.png', size: 512, type: 'bg' },
-
-  // App router icons (solid background)
-  { dest: 'src/app/icon.png', size: 512, type: 'bg' },
-  { dest: 'src/app/apple-icon.png', size: 180, type: 'bg' },
-  { dest: 'src/app/favicon.ico', size: 32, type: 'bg' },
-
-  // Brand icons (transparent background)
-  { dest: 'public/brand/kivora-mark.png', size: 512, type: 'transparent' },
-  { dest: 'public/brand/kivora-mark-source.png', size: 1024, type: 'transparent' },
-];
-
-async function main() {
-  if (!fs.existsSync(SVG_PATH)) {
-    console.error(`Error: Source SVG not found at ${SVG_PATH}`);
-    process.exit(1);
+// Store the three PNG resolutions inside the ICO directory used by browser tabs.
+async function favicon() {
+  const sizes = [16, 32, 48]
+  const images = await Promise.all(sizes.map(size => png(icon, size)))
+  const directory = Buffer.alloc(6 + 16 * sizes.length)
+  directory.writeUInt16LE(1, 2)
+  directory.writeUInt16LE(sizes.length, 4)
+  let offset = directory.length
+  for (const [i, bytes] of images.entries()) {
+    const entry = 6 + i * 16
+    directory[entry] = directory[entry + 1] = sizes[i]
+    directory.writeUInt16LE(1, entry + 4)
+    directory.writeUInt16LE(32, entry + 6)
+    directory.writeUInt32LE(bytes.length, entry + 8)
+    directory.writeUInt32LE(offset, entry + 12)
+    offset += bytes.length
   }
-
-  console.log('Generating icons from SVG...');
-
-  for (const target of targets) {
-    const destPath = path.resolve(target.dest);
-    const destDir = path.dirname(destPath);
-
-    // Create directory if it doesn't exist
-    if (!fs.existsSync(destDir)) {
-      fs.mkdirSync(destDir, { recursive: true });
-    }
-
-    try {
-      if (target.type === 'bg') {
-        // Render SVG with padding/offset, and composite on top of dark background
-        const padding = Math.round(target.size * 0.15); // 15% padding
-        const iconSize = target.size - padding * 2;
-
-        const iconBuffer = await sharp(SVG_PATH)
-          .resize(iconSize, iconSize)
-          .toBuffer();
-
-        await sharp({
-          create: {
-            width: target.size,
-            height: target.size,
-            channels: 4,
-            background: DARK_BG,
-          },
-        })
-          .composite([{ input: iconBuffer, gravity: 'center' }])
-          .png()
-          .toFile(destPath);
-      } else {
-        // Render directly as transparent PNG
-        await sharp(SVG_PATH)
-          .resize(target.size, target.size)
-          .png()
-          .toFile(destPath);
-      }
-
-      console.log(`✓ Generated: ${target.dest} (${target.size}x${target.size}) [${target.type}]`);
-    } catch (err) {
-      console.error(`⨯ Failed to generate ${target.dest}:`, err.message);
-    }
-  }
-
-  console.log('All icons generated successfully!');
+  return Buffer.concat([directory, ...images])
 }
 
-main().catch((err) => {
-  console.error('Fatal error generating icons:', err);
-  process.exit(1);
-});
+for (const [size, paths] of [
+  [192, ['public/icon-192.png', 'public/pwa-192x192.png']],
+  [512, ['public/icon-512.png', 'public/pwa-512x512.png', 'src/app/icon.png']],
+  [180, ['public/apple-touch-icon.png', 'src/app/apple-icon.png']],
+]) {
+  const image = await png(icon, size)
+  await Promise.all(paths.map(path => writeFile(path, image)))
+}
+await writeFile('src/app/favicon.ico', await favicon())
+for (const [size, path] of [[512, 'public/brand/kivora-mark.png'], [1024, 'public/brand/kivora-mark-source.png']]) {
+  await writeFile(path, await png('public/brand/kivora-mark.svg', size))
+}

@@ -13,7 +13,7 @@ export const softBtn =
   'inline-flex min-h-11 items-center justify-center gap-2 rounded-control border border-brand-border bg-bg-card px-4 py-2.5 text-sm font-semibold text-brand-dark transition-colors hover:bg-primary-light'
 
 export const softKicker =
-  'inline-flex items-center gap-2 rounded-full bg-primary-light px-3 py-1 text-2xs font-semibold uppercase tracking-wider text-primary'
+  'inline-flex items-center gap-2 rounded-label bg-primary-light px-3 py-1 text-2xs font-semibold uppercase tracking-wider text-primary'
 
 export const selectedPill = 'bg-primary text-on-primary shadow-sm'
 
@@ -31,7 +31,7 @@ export const authInput =
   'Input self-stretch py-3 bg-surface/50 rounded-container border border-dashed border-border-muted/24 inline-flex justify-center items-start overflow-hidden w-full transition-all focus-within:border-solid focus-within:border-primary focus-within:shadow-[0_0_14px_rgba(28, 25, 21,0.12)] focus-within:bg-card/90'
 
 export const authSubmitBtn =
-  'inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full bg-primary py-3.5 font-heading text-lg font-bold leading-7 text-on-primary border border-dashed border-primary-container/50 shadow-[0px_8px_15px_0px_rgba(28, 25, 21,0.15)] transition-colors hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50'
+  'inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-action bg-primary py-3.5 font-heading text-lg font-bold leading-7 text-on-primary border border-dashed border-primary-container/50 shadow-[0px_8px_15px_0px_rgba(28, 25, 21,0.15)] transition-colors hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50'
 
 export const linkPrimary = 'font-semibold text-primary hover:underline'
 

@@ -150,7 +150,7 @@ export default function AudienceTabs() {
             >
               <div className="landing-audience-pitch flex min-h-[270px] flex-col justify-between border-b border-brand-dark/20 p-6 sm:p-8 lg:border-b-0 lg:border-r">
                 <div>
-                  <span className="inline-flex rounded-full border border-brand-dark/20 bg-bg-card px-3 py-1 font-heading text-2xs font-bold uppercase tracking-wider text-brand-secondary">
+                  <span className="inline-flex rounded-label border border-brand-dark/20 bg-bg-card px-3 py-1 font-heading text-2xs font-bold uppercase tracking-wider text-brand-secondary">
                     {active.eyebrow}
                   </span>
                   <p className="mt-6 max-w-lg font-section text-3xl font-semibold leading-tight text-brand-dark sm:text-4xl">

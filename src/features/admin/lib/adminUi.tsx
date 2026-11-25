@@ -13,11 +13,11 @@ export const nestedCardClass =
 export const innerPanelClass =
   'home-frosted-subtle rounded-container border border-brand-border p-4 shadow-sm'
 export const softKicker =
-  'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
+  'inline-flex items-center rounded-label border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
 export const accentBadge =
-  'inline-flex items-center rounded-full border border-brand-dark bg-brand-accent px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
+  'inline-flex items-center rounded-label border border-brand-dark bg-brand-accent px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark'
 export const neutralBadge =
-  'inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-2.5 py-1 font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary'
+  'inline-flex items-center rounded-label border border-brand-dark bg-bg-primary px-2.5 py-1 font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary'
 export const primaryBtn = `${homePrimaryButton} disabled:cursor-not-allowed disabled:opacity-60`
 export const ghostBtn = `${homeSecondaryButton} min-h-11 disabled:cursor-not-allowed disabled:opacity-60`
 export const dangerBtn =

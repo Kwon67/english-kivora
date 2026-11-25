@@ -1,11 +1,10 @@
 import type { Metadata, Viewport } from 'next';
-import Script from 'next/script';
 import { DM_Mono, Inter } from 'next/font/google';
 import { Toaster } from 'sonner';
 import AnalyticsProvider from '@/components/layout/AnalyticsProvider';
 import SitePointer from '@/components/layout/SitePointer';
 import PWAExperience from '@/features/pwa/components/PWAExperience';
-import { BRAND_PRIMARY } from '@/lib/brandColors';
+import { BRAND_PAPER } from '@/lib/brandColors';
 import './globals.css';
 
 const inter = Inter({
@@ -55,11 +54,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon.svg?v=2', type: 'image/svg+xml' },
-      { url: '/icon-192.png?v=2', sizes: '192x192', type: 'image/png' },
-      { url: '/icon-512.png?v=2', sizes: '512x512', type: 'image/png' }
+      { url: '/favicon.svg?v=3', type: 'image/svg+xml' },
+      { url: '/icon-192.png?v=4', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png?v=4', sizes: '512x512', type: 'image/png' }
     ],
-    apple: [{ url: '/apple-touch-icon.png?v=2', sizes: '180x180', type: 'image/png' }]
+    apple: [{ url: '/apple-touch-icon.png?v=4', sizes: '180x180', type: 'image/png' }]
   },
   formatDetection: {
     telephone: false,
@@ -82,7 +81,7 @@ export const viewport: Viewport = {
   maximumScale: 5,
   userScalable: true,
   viewportFit: 'cover',
-  themeColor: BRAND_PRIMARY
+  themeColor: BRAND_PAPER
 };
 
 export default async function RootLayout({
@@ -96,7 +95,7 @@ export default async function RootLayout({
   return (
 	    <html lang="pt-BR" suppressHydrationWarning data-scroll-behavior="smooth" className={`${inter.variable} ${dmMono.variable}`}>
 	      <body suppressHydrationWarning className="premium-theme antialiased min-h-screen min-h-[100svh]">
-	        <Script src="/pwa-init.js" strategy="beforeInteractive" />
+	        <script async src="/pwa-init.js" />
 	        <div
 	          id="pwa-boot-splash"
 	          aria-hidden="true"
@@ -131,18 +130,12 @@ export default async function RootLayout({
 	            toastOptions={{
 	              classNames: {
 	                toast:
-	                  'kivora-toast group toast !rounded-container !border !border-brand-dark !bg-bg-card !font-body !font-medium !text-brand-dark !shadow-offset-lg',
+	                  'kivora-toast group toast font-body font-medium',
 	                title: '!font-heading !text-sm !font-bold !text-brand-dark',
 	                description: '!font-body !text-xs !font-semibold !text-brand-secondary',
 	                icon: 'kivora-toast-icon !border !border-brand-dark !bg-brand-accent !text-brand-dark',
 	                closeButton:
 	                  'kivora-toast-close !border !border-brand-dark !bg-bg-card !text-brand-dark hover:!bg-bg-primary',
-	                error:
-	                  '!border-brand-dark !bg-bg-card !text-[var(--color-error)]',
-	                success:
-	                  '!border-brand-dark !bg-bg-card !text-brand-dark',
-	                warning:
-	                  '!border-brand-dark !bg-bg-card !text-brand-dark',
 	              },
 	            }}
 	          />

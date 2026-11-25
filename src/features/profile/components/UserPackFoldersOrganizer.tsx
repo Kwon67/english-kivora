@@ -35,7 +35,6 @@ import {
   libraryFolderSpine,
   libraryFrostedSubtle,
   libraryFrostedSurface,
-  LibraryBadge,
   nestedCardClass,
   neutralBadge,
   primaryBtn,
@@ -484,70 +483,36 @@ export default function UserPackFoldersOrganizer({
     const canRename = folder.label !== USER_MISC_PACK_FOLDER_LABEL
 
     return (
-      <div className={`${libraryFolderSpine} ${libraryFrostedSubtle} flex min-h-11 flex-col gap-3 border-b border-brand-dark/15 bg-bg-primary px-4 py-4 sm:flex-row sm:items-center`}>
-        <button
-          type="button"
-          onClick={() => toggleFolder(folder.id)}
-          className="flex min-h-11 min-w-0 flex-1 items-center gap-3 text-left transition-colors hover:opacity-90"
-          aria-expanded={isExpanded}
-        >
-          <span className={iconClass}>
-            <FolderIcon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
-          </span>
-          <div className="min-w-0 flex-1">
-            {isRenaming ? (
-              <div className="flex items-center gap-2" onClick={(event) => event.stopPropagation()}>
-                <input
-                  value={renameValue}
-                  onChange={(event) => setRenameValue(event.target.value)}
-                  className={`${profileField} flex-1 py-2 text-sm font-bold`}
-                  disabled={isPending}
-                  autoFocus
-                />
-                <button
-                  type="button"
-                  onClick={() => saveRenameFolder(folder)}
-                  disabled={isPending}
-                  className={`${primaryBtn} !rounded-lg px-2.5 py-2`}
-                  aria-label="Salvar nome da pasta"
-                >
-                  {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                </button>
-                <button
-                  type="button"
-                  onClick={cancelRenameFolder}
-                  disabled={isPending}
-                  className={`${ghostBtn} !rounded-lg px-2.5 py-2`}
-                  aria-label="Cancelar renomear pasta"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            ) : (
-              <>
-                <p className="truncate font-heading text-base font-bold text-brand-dark">{folder.label}</p>
-                <p className="mt-0.5 font-body text-xs text-brand-secondary">
-                  Pasta privada · {folder.packs.length}{' '}
-                  {folder.packs.length === 1 ? 'pack' : 'packs'}
-                </p>
-              </>
-            )}
-          </div>
-          <span className="shrink-0 text-brand-secondary">
-            {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          </span>
-        </button>
+      <div className={`folder-heading ${libraryFolderSpine} ${libraryFrostedSubtle}`}>
+        {isRenaming ? (
+          <form className="folder-name-form" onSubmit={event => { event.preventDefault(); saveRenameFolder(folder) }}>
+            <input value={renameValue} onChange={event => setRenameValue(event.target.value)}
+              aria-label="Nome da pasta" className={profileField} disabled={isPending} autoFocus />
+            <button type="submit" disabled={isPending} className={primaryBtn} aria-label="Salvar nome da pasta">
+              {isPending ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+            </button>
+            <button type="button" onClick={cancelRenameFolder} disabled={isPending} className={ghostBtn} aria-label="Cancelar renomear pasta">
+              <X size={16} />
+            </button>
+          </form>
+        ) : (
+          <button type="button" onClick={() => toggleFolder(folder.id)} className="folder-disclosure" aria-expanded={isExpanded}>
+            <span className={iconClass}><FolderIcon size={18} aria-hidden="true" /></span>
+            <span><strong>{folder.label}</strong><small>{folder.packs.length} {folder.packs.length === 1 ? 'pack' : 'packs'}</small></span>
+            {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+          </button>
+        )}
 
         {!isRenaming && canRename && (
           <button
             type="button"
             onClick={() => startRenameFolder(folder)}
             disabled={isPending}
-            className={`${ghostBtn} self-start px-3 py-2 sm:self-center`}
+            className={`${ghostBtn} folder-rename`}
+            title={`Renomear pasta ${folder.label}`}
             aria-label={`Renomear pasta ${folder.label}`}
           >
             <Pencil className="h-3.5 w-3.5" />
-            Renomear
           </button>
         )}
       </div>
@@ -570,8 +535,7 @@ export default function UserPackFoldersOrganizer({
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <LibraryBadge label="Organização privada" />
-          <p className="mt-3 font-body text-sm text-brand-secondary">
+          <p className="font-body text-sm text-brand-secondary">
             Suas pastas são exclusivas da sua conta. Outros membros só veem o que você publicar.
           </p>
         </div>
@@ -581,6 +545,7 @@ export default function UserPackFoldersOrganizer({
             <input
               value={createFolderName}
               onChange={(event) => setCreateFolderName(event.target.value)}
+              aria-label="Nome da nova pasta"
               placeholder="Nome da nova pasta"
               className={`${profileField} flex-1 py-2 text-sm font-bold`}
               disabled={isPending}

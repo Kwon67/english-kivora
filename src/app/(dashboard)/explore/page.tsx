@@ -75,7 +75,7 @@ export default async function ExplorePage() {
   return (
     <div className={homeShellClass}>
       <div className="discovery-catalog relative z-10 mx-auto max-w-4xl space-y-5 pb-6">
-        <ExploreHeader featuredPack={catalogLoadFailed ? undefined : featuredPack} />
+        <ExploreHeader hasSearch={!catalogLoadFailed && typedPacks.length > 0} featuredPack={catalogLoadFailed ? undefined : featuredPack} />
 
         {catalogLoadFailed && (
           <EmptyState
@@ -102,17 +102,13 @@ export default async function ExplorePage() {
             <div key={label}><dt>{label}</dt><dd>{value}</dd></div>
           ))}
         </dl>
-        <p className="text-sm text-brand-secondary">{levelCount} níveis de proficiência disponíveis.</p>
 
         <section id="packs" className="space-y-4">
-          <div>
+          <header className="catalog-trail-heading">
             <h2 className={homeSectionTitleClass}>Sua trilha por nível</h2>
-            <p className="mt-2 max-w-xl font-body text-sm text-brand-secondary">
-              {gate.stretch
-                ? `Nível ${gate.current}, com desafios ${gate.stretch} disponíveis. Avance na trilha para desbloquear os demais.`
-                : `Nível ${gate.current}. Avance na trilha para desbloquear os demais níveis.`}
-            </p>
-          </div>
+            <p>{levelCount} níveis de proficiência disponíveis.</p>
+            {gate.stretch && <p>Desafios {gate.stretch} disponíveis no seu nível.</p>}
+          </header>
 
           {catalogLoadFailed ? (
             <p className="font-body text-sm text-brand-secondary">

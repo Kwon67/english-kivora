@@ -19,6 +19,7 @@ import {
   GraduationCap,
   ListChecks,
   Medal,
+  Trophy,
   Mic,
   Settings2,
   ShieldCheck,
@@ -36,6 +37,7 @@ const icons = {
   course: GraduationCap,
   list: ListChecks,
   medal: Medal,
+  trophy: Trophy,
   audio: Mic,
   settings: Settings2,
   shield: ShieldCheck,
@@ -70,6 +72,7 @@ export default function WorkspaceSections({
   const uid = useId()
   const root = useRef<HTMLDivElement>(null)
   const [selected, setSelected] = useState(defaultValue ?? tabs[0].id)
+  const [activatedTab, setActivatedTab] = useState<string | null>(null)
   const active = value ?? selected
   const panels = Children.toArray(children)
   const anchorConfig = JSON.stringify(
@@ -78,6 +81,7 @@ export default function WorkspaceSections({
   const onAnchorSelect = useEffectEvent((id: string) => onValueChange?.(id))
 
   function select(id: string) {
+    setActivatedTab(id)
     setSelected(id)
     onValueChange?.(id)
   }
@@ -99,6 +103,7 @@ export default function WorkspaceSections({
         (item) => item.id === anchor || item.anchors?.includes(anchor),
       )
       if (!tab) return false
+      setActivatedTab(null)
       setSelected(tab.id)
       onAnchorSelect(tab.id)
       cancelAnimationFrame(frame)
@@ -186,6 +191,7 @@ export default function WorkspaceSections({
               type="button"
               role="tab"
               data-tab-index={index}
+              data-activated={activatedTab === tab.id || undefined}
               aria-selected={active === tab.id}
               aria-controls={`${uid}-panel-${tab.id}`}
               tabIndex={active === tab.id ? 0 : -1}

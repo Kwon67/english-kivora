@@ -1,10 +1,10 @@
 .competency-entry { display:flex; align-items:center; gap:20px; padding:24px; margin:20px 0; border:1px solid #2c2e2a35; border-radius:24px; background:#fffef8; color:#2c2e2a; transition:background-color .2s; }
-.competency-entry:hover { background:#f5f4eb; }
+.competency-entry:hover { background:var(--kivora-paper); }
 .competency-entry-icon { display:grid; place-items:center; width:54px; height:54px; flex-shrink:0; background:#eee8ff; border-radius:16px; }
 .competency-entry-copy { display:flex; flex:1; flex-direction:column; min-width:0; gap:7px; }
 .competency-entry-copy strong { font-size:23px; font-weight:500; letter-spacing:-.035em; line-height:1.2; }
 .competency-entry-copy > span:last-child { font-size:14px; color:#64675e; line-height:1.6; }
-.competency-entry-cta { display:flex; align-items:center; gap:20px; padding:13px 18px; min-height:48px; border:1px solid #2c2e2a; border-radius:13px; background:#8ed462; font-size:14px; font-weight:500; flex-shrink:0; }
+.competency-entry-cta { display:flex; align-items:center; gap:20px; padding:13px 18px; min-height:48px; border:1px solid #2c2e2a; border-radius:13px; background:var(--brand-highlight); font-size:14px; font-weight:500; flex-shrink:0; }
 @media(max-width:900px) {
  .competency-entry { flex-wrap:wrap; }
  .competency-entry-cta { margin-left:74px; }

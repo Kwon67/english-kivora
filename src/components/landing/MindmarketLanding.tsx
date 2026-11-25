@@ -15,13 +15,6 @@ import JourneyRibbon from './JourneyRibbon'
 import JourneyMotion from './JourneyMotion'
 import { ConversationScene, MemoryScene } from './JourneyArt'
 
-// Runs as HTML is parsed, before the heading paints. Failed or late chunks leave readable text.
-const heroRevealBootstrap = `(() => {
-  if (document.hidden || !matchMedia('(prefers-reduced-motion: no-preference)').matches) return;
-  const script = document.currentScript;
-  script.dataset.heroReveal = setTimeout(() => { delete script.dataset.heroReveal }, 2000);
-})()`
-
 const links = [
   { href: '#seu-caminho', label: 'Seu caminho' },
   { href: '#como-funciona', label: 'Como funciona' },
@@ -55,8 +48,7 @@ function Opening() {
   return (
     <section className={layout.opening} aria-labelledby="hero-title">
       <div className={layout.headline} data-hero-copy>
-        <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: heroRevealBootstrap }} />
-        <h1 id="hero-title" className={heroStyles.headline} aria-label="Seu inglês. Um mundo mais aberto.">
+        <h1 data-hero-reveal="" id="hero-title" className={heroStyles.headline} aria-label="Seu inglês. Um mundo mais aberto.">
           <span data-title-line><HeroWord>Seu</HeroWord>{' '}<HeroWord>inglês.</HeroWord></span>{' '}
           <span data-title-line><HeroWord>Um</HeroWord>{' '}<HeroWord>mundo</HeroWord></span>{' '}
           <span data-title-line><HeroWord>mais</HeroWord>{' '}<HeroWord underline>aberto.</HeroWord></span>
@@ -98,7 +90,7 @@ function PracticeDesk() {
 function FieldNotes({ riveAssets }: { riveAssets: SceneAssets }) {
   return (
     <div className={layout.fieldNotes}>
-      <section id="revisoes" className={layout.field} aria-labelledby="memory-title">
+      <section id="revisoes" className={`${layout.field} ${layout.memoryField}`} aria-labelledby="memory-title">
         <figure className={layout.plate}><MemoryScene riveSrc={riveAssets.memory} /></figure>
         <div className={layout.caption}>
           <p className={layout.label}>Revisão espaçada</p>
@@ -174,17 +166,25 @@ function Membership() {
 
 function Colophon() {
   return (
-    <footer className={layout.colophon}>
+    <footer id="rodape" className={layout.colophon}>
       <div className={layout.signoff}>
         <h2>Um pequeno <i lang="en">hello.</i><br />Um mundo de possibilidades.</h2>
-        <Action>Começar minha jornada</Action>
+        <Action className={layout.journeyCta}>Começar minha jornada</Action>
       </div>
       <div className={layout.footerMap}>
         <Link href="/" aria-label="Kivora English, início"><LandingWordmark /></Link>
-        <nav aria-label="Explore a Kivora">{links.map(link => <Link key={link.href} href={link.href}>{link.label}</Link>)}</nav>
-        <nav aria-label="Conta e informações"><Link href="/login">Entrar</Link><Link href="/privacy">Privacidade</Link><Link href="/terms">Termos de uso</Link></nav>
+        <nav aria-labelledby="footer-explore">
+          <h3 id="footer-explore">Explore a Kivora</h3>
+          {links.map(link => <Link key={link.href} href={link.href}>{link.label}</Link>)}
+        </nav>
+        <nav aria-labelledby="footer-account">
+          <h3 id="footer-account">Conta e informações</h3>
+          <Link href="/login">Entrar</Link>
+          <Link href="/privacy">Privacidade</Link>
+          <Link href="/terms">Termos de uso</Link>
+        </nav>
       </div>
-      <div className={layout.credit}><span>© {new Date().getFullYear()} Kivora English</span><Link href="#hero-title">Voltar ao início ↑</Link></div>
+      <div className={layout.credit}><span>© {new Date().getFullYear()} Kivora English</span><Link href="#hero-title">Voltar ao início <ArrowUpRight size={15} aria-hidden="true" /></Link></div>
     </footer>
   )
 }

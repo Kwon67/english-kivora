@@ -885,17 +885,18 @@ export default function SpeakingMode({
 
   return (
     <div data-tone="speaking" className={`exercise-prompt ${isBlitzVariant ? 'home-frosted-subtle rounded-container border border-brand-dark' : 'game-glass-card'} mx-auto w-full max-w-[760px] p-4 sm:p-8 lg:p-10`}>
-      <div className="text-center">
+      <div className="speech-instructions text-center">
         <p className="section-kicker uppercase tracking-widest text-primary font-bold mb-2">Treino de Pronúncia</p>
         <h2 className="mb-4 text-2xl font-bold text-text sm:mb-6 sm:text-3xl">Ouça e Repita</h2>
         
-        <div className="mb-5 flex flex-col items-center justify-center gap-3 sm:mb-8 sm:gap-6">
-          <div className="w-full rounded-2xl home-frosted-subtle border border-brand-dark/15 p-3 sm:p-6">
+        <div className="speech-listen mb-5 flex flex-col items-center justify-center gap-3 sm:mb-8 sm:gap-6">
+          <div className="speech-phrase w-full rounded-2xl home-frosted-subtle border border-brand-dark/15 p-3 sm:p-6">
             <p className="mb-2 font-mono text-lg font-medium italic leading-snug text-text sm:text-2xl" lang="en">&quot;{englishPhrase}&quot;</p>
             <p className="text-sm text-text-muted sm:text-base">{card.portuguese_translation || card.pt}</p>
           </div>
           
           <AudioButton
+            className={isBlitzVariant ? 'blitz-speech-player' : undefined}
             url={card.audio_url} fallbackText={englishPhrase}
             autoPlay={true}
             variant="game"
@@ -908,7 +909,7 @@ export default function SpeakingMode({
         </div>
       </div>
 
-      <div className="mt-5 flex w-full flex-col items-center gap-3 sm:mt-8 sm:gap-6">
+      <div className="speech-record mt-5 flex w-full flex-col items-center gap-3 sm:mt-8 sm:gap-6">
         <div className="flex w-full flex-col items-center gap-3 sm:gap-6">
           {isListeningActive && (
             <div className="w-full max-w-xs animate-fade-in mb-2">
@@ -1005,8 +1006,8 @@ export default function SpeakingMode({
         )}
 
         {visibleError && (
-          <div className="flex flex-col items-stretch gap-2">
-            <div className="rounded-lg bg-[var(--color-error)]/10 px-4 py-2 text-sm text-[var(--color-error)] font-medium">
+          <div className="speech-recovery flex flex-col items-stretch gap-2">
+            <div role="status" className="rounded-lg bg-[var(--color-error)]/10 px-4 py-2 text-sm text-[var(--color-error)] font-medium">
               {visibleError}
             </div>
 

@@ -2,6 +2,7 @@ const SW_VERSION = '2026-11-11-01'
 const STATIC_CACHE = `kivora-static-${SW_VERSION}`
 const RUNTIME_CACHE = `kivora-runtime-${SW_VERSION}`
 const TTS_CACHE = `kivora-tts-${SW_VERSION}`
+const isLoopback = ['localhost', '127.0.0.1', '[::1]'].includes(self.location.hostname)
 const OFFLINE_URL = '/offline'
 const STATIC_MAX_ENTRIES = 220
 const TTS_MAX_ENTRIES = 60
@@ -9,11 +10,11 @@ const TTS_MAX_ENTRIES = 60
 const PRECACHE_URLS = [
   OFFLINE_URL,
   '/manifest.webmanifest',
-  '/icon-192.png?v=2',
-  '/icon-512.png?v=2',
+  '/icon-192.png?v=4',
+  '/icon-512.png?v=4',
   '/notification-badge-96.png',
-  '/apple-touch-icon.png?v=2',
-  '/favicon.svg?v=2',
+  '/apple-touch-icon.png?v=4',
+  '/favicon.svg?v=3',
 ]
 
 function isSameOrigin(url) {
@@ -99,6 +100,7 @@ function notificationUrlFromData(data, action) {
 self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
+      if (isLoopback) await self.skipWaiting()
       const cache = await caches.open(STATIC_CACHE)
       await Promise.allSettled(
         PRECACHE_URLS.map((url) => cache.add(url).catch(() => undefined))
@@ -140,6 +142,9 @@ self.addEventListener('fetch', (event) => {
   // when a service worker owns the HTML request (common Android PWA blank screen).
   if (request.mode === 'navigate') return
 
+  // Turbopack reuses asset URLs between local builds. Always fetch the current bundle.
+  if (isLoopback && isNextAsset(url)) return
+
   if (isNextStaticAsset(url)) {
     event.respondWith(cacheFirst(event, STATIC_CACHE, STATIC_MAX_ENTRIES))
     return
@@ -175,7 +180,7 @@ self.addEventListener('push', (event) => {
   const notificationOptions = {
     body,
     tag,
-    icon: typeof data.icon === 'string' ? data.icon : '/icon-192.png?v=2',
+    icon: typeof data.icon === 'string' ? data.icon : '/icon-192.png?v=4',
     badge: typeof data.badge === 'string' ? data.badge : '/notification-badge-96.png',
     data: {
       url,

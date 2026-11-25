@@ -37,9 +37,9 @@ export const adminPacksInnerPanel = `${landingRadiusLg} ${adminFrostedSubtle} bo
 export const adminPacksFolderSpine = 'admin-pack-spine'
 export const adminPacksModalShell = `${adminPacksPanel} admin-dialog relative my-auto w-full overflow-hidden`
 
-export const adminPacksKicker = `inline-flex items-center rounded-full border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark`
+export const adminPacksKicker = `inline-flex items-center rounded-label border border-brand-dark bg-bg-primary px-3 py-1 font-heading text-xs font-bold uppercase tracking-widest text-brand-dark`
 
-export const adminPacksAccentPill = `inline-flex items-center rounded-full border border-brand-dark bg-brand-accent px-2.5 py-1 font-heading text-2xs font-bold uppercase tracking-widest text-brand-dark`
+export const adminPacksAccentPill = `inline-flex items-center rounded-label border border-brand-dark bg-brand-accent px-2.5 py-1 font-heading text-2xs font-bold uppercase tracking-widest text-brand-dark`
 
 export const adminPacksFieldLabel = 'font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary'
 

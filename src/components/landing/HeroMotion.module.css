@@ -1,6 +1,8 @@
-@media (prefers-reduced-motion: no-preference) {
-  script[data-hero-reveal] + .headline .word {
-    opacity: 0;
+@keyframes waitForHero { from, to { opacity:0; } }
+
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  .headline[data-hero-reveal] .word {
+    animation:waitForHero 2s step-end;
   }
 }
 
@@ -25,6 +27,6 @@
   bottom: -.09em;
   height: .13em;
   border-top: .045em solid var(--yellow);
-  border-radius: 80% 40% 0 0;
+  border-radius: 80% 40% 0 0; corner-shape:round;
   pointer-events: none;
 }

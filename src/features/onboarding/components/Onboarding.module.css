@@ -15,13 +15,19 @@
   font-variant-numeric: tabular-nums;
 }
 .track { flex: 1; height: 6px; overflow: hidden; border-radius: 999px; background: var(--kivora-line); }
-.track span { display: block; height: 100%; background: var(--brand-sage); }
+.track span { display: block; height: 100%; background: var(--brand-highlight); }
 .shell :is(h1, h2) { line-height: 1.15; }
 .shell h1 { font-size: clamp(28px, 5vw, 42px); }
 .shell h1:focus-visible { outline-offset: 4px; }
 .shell [data-onboarding-question]:focus-visible { outline-offset: 4px; }
 .subtitle { max-width: 58ch; margin-top: 8px; color: var(--kivora-muted); font-size: .9375rem; line-height: 1.55; }
-.content { margin-top: 20px; }
+.content {
+  margin-top: 20px;
+  padding: var(--workspace-card-padding);
+  border: 1px solid var(--kivora-line);
+  border-radius: var(--workspace-radius);
+  background: var(--kivora-surface);
+}
 .feedback { color: var(--kivora-error); font-size: .875rem; line-height: 1.55; }
 .welcome { min-height: 0; }
 .welcome li { padding-block: 8px; border-bottom: 1px solid var(--kivora-line); }

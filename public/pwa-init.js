@@ -23,9 +23,12 @@
   }
 
   if (isStandalone) {
-    document.addEventListener('DOMContentLoaded', function () {
-      window.setTimeout(markPwaReady, 900);
-    });
+    function finishSplash() { window.setTimeout(markPwaReady, 900); }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', finishSplash, { once: true });
+    } else {
+      finishSplash();
+    }
     window.setTimeout(markPwaReady, 3500);
   }
 })();

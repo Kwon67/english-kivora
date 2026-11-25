@@ -24,8 +24,11 @@
   display: grid;
   min-width: 0;
   gap: 18px;
-  padding-block: 18px;
-  border-top: 1px solid var(--kivora-line);
+  margin-block: var(--workspace-gap);
+  padding: var(--workspace-card-padding);
+  border: 1px solid var(--kivora-line);
+  border-radius: var(--workspace-radius);
+  background: var(--kivora-surface);
 }
 
 .section h2 {

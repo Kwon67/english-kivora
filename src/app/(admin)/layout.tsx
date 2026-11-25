@@ -1,3 +1,4 @@
+import '@/features/admin/components/AdminWorkspace.css'
 import WorkspaceMotion from '@/components/motion/WorkspaceMotion'
 import { Suspense } from 'react'
 import { AdminSidebar, AdminSidebarFallback } from '@/components/layout/AdminChrome'

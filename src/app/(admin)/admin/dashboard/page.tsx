@@ -263,14 +263,14 @@ export default async function AdminDashboard({
 
 
   return (
-    <div className={`${adminDashboardShell} ${styles.workspace}`}>
+    <div className={`dashboard-landing ${adminDashboardShell} ${styles.workspace}`}>
       <div className="relative z-10 mx-auto w-full min-w-0 max-w-full space-y-6 pb-8 sm:space-y-8">
 <AdminMotionSection>
           <AdminDashboardHeader todayLabel={todayLabel} />
         </AdminMotionSection>
 
 <WorkspaceSections label="Visão geral da administração" tabs={[{"id":"operacao","label":"Atividade","description":"Indicadores de hoje e o desempenho dos alunos.","icon":"chart","anchors":["desempenho"]},{"id":"destaques","label":"Destaques","description":"Reconheça os avanços e acesse as ferramentas de gestão.","icon":"medal","anchors":["acoes"]}]} >
-<div className="workspace-panel-stack"><AdminMotionSection className={adminDashboardTelemetryBand} stagger>
+<div className="workspace-panel-stack"><AdminMotionSection className={`${adminDashboardTelemetryBand} dashboard-overview-metrics`} stagger>
           <AdminMotionItem>
             <AdminMetric
               tone="success"
@@ -326,7 +326,7 @@ export default async function AdminDashboard({
         </AdminMotionSection><AdminMotionSection>
             <section
               id="desempenho"
-              className={`${styles.panel} scroll-mt-4`}
+              className={`dashboard-panel ${styles.panel} scroll-mt-4`}
             >
               <div className={adminDashboardSectionHeader}>
                 <div>
@@ -395,7 +395,7 @@ export default async function AdminDashboard({
                       return (
                         <tr
                           key={row.memberId}
-                          className="transition-colors hover:bg-bg-primary/80"
+                          className="dashboard-member transition-colors hover:bg-bg-primary/80"
                         >
                           <td data-label="Membro" className="px-4 py-3 sm:px-5">
                             <Link
@@ -467,12 +467,12 @@ export default async function AdminDashboard({
                               '—'
                             )}
                           </td>
-                          <td data-label="Concluído" className="px-3 py-3 text-center font-body text-xs font-semibold text-brand-secondary">
+                          <td data-label="Última conclusão" className="px-3 py-3 text-center font-body text-xs font-semibold text-brand-secondary">
                             {row.lastCompletedAt
                               ? formatAppDateTime(row.lastCompletedAt)
                               : '—'}
                           </td>
-                          <td data-label="Status" className="px-4 py-3 sm:px-5">
+                          <td data-label="Tarefas concluídas" className="px-4 py-3 sm:px-5">
                             {!row.hasAny ? (
                               <span
                                 className={`${adminDashboardStatusPill} bg-bg-primary text-brand-secondary`}
@@ -521,22 +521,13 @@ export default async function AdminDashboard({
           >
             {spotlight.length > 0 ? (
               <AdminMotionSection>
-                <section className={styles.panel}>
-                  <div className="mb-5 flex items-center gap-3">
-                    <span className={adminDashboardIconBox}>
-                      <Medal className={homeIconGlyphSm} strokeWidth={1.5} />
-                    </span>
-                    <div>
-
-                      <h2
-                        className={`${adminDashboardSectionTitle} mt-2 text-xl sm:text-2xl`}
-                      >
-                        Top desempenho
-                      </h2>
-                    </div>
+                <section className={`dashboard-panel ${styles.panel}`}>
+                  <div className="mb-4 flex items-center gap-3">
+                    <Medal className="dashboard-rank-icon" aria-hidden />
+                    <h2 className={adminDashboardSectionTitle}>Top desempenho</h2>
                   </div>
 
-                  <div className="admin-spotlight-list grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+                  <ol className="dashboard-ranking">
                     {spotlight.map((row, index) => {
                       const total = row.totalCorrect + row.totalWrong
                       const pct =
@@ -545,97 +536,79 @@ export default async function AdminDashboard({
                           : 0
 
                       return (
-                        <div
-                          key={row.memberId}
-                          className={styles.insightRow}
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
-                              {index + 1}º lugar
-                            </span>
-                            {row.bestStreak > 0 ? (
-                              <span
-                                className="tone-chip"
-                                data-tone="streak"
-                              >
-                                <Flame className="h-3 w-3" strokeWidth={1.5} />
-                                {row.bestStreak}
-                              </span>
-                            ) : null}
-                          </div>
+                        <li key={row.memberId} className="dashboard-insight">
                           <Link
                             href={`/admin/members/${row.memberId}`}
                             transitionTypes={navForwardTransitionTypes}
-                            className="mt-3 flex items-center gap-3 group"
+                            className="group flex min-w-0 items-center gap-3"
                           >
-                            <div className={adminDashboardMemberAvatar}>
+                            <span className={adminDashboardMemberAvatar}>
                               <UserRound className="h-5 w-5" aria-hidden />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="truncate font-heading text-sm font-bold text-brand-dark group-hover:text-brand-secondary">
-                                {row.username}
-                              </p>
-                              <p className="font-body text-xs text-brand-secondary">
-                                {row.totalCorrect} acertos
-                              </p>
-                            </div>
+                            </span>
+                            <span className="min-w-0">
+                              <span className="dashboard-place">{index + 1}º lugar</span>
+                              <strong className="block break-words group-hover:underline">{row.username}</strong>
+                            </span>
                           </Link>
-                          <div className="admin-member-rail mt-3">
-                            <div
-                              data-progress-fill
-                              className="admin-member-rail-fill"
-                              style={{ width: `${pct}%` }}
-                            />
+                          <dl className="dashboard-rank-metrics">
+                            <div><dt>Acertos</dt><dd>{row.totalCorrect}</dd></div>
+                            <div><dt>Taxa de acerto</dt><dd>{pct}%</dd></div>
+                            {row.bestStreak > 0 && (
+                              <div><dt>Melhor sequência</dt><dd>{row.bestStreak}</dd></div>
+                            )}
+                          </dl>
+                          <div className="admin-member-rail mt-3" aria-hidden="true">
+                            <div data-progress-fill className="admin-member-rail-fill" style={{ width: `${pct}%` }} />
                           </div>
-                          <p className="mt-1.5 font-heading text-2xs font-bold uppercase tracking-widest text-brand-secondary">
-                            {pct}% precisão
-                          </p>
-                        </div>
+                        </li>
                       )
                     })}
-                  </div>
+                  </ol>
                 </section>
               </AdminMotionSection>
             ) : null}
 
-            <AdminMotionSection
-              id="acoes"
-              className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1"
-              stagger
-            >
-              <AdminMotionItem>
-                <Link
-                  href="/admin/reports"
-                  className={styles.actionRow}
-                >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className={adminDashboardIconBox}>
-                      <BarChart2
-                        className={homeIconGlyphSm}
-                        strokeWidth={1.5}
-                      />
-                    </span>
-                    <span className="truncate">Relatórios completos</span>
-                  </div>
-                  <ArrowRight className="h-4 w-4 shrink-0 text-brand-secondary transition-transform group-hover:translate-x-0.5 " />
-                </Link>
-              </AdminMotionItem>
+            <section className="dashboard-panel" aria-labelledby="dashboard-tools-title">
+              <h2 id="dashboard-tools-title" className={adminDashboardSectionTitle}>Ferramentas de gestão</h2>
+              <AdminMotionSection
+                id="acoes"
+                className="dashboard-tools"
+                stagger
+              >
+                <AdminMotionItem>
+                  <Link
+                    href="/admin/reports"
+                    className={`dashboard-action ${styles.actionRow}`}
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className={adminDashboardIconBox}>
+                        <BarChart2
+                          className={homeIconGlyphSm}
+                          strokeWidth={1.5}
+                        />
+                      </span>
+                      <span className="truncate">Relatórios completos</span>
+                    </div>
+                    <ArrowRight className="h-4 w-4 shrink-0 text-brand-secondary transition-transform group-hover:translate-x-0.5 " />
+                  </Link>
+                </AdminMotionItem>
 
-              <AdminMotionItem>
-                <Link
-                  href="/admin/members"
-                  className={styles.actionRow}
-                >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className={adminDashboardIconBox}>
-                      <Users className={homeIconGlyphSm} strokeWidth={1.5} />
-                    </span>
-                    <span className="truncate">Gerenciar membros</span>
-                  </div>
-                  <ArrowRight className="h-4 w-4 shrink-0 text-brand-secondary transition-transform group-hover:translate-x-0.5 " />
-                </Link>
-              </AdminMotionItem>
-            </AdminMotionSection>
+                <AdminMotionItem>
+                  <Link
+                    href="/admin/members"
+                    className={`dashboard-action ${styles.actionRow}`}
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className={adminDashboardIconBox}>
+                        <Users className={homeIconGlyphSm} strokeWidth={1.5} />
+                      </span>
+                      <span className="truncate">Gerenciar membros</span>
+                    </div>
+                    <ArrowRight className="h-4 w-4 shrink-0 text-brand-secondary transition-transform group-hover:translate-x-0.5 " />
+                  </Link>
+                </AdminMotionItem>
+              </AdminMotionSection>
+            </section>
           </aside></div>
 </WorkspaceSections>
 </div>

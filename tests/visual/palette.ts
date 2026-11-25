@@ -114,7 +114,11 @@ export async function checkArtwork(page: Page) {
     nodes.flatMap(node => {
       const single = node.getAttribute('src') ?? node.getAttribute('href') ?? node.getAttribute('xlink:href')
       const variants = (node.getAttribute('srcset') ?? '').split(',').map(candidate => candidate.trim().split(/\s+/)[0])
-      return [single, ...variants].filter((path): path is string => Boolean(path))
+      return [single, ...variants].filter((path): path is string => Boolean(path)).map(path => {
+        // Next adds a deployment query to local assets in dev. Compare their files.
+        const asset = new URL(path, location.href)
+        return asset.origin === location.origin ? asset.pathname : asset.href
+      })
     }))
   for (const file of new Set([...paths, ...Object.keys(reference.artwork)])) {
     expect(file in reference.artwork, file).toBe(true)

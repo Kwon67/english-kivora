@@ -45,18 +45,20 @@ export default function LandingNavigation({ links }: { links: { href: string; la
   })
   const show = contextSafe(() => {
     const element = dialog.current
-    if (!element) return
+    if (!element || element.open) return
     animation.current?.kill()
     closing.current = false
     engine.current?.stop()
     element.showModal()
     setOpen(true)
     const items = element.querySelectorAll('[data-menu-item]')
-    gsap.set([element, ...items], { clearProps: 'transform,opacity' })
+    const lines = element.querySelectorAll('[data-menu-line]')
+    gsap.set([element, ...items, ...lines], { clearProps: 'transform,opacity,--menu-veil' })
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     animation.current = gsap.timeline()
       .fromTo(element, { yPercent: -100, '--menu-veil': 0 }, { yPercent: 0, '--menu-veil': 1, duration: duration.menuEnter, ease: ease.title, clearProps: 'transform' })
-      .fromTo(items, { y: 36, opacity: 0 }, { y: 0, opacity: 1, stagger: .065, duration: duration.itemEnter, ease: ease.reveal, clearProps: 'transform,opacity' }, .18)
+      .fromTo(items, { y: 20, opacity: 0 }, { y: 0, opacity: 1, stagger: .05, duration: duration.itemEnter, ease: ease.reveal, clearProps: 'transform,opacity' }, .13)
+      .fromTo(lines, { scaleX: 0 }, { scaleX: 1, stagger: .05, duration: duration.itemEnter, ease: ease.reveal, clearProps: 'transform' }, .23)
   })
 
   useEffect(() => {
@@ -104,10 +106,22 @@ export default function LandingNavigation({ links }: { links: { href: string; la
       navigateAfterClose?.()
     }} onClick={event => { if (event.target === dialog.current) close() }}>
       <div className={styles.menuInner}>
-        <div className={styles.menuTop}><LandingWordmark /><button autoFocus onClick={() => close()} aria-label="Fechar menu"><X size={25} aria-hidden="true" /></button></div>
+        <div className={styles.menuTop} data-menu-item><LandingWordmark /><button autoFocus onClick={() => close()} aria-label="Fechar menu"><X size={25} aria-hidden="true" /></button></div>
         <p id="mobile-menu-title" className={styles.eyebrow} data-menu-item>Explorar a Kivora</p>
-        <nav aria-label="Navegação no celular" className={styles.mobileLinks}>{links.map(link => <Link data-menu-item key={link.href} href={link.href} onClick={event => navigate(event, link.href)}>{link.label}<ArrowUpRight size={25} aria-hidden="true" /></Link>)}</nav>
-        <div className={styles.menuBottom} data-menu-item><Link href="/login" transitionTypes={['kivora-auth']} onClick={event => navigate(event, '/login')}>Já tenho uma conta <ArrowRight size={19} aria-hidden="true" /></Link><Link href="/register" onClick={event => navigate(event, '/register')} className={styles.navCta}>Começar grátis <ArrowUpRight size={21} aria-hidden="true" /></Link></div>
+        <nav aria-label="Navegação no celular" className={styles.mobileLinks}>
+          {links.map(link => (
+            <Link data-menu-item key={link.href} href={link.href} onClick={event => navigate(event, link.href)}>
+              {link.label}<ArrowUpRight size={25} aria-hidden="true" />
+              <span className={styles.menuLine} data-menu-line aria-hidden="true" />
+            </Link>
+          ))}
+        </nav>
+        <div className={styles.menuBottom} data-menu-item>
+          <Link href="/login" transitionTypes={['kivora-auth']} onClick={event => navigate(event, '/login')}>Já tenho uma conta <ArrowRight size={19} aria-hidden="true" /></Link>
+          <Link href="/register" onClick={event => navigate(event, '/register')} className={styles.navCta}>
+            Começar grátis <span className={styles.menuCtaIcon}><ArrowUpRight size={20} aria-hidden="true" /></span>
+          </Link>
+        </div>
         <p className={styles.menuNote} data-menu-item>Seu próximo <span lang="en">hello</span> começa aqui.</p>
       </div>
     </dialog>

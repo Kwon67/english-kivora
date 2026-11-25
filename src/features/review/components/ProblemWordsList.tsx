@@ -153,7 +153,7 @@ export default function ProblemWordsList({ words }: ProblemWordsListProps) {
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 lang="en" className="font-heading text-lg font-semibold text-brand-dark sm:text-xl">{word.en}</h3>
                       <span
-                        className={`inline-flex rounded-full border border-brand-dark px-2.5 py-1 font-heading text-2xs font-bold uppercase tracking-widest ${getProblemWordSeverityPillClass(severity)}`}
+                        className={`inline-flex rounded-label border border-brand-dark px-2.5 py-1 font-heading text-2xs font-bold uppercase tracking-widest ${getProblemWordSeverityPillClass(severity)}`}
                       >
                         {severity}
                       </span>

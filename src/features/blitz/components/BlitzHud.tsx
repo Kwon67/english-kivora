@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Clock3, Flame, Heart } from 'lucide-react'
+import { Clock3, Flame, Heart, Zap } from 'lucide-react'
 import {
   getBlitzSessionPhase,
   getBlitzSessionProgress,
@@ -22,7 +22,7 @@ function BlitzElapsed({ startedAt }: { startedAt: number }) {
   const seconds = startedAt ? Math.max(0, Math.floor((now - startedAt) / 1000)) : 0
   const label = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
 
-  return <div><dt><Clock3 size={15} aria-hidden="true" /><span className="sr-only">Tempo decorrido</span></dt><dd>{label}</dd></div>
+  return <div><dt><Clock3 size={15} aria-hidden="true" /><span>Tempo<span className="sr-only"> decorrido</span></span></dt><dd>{label}</dd></div>
 }
 
 interface BlitzHudProps {
@@ -53,30 +53,28 @@ export default function BlitzHud({
 
   return (
     <section className="blitz-hud" aria-label="Placar da partida">
-      <div className="blitz-hud-row">
+      <div className="blitz-hud-context">
+        <span>{getBlitzModeLabel(mode)}</span>
         <div className="blitz-hud-lives" role="img" aria-label={`${lives} de 3 vidas`}>
           {Array.from({ length: 3 }, (_, index) => (
             <Heart key={index} aria-hidden="true" size={17} className={index < lives ? 'blitz-heart' : 'blitz-heart-empty'} />
           ))}
         </div>
-        <dl className="blitz-hud-stats">
-          <div><dt>Pontos</dt><dd>{score}</dd></div>
-          <div data-combo={combo >= 3}>
-            <dt><Flame size={16} aria-hidden="true" /><span className="sr-only">Combo</span></dt>
-            <dd>{combo}{combo >= 3 && <small>×{multiplier}</small>}</dd>
-          </div>
-          <BlitzElapsed startedAt={startedAt} />
-        </dl>
       </div>
+      <dl className="blitz-hud-stats">
+        <div><dt><Zap size={15} aria-hidden="true" />Pontos</dt><dd>{score}</dd></div>
+        <div data-combo={combo >= 3}>
+          <dt><Flame size={16} aria-hidden="true" /><span>Combo</span></dt>
+          <dd>{combo}{combo >= 3 && <small>×{multiplier}</small>}</dd>
+        </div>
+        <BlitzElapsed startedAt={startedAt} />
+      </dl>
       <div className="blitz-hud-progress" role="progressbar" aria-valuenow={progress} aria-valuemin={0}
         aria-valuemax={100} aria-valuetext={`${phase} da partida`} aria-label="Progresso da partida de Blitz"
         data-testid="blitz-session-progress">
         <span style={{ width: `${progress}%` }} />
       </div>
-      <div className="blitz-hud-context">
-        <span>{getBlitzModeLabel(mode)}</span>
-        <span role="status">{adaptationLabel}</span>
-      </div>
+      <span className="blitz-adaptation" role="status">{adaptationLabel}</span>
     </section>
   )
 }

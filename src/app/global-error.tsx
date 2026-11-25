@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect } from 'react'
-import Script from 'next/script'
 import './globals.css'
 
 export default function GlobalError({
@@ -17,8 +16,8 @@ export default function GlobalError({
 
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body className="bg-[var(--color-bg)] text-text antialiased">
-        <Script src="/pwa-init.js" strategy="beforeInteractive" />
+      <body className="premium-theme bg-[var(--color-bg)] text-text antialiased">
+        <script async src="/pwa-init.js" />
         <main className="flex min-h-screen min-h-[100svh] items-center justify-center px-6 py-16">
           <section className="w-full max-w-md text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-subtle">
@@ -33,7 +32,7 @@ export default function GlobalError({
             <button
               type="button"
               onClick={retry}
-              className="mt-8 inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
+              className="mt-8 inline-flex items-center justify-center rounded-action bg-primary px-6 py-3 text-sm font-semibold text-on-primary transition hover:bg-primary-dark"
             >
               Tentar novamente
             </button>

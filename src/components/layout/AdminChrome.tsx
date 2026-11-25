@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import WorkspaceNavigationSkeleton from '@/components/navigation/WorkspaceNavigationSkeleton'
 import AdminSidebarClient from './AdminSidebarClient'
 
 export async function AdminSidebar() {
@@ -22,19 +23,5 @@ export async function AdminSidebar() {
 }
 
 export function AdminSidebarFallback() {
-  return (
-    <>
-      <div
-        className="admin-desktop-header motion-safe:animate-pulse"
-        aria-label="Carregando navegação"
-      >
-        <div className="h-10 w-44 rounded-xl bg-surface-container" />
-        <div className="h-14 w-96 rounded-full bg-surface-container" />
-        <div className="h-10 w-10 rounded-full bg-surface-container" />
-      </div>
-      <div className="admin-mobile-bar motion-safe:animate-pulse">
-        <div className="h-9 w-32 rounded-lg bg-bg-primary" />
-      </div>
-    </>
-  )
+  return <WorkspaceNavigationSkeleton />
 }

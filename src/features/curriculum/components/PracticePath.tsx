@@ -1,4 +1,5 @@
 'use client'
+import SpotIllustration from '@/components/illustrations/SpotIllustration'
 import AudioButton from '@/components/ui/AudioButton'
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
@@ -33,7 +34,7 @@ export default function PracticePath({userId,packs,packsUnavailable=false,initia
   const anchor=document.createElement('a');anchor.href=url;anchor.download=`kivora-pratica-${level}.json`;document.body.appendChild(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(url),0)
  }
  return <div className={`competency-page${unit?' competency-page-session':' competency-page-sequence'}`}>
-  {!unit?<header className="product-heading competency-heading"><h1 ref={sequenceHeading} tabIndex={-1}>Prática por competências</h1><p>Leia, escreva, converse e aplique o que aprendeu em três situações por faixa.</p></header>:<div className="competency-session-nav"><button className="product-text-link" onClick={()=>{setSelected(null);setFollowup(false)}}><ArrowLeft size={18} aria-hidden="true" />Voltar à sequência</button><p className="product-kicker">Prática por competências · {unit.level}</p></div>}
+  {!unit?<header className="competency-heading"><div><h1 ref={sequenceHeading} tabIndex={-1}>Prática por competências</h1><p>Leia, escreva, converse e aplique o que aprendeu em três situações por faixa.</p></div><SpotIllustration motif="pencil" className="competency-heading-art" /></header>:<div className="competency-session-nav"><button className="product-text-link" onClick={()=>{setSelected(null);setFollowup(false)}}><ArrowLeft size={18} aria-hidden="true" />Voltar à sequência</button><p className="product-kicker">Prática por competências · {unit.level}</p></div>}
   {storageFailed&&<p role="alert" className="product-error">Não foi possível guardar o progresso neste navegador. Copie suas respostas antes de sair.</p>}
   {!unit?<>
    <PracticeSequence level={level} records={records} ready={ready} onLevelChange={setLevel} onOpen={open} onExport={exportPortfolio}/>

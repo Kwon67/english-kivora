@@ -52,7 +52,7 @@ export const adminDashboardSpotlightCard = `${landingRadiusLg} ${adminFrostedSub
 
 export const adminDashboardMemberAvatar = `relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-control border border-brand-dark bg-primary-light font-heading text-sm font-bold text-brand-dark`
 
-export const adminDashboardStatusPill = `inline-flex items-center gap-1.5 rounded-full border border-brand-dark px-2.5 py-1 font-heading text-2xs font-bold uppercase tracking-widest`
+export const adminDashboardStatusPill = `inline-flex items-center gap-1.5 rounded-label border border-brand-dark px-2.5 py-1 font-heading text-2xs font-bold uppercase tracking-widest`
 
 /** Admin chrome — flat sidebar aligned with ops deck */
 export const adminSidebarShell =
@@ -64,7 +64,7 @@ export const adminSidebarProfile = `rounded-container border border-brand-dark/2
 
 export const adminSidebarAvatar = `box-border flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-control border border-brand-dark bg-primary-light font-heading text-xs font-bold text-brand-dark`
 
-export const adminSidebarBadge = `inline-flex items-center gap-1.5 rounded-full border border-brand-dark bg-brand-accent px-2.5 py-1 font-heading text-[0.65rem] font-bold uppercase tracking-widest text-brand-dark`
+export const adminSidebarBadge = `inline-flex items-center gap-1.5 rounded-label border border-brand-dark bg-brand-accent px-2.5 py-1 font-heading text-[0.65rem] font-bold uppercase tracking-widest text-brand-dark`
 
 // Link de navegação é CONTROLE: com 38px de altura, 20px de raio o transformava em cápsula.
 export const adminSidebarNavLink =

@@ -156,7 +156,7 @@ export default function MatchingGame({
         <p className={`leading-relaxed text-text-muted ${isCompact ? 'mt-3 text-sm' : 'mt-4 text-base'}`}>
           Encontre os pares corretos e limpe o tabuleiro sem perder o ritmo.
         </p>
-        <div className="mt-4 inline-flex rounded-full border home-frosted-subtle border-brand-dark/15 px-4 py-2 text-sm font-semibold text-text-muted">
+        <div className="mt-4 inline-flex rounded-label border home-frosted-subtle border-brand-dark/15 px-4 py-2 text-sm font-semibold text-text-muted">
           {matchedIds.size} de {gameCards.length} pares encontrados
         </div>
       </div>
@@ -206,7 +206,7 @@ export default function MatchingGame({
             >
               <div className="mb-2.5 flex items-start justify-between gap-2">
                 <span
-                  className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] sm:text-2xs ${badgeStyle}`}
+                  className={`shrink-0 rounded-label px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] sm:text-2xs ${badgeStyle}`}
                 >
                   {item.type === 'en' ? 'EN' : 'PT'}
                 </span>

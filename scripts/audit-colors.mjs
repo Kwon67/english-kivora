@@ -19,6 +19,13 @@ const FORBIDDEN_BRAND_HEX = /#(?:183b16|24551d|b8ff5c|cbff83|065f46|1db954|e3ecc
 
 const CHECKS = [
   {
+    id: 'retired-pastel-green',
+    test: (text) => [...text.matchAll(/#(?:e2edce|f4f8eb|eaf4e1)\b/gi)].map(match => ({
+      line: lineOf(text, match.index),
+      detail: match[0],
+    })),
+  },
+  {
     id: 'forbidden-brand-hex',
     test: (text, file) => {
       if (ALLOWED_HEX_FILES.has(file)) return []

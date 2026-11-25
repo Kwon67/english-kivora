@@ -108,7 +108,7 @@ export default function SentenceBuildMode({ card, onCorrect, onWrong }: Sentence
           {connectorHints.map((hint) => (
             <span
               key={hint}
-              className="rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary"
+              className="rounded-label border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary"
             >
               {hint}
             </span>
@@ -127,7 +127,7 @@ export default function SentenceBuildMode({ card, onCorrect, onWrong }: Sentence
                 type="button"
                 onClick={() => removeToken(index)}
                 disabled={isValidated}
-                className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-sm font-bold text-primary"
+                className="rounded-label border border-primary/20 bg-primary/10 px-3 py-1.5 text-sm font-bold text-primary"
               >
                 {token}
               </button>
@@ -143,7 +143,7 @@ export default function SentenceBuildMode({ card, onCorrect, onWrong }: Sentence
             type="button"
             onClick={() => addToken(token, index)}
             disabled={isValidated}
-            className="rounded-full border border-border-muted/20 bg-surface-container-low px-3 py-1.5 text-sm font-semibold text-text transition-colors hover:border-primary/20 hover:text-primary"
+            className="rounded-label border border-border-muted/20 bg-surface-container-low px-3 py-1.5 text-sm font-semibold text-text transition-colors hover:border-primary/20 hover:text-primary"
           >
             {token}
           </button>

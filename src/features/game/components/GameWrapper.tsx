@@ -694,7 +694,7 @@ export default function GameWrapper({
     <div className="pb-4">
       {hasTimer && timerStarted && (
         <div className="mx-auto mb-4 flex w-full max-w-[1100px] justify-end">
-          <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 font-heading text-sm font-bold ${
+          <div className={`inline-flex items-center gap-2 rounded-label border px-4 py-2 font-heading text-sm font-bold ${
             timerExpired
               ? 'border-error/30 bg-error-soft text-[var(--color-error)]'
               : 'border-brand-dark bg-brand-accent text-brand-dark'

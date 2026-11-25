@@ -1,0 +1,79 @@
+/* Shared page canvas; illustrations, progress and status keep their semantic accents. */
+body.premium-theme,
+.premium-theme :is(.premium-app, .admin-premium-shell, main#main-content, main.landing-light, main.premium-auth, main[data-kivora-workspace="offline"]) {
+  background-color: var(--kivora-paper);
+}
+.premium-theme :is(.premium-auth-form, .workspace-feedback, .pwa-notice-card, .subscription-alert) {
+  background: #fffef8;
+  border: 1px solid var(--kivora-line);
+  border-radius: var(--workspace-radius);
+  corner-shape: squircle;
+  padding: var(--workspace-surface-padding, clamp(16px, 3vw, 28px));
+}
+.premium-theme .subscription-alert { border-inline-start: 4px solid var(--brand-yellow); }
+.premium-theme .workspace-feedback-actions { gap: 12px; }
+.premium-theme :is(.premium-kicker, .section-kicker, .workspace-eyebrow, .product-kicker) {
+  font-family: var(--font-kivora-mono), monospace;
+  letter-spacing: .08em;
+}
+.premium-theme :is(.btn-primary, .premium-auth-fields button[type="submit"], .blitz-button-primary, .pwa-notice-actions .premium-primary) {
+  background: var(--brand-highlight);
+  color: var(--kivora-ink);
+  border-radius: var(--workspace-inset-radius);
+}
+.premium-theme :is(.btn-primary, .premium-auth-fields button[type="submit"], .blitz-button-primary):hover:not(:disabled) {
+  background: var(--brand-highlight-hover);
+  color: var(--kivora-ink);
+}
+.premium-theme :is(.pwa-notice-actions, .premium-auth-fields) { gap: 12px; }
+.premium-theme .kivora-toast[data-sonner-toast] {
+  background: #fffef8;
+  color: var(--kivora-ink);
+  border: 1px solid var(--kivora-line);
+  border-inline-start: 4px solid var(--brand-highlight);
+  border-radius: 16px;
+  corner-shape: squircle;
+  padding-inline-end: 48px !important;
+}
+.premium-theme .kivora-toast[data-type="error"] { border-inline-start-color: var(--brand-orange); }
+.premium-theme .kivora-toast[data-type="warning"] { border-inline-start-color: var(--brand-yellow); }
+.premium-theme .kivora-toast[data-type="info"] { border-inline-start-color: var(--brand-blue); }
+
+.premium-theme [data-kivora-workspace] :is(.workspace-section-tabs button, .workspace-button, .premium-primary, .study-add) {
+  border-radius: var(--workspace-inset-radius);
+  corner-shape: squircle;
+}
+.premium-theme :is(.study-desk-heading, .blitz-hero-arena, .focus-session, [data-studio-hero]) {
+  background: var(--kivora-paper);
+  color: var(--kivora-ink);
+}
+.premium-theme [data-kivora-workspace] :is(.workspace-disclosure, .competency-response-card, .stitch-panel, .study-heatmap, .learning-panel, .study-finish) {
+  border: 1px solid var(--kivora-line);
+  border-radius: var(--workspace-radius);
+  background: #fffef8;
+}
+.premium-theme .workspace-section-tabs button[aria-selected="true"] {
+  background: var(--brand-highlight);
+  color: var(--kivora-ink);
+}
+.premium-theme .landing-light :is(.landing-frosted-surface,.landing-frosted-subtle) {
+  background: #fffef8;
+  border-color: var(--kivora-line);
+  border-radius: var(--workspace-radius);
+}
+
+.premium-app :is(.discovery-catalog .catalog-summary, .pack-detail-status) {
+  padding: var(--workspace-card-padding);
+  border: 1px solid var(--kivora-line);
+  border-radius: var(--workspace-radius);
+  background: var(--kivora-surface);
+}
+.public-feedback-page {
+  min-height: 100svh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  justify-items: center;
+  align-items: center;
+  padding-inline: var(--workspace-gutter);
+}
+.public-feedback-page > section { margin-block: var(--workspace-gap); }

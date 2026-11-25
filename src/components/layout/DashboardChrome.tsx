@@ -1,3 +1,4 @@
+import WorkspaceNavigationSkeleton from '@/components/navigation/WorkspaceNavigationSkeleton'
 import Navbar from '@/components/layout/Navbar'
 import type { NavbarProfile } from '@/components/layout/Navbar'
 import { createClient } from '@/lib/supabase/server'
@@ -44,15 +45,5 @@ export async function DashboardChrome() {
 }
 
 export function DashboardChromeFallback() {
-  return (
-    <>
-      <div className="stitch-topbar">
-        <div className="workspace-compact-nav mx-auto max-w-[var(--workspace-max)]">
-          <div className="h-10 w-36 rounded-[0.8rem] bg-[var(--color-surface-container)]" />
-          <div className="hidden h-10 w-64 rounded-[0.8rem] bg-[var(--color-surface-container)] lg:block" />
-          <div className="h-10 w-10 rounded-[0.8rem] bg-[var(--color-surface-container)] sm:h-9 sm:w-9" />
-        </div>
-      </div>
-    </>
-  )
+  return <WorkspaceNavigationSkeleton />
 }

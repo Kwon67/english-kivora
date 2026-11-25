@@ -2,13 +2,13 @@
 
 import { useActionState, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { ChevronDown, ChevronRight, LogOut, Menu, MoreHorizontal, ArrowLeftRight, UserRound } from 'lucide-react'
+import { Check, ChevronDown, ChevronRight, X, LogOut, Menu, MoreHorizontal, ArrowLeftRight, UserRound } from 'lucide-react'
 import { logoutAction } from '@/app/actions'
 import BrandMark from '@/components/ui/BrandMark'
 import WorkspaceLink from './WorkspaceLink'
 import { learningNavigation, administrationNavigation, learningPrimary, adminPrimary, destinationIsActive, type WorkspaceDestination } from '@/lib/workspaceNavigation'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/shadcn/dropdown-menu'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from '@/components/shadcn/sheet'
+import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from '@/components/shadcn/sheet'
 import { trackUxEvent } from '@/lib/uxAnalytics'
 
 export default function WorkspaceNavigation({ username, isAdmin, workspace = 'learning' }: {
@@ -25,6 +25,7 @@ export default function WorkspaceNavigation({ username, isAdmin, workspace = 'le
   const primary = admin ? adminPrimary : learningPrimary
   const overflow = groups.map(group => ({ ...group, items: group.items.filter(item => !primary.some(p => p.href === item.href)) })).filter(group => group.items.length)
   const moreActive = overflow.some(group => group.items.some(item => destinationIsActive(pathname, item)))
+  const currentDestination = groups.flatMap(group => group.items).find(item => destinationIsActive(pathname, item))
   const initials = username.trim().charAt(0).toUpperCase() || 'K'
   const navigate = (item: WorkspaceDestination) => {
     setDrawerOpen(false)
@@ -73,7 +74,7 @@ export default function WorkspaceNavigation({ username, isAdmin, workspace = 'le
                 <span className="workspace-account-identity"><small>SUA CONTA</small><strong title={username}>{username}</strong></span>
               </DropdownMenuLabel>
               <DropdownMenuItem asChild><WorkspaceLink href="/settings"><span className="workspace-account-item-icon"><UserRound size={18} aria-hidden="true" /></span><span>Minha conta</span><ChevronRight size={15} aria-hidden="true" className="workspace-account-item-arrow" /></WorkspaceLink></DropdownMenuItem>
-              {isAdmin && <DropdownMenuItem asChild><WorkspaceLink href={switchHref}><span className="workspace-account-item-icon"><ArrowLeftRight size={18} aria-hidden="true" /></span><span>{switchLabel}</span><ChevronRight size={15} aria-hidden="true" className="workspace-account-item-arrow" /></WorkspaceLink></DropdownMenuItem>}
+              {isAdmin && <DropdownMenuItem asChild><WorkspaceLink href={switchHref} className="workspace-account-switch"><span className="workspace-account-item-icon"><ArrowLeftRight size={18} aria-hidden="true" /></span><span>{switchLabel}</span><ChevronRight size={15} aria-hidden="true" className="workspace-account-item-arrow" /></WorkspaceLink></DropdownMenuItem>}
               <DropdownMenuSeparator />
               <form action={logoutFormAction} aria-busy={logoutPending}>
                 {/* Keep the form mounted until the browser dispatches its submit event. */}
@@ -86,7 +87,7 @@ export default function WorkspaceNavigation({ username, isAdmin, workspace = 'le
               </form>
             </DropdownMenuContent>
           </DropdownMenu>
-          <SheetTrigger asChild><button onClick={event => { drawerTrigger.current = event.currentTarget }} className="workspace-navigation-menu" aria-label={admin ? 'Abrir menu administrativo' : 'Abrir menu de navegação'}><Menu size={22} strokeWidth={1.5} /></button></SheetTrigger>
+          <SheetTrigger asChild><button onClick={event => { drawerTrigger.current = event.currentTarget }} className="workspace-navigation-menu" aria-label={admin ? 'Abrir menu administrativo' : 'Abrir menu de navegação'}><span className="workspace-menu-caption">Menu</span><Menu size={22} strokeWidth={1.5} /></button></SheetTrigger>
         </div>
       </div>
 
@@ -97,14 +98,43 @@ export default function WorkspaceNavigation({ username, isAdmin, workspace = 'le
         <SheetTrigger asChild><button onClick={event => { drawerTrigger.current = event.currentTarget }} className="workspace-dock-link" aria-label="Abrir mais opções" data-current={moreActive || undefined}><MoreHorizontal size={21} strokeWidth={1.5} /><span>Mais</span></button></SheetTrigger>
       </div>
     </nav>}
-    <SheetContent side="right" className="workspace-navigation-sheet" onCloseAutoFocus={event => { event.preventDefault(); drawerTrigger.current?.focus() }}>
-      <SheetHeader><SheetTitle>{admin ? 'Administração' : 'Seu espaço'}</SheetTitle><SheetDescription>Escolha uma área para continuar.</SheetDescription></SheetHeader>
+    <SheetContent side="right" data-workspace={workspace} className="workspace-navigation-sheet"
+      showCloseButton={admin}
+      onCloseAutoFocus={event => { event.preventDefault(); drawerTrigger.current?.focus() }}>
+      <SheetHeader>
+        <SheetTitle>{admin ? 'Administração' : 'Seu espaço'}</SheetTitle>
+        <SheetDescription>
+          {!admin && currentDestination ? `Página atual · ${currentDestination.label}` : 'Escolha uma área para continuar.'}
+        </SheetDescription>
+        {!admin && (
+          <SheetClose className="learner-menu-close" aria-label="Fechar menu">
+            <X size={19} aria-hidden="true" />
+          </SheetClose>
+        )}
+      </SheetHeader>
       <nav aria-label="Todas as áreas" className="workspace-navigation-groups">
-        {groups.map(group => <section key={group.label}><h2>{group.label}</h2><ul>{group.items.map(item => <li key={item.href}>
-          <WorkspaceLink href={item.href} className="workspace-menu-destination" aria-current={destinationIsActive(pathname, item) ? 'page' : undefined} onNavigate={() => navigate(item)}>
-            <item.icon size={20} strokeWidth={1.5} aria-hidden="true" /><span><strong>{item.label}</strong>{item.description && <small>{item.description}</small>}</span><ChevronRight size={15} aria-hidden="true" />
-          </WorkspaceLink>
-        </li>)}</ul></section>)}
+        {groups.map(group => (
+          <section key={group.label}>
+            <h2>{group.label}</h2>
+            <ul>
+              {group.items.map(item => {
+                const active = destinationIsActive(pathname, item)
+                const Icon = item.icon
+                return (
+                  <li key={item.href}>
+                    <WorkspaceLink href={item.href} className="workspace-menu-destination" aria-current={active ? 'page' : undefined} onNavigate={() => navigate(item)}>
+                      {admin ? <Icon size={20} strokeWidth={1.5} aria-hidden="true" /> : (
+                        <span className="learner-menu-icon"><Icon size={19} strokeWidth={1.6} aria-hidden="true" /></span>
+                      )}
+                      <span><strong>{item.label}</strong>{item.description && <small>{item.description}</small>}</span>
+                      {!admin && active ? <Check size={16} aria-hidden="true" /> : <ChevronRight size={15} aria-hidden="true" />}
+                    </WorkspaceLink>
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+        ))}
       </nav>
       {isAdmin && <WorkspaceLink className="workspace-switch-link" href={switchHref} onNavigate={() => setDrawerOpen(false)}><ArrowLeftRight size={18} />{switchLabel}<ChevronRight size={15} /></WorkspaceLink>}
     </SheetContent>

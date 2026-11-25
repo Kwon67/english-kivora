@@ -5,7 +5,7 @@ export default function StreetScene() {
     <svg viewBox="0 0 1440 420" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
       <defs>
         <g id="kivora-tree">
-          <path fill="#8ED462" d="M-34 80Q-55 56-32 35Q-34 9-9 8Q9-11 25 9Q52 13 45 42Q63 70 36 83Q4 101-34 80Z"/>
+          <path fill="var(--brand-highlight, #8ed462)" d="M-34 80Q-55 56-32 35Q-34 9-9 8Q9-11 25 9Q52 13 45 42Q63 70 36 83Q4 101-34 80Z"/>
           <path d="M4 121V40m0 32L-12 56m16 7 14-16" fill="none" stroke="#2C2E2A" strokeWidth="3" strokeLinecap="round"/>
         </g>
         <g id="kivora-terrace">
@@ -21,14 +21,21 @@ export default function StreetScene() {
         <path d="M0 213Q143 94 299 187T596 253Q758 227 852 246T1111 211Q1256 159 1440 221V420H0Z"/>
       </g>
       <g transform="translate(270 117)"><use href="#kivora-terrace"/><use href="#kivora-terrace" x="72" y="6"/>
+        <g transform="translate(0 18)">
         <path d="M145 9h59v105h-59Z" fill="#2BA0FF"/><path d="m140 11 35-30 34 30Z" fill="#2C2E2A"/>
         <path d="M157 24h11v17h-11zm23 0h11v17h-11zm-23 32h11v17h-11zm23 0h11v17h-11z" fill="#F5F1E4"/>
+        </g>
       </g>
-      <path d="M0 241Q231 164 473 236T967 239Q1177 169 1440 219V420H0Z" fill="#8ED462"/>
+      <use href="#kivora-tree" transform="translate(526 178) scale(.6)"/>
+      <g fill="none" stroke="#2C2E2A" strokeWidth="3" strokeLinecap="round">
+        <path d="M563 258V239h29v13m-30-8h31m-27-9h23" />
+        <path d="M604 251v-27"/><circle cx="604" cy="220" r="4" fill="#F5E211"/>
+      </g>
+      <path d="M0 241Q231 164 473 236T967 239Q1177 169 1440 219V420H0Z" fill="var(--brand-highlight, #8ed462)"/>
       <g transform="translate(112 107)"><use href="#kivora-tree"/><use href="#kivora-tree" transform="translate(72 34) scale(.76)"/></g>
       <g transform="translate(1230 93)"><use href="#kivora-tree" transform="scale(1.12)"/><use href="#kivora-tree" transform="translate(89 31) scale(.85)"/></g>
       <path d="M0 395Q252 241 561 294T1083 318Q1298 239 1440 260V420H0Z" fill="#F5F1E4"/>
-      <g fill="none" stroke="#2C2E2A" strokeWidth="2.4" strokeLinecap="round"><path d="m542 115 9 4 8-8m608 17 9 4 8-8m-595 9 7 3 6-6"/></g>
+      <g fill="none" stroke="#2C2E2A" strokeWidth="2.4" strokeLinecap="round"><path d="m542 115 9 4 8-8m608 17 9 4 8-8m-595 9 7 3 6-6m54-36 6 3 7-6m27 14 5 2 5-5"/></g>
     </svg>
   )
 }

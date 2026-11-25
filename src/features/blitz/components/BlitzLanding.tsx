@@ -97,12 +97,14 @@ export default function BlitzLanding({
         </p>
       )}
 
-      <section className={`${blitzHeroArena} blitz-entry-hero`} aria-labelledby="blitz-entry-title">
+      <header className="blitz-lobby-heading">
+        <h1 id="blitz-entry-title">Blitz <SpotIllustration motif="bolt" className="inline-block size-9 align-middle sm:size-12" /></h1>
+        <p className="blitz-lead">Pratique inglês em rodadas rápidas. Faixa {faixaLabel}.</p>
+      </header>
+
+      <section className={`${blitzHeroArena} blitz-entry-hero`} aria-label="Configurar partida">
         <div className="blitz-entry-content">
-          <header>
-            <h1 id="blitz-entry-title">Blitz <SpotIllustration motif="bolt" className="inline-block size-9 align-middle sm:size-12" /></h1>
-            <p className="blitz-lead">Pratique inglês em rodadas rápidas. Faixa {faixaLabel}.</p>
-          </header>
+          <h2 className="blitz-mode-title">Modo de jogo</h2>
 
           <div className="blitz-entry-modes" role="group" aria-label="Modo de jogo do Blitz">
             <button type="button" onClick={() => setSelectedMode('standard')} className={blitzModeOption(!isAiMode)} aria-pressed={!isAiMode}>
@@ -112,7 +114,7 @@ export default function BlitzLanding({
               <Sparkles size={16} aria-hidden="true" /> Com IA
             </button>
           </div>
-          <div className="blitz-entry-mode-detail">
+          <div className="blitz-entry-mode-detail" aria-live="polite">
             {isAiMode ? (
               <div data-testid="blitz-ai-level-scope">
                 <p><strong>Seu nível: {teto}</strong> · {getCefrLevelLabel(teto)}</p>
