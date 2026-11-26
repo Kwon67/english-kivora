@@ -14,8 +14,8 @@ import * as React from "react"
  * sheet rips from the pin outwards: a jagged ridge with a white fibre rim and
  * curled flaps that cast shadows. Click the pin and it re-rips a new edge.
  *
- * No dependencies and nothing fetched: the tear, flaps, grain, pin and icons
- * are SVG and canvas built from numbers.
+ * The tear, flaps, pin and icons are SVG. The paper grain is a reusable
+ * raster tile generated from the original seeded noise.
  */
 
 // #region tear
@@ -621,7 +621,6 @@ export default function PushpinTearFooter({
   const [sent, setSent] = React.useState(false)
   const [address, setAddress] = React.useState("")
   const [toast, setToast] = React.useState("")
-  const [grain, setGrain] = React.useState("")
 
   const s = React.useRef({
     W: 0,
@@ -753,24 +752,6 @@ export default function PushpinTearFooter({
     io.observe(el)
     return () => io.disconnect()
   }, [])
-
-  // grain tile, once
-  React.useEffect(() => {
-    if (!visible) return
-    const c = document.createElement("canvas")
-    c.width = c.height = 160
-    const g = c.getContext("2d")
-    if (!g) return
-    const img = g.createImageData(160, 160)
-    const r = rng(42)
-    for (let i = 0; i < img.data.length; i += 4) {
-      const v = r() < 0.5 ? 0 : 255
-      img.data[i] = img.data[i + 1] = img.data[i + 2] = v
-      img.data[i + 3] = Math.floor(r() * 46)
-    }
-    g.putImageData(img, 0, 0)
-    setGrain(c.toDataURL())
-  }, [visible])
 
   // the opening: chrome, pin, rip
   React.useEffect(() => {
@@ -937,11 +918,9 @@ export default function PushpinTearFooter({
             <stop offset=".55" stopColor="#fff" stopOpacity="0" />
             <stop offset="1" stopColor="#001033" stopOpacity=".12" />
           </linearGradient>
-          {grain && (
-            <pattern id={uid + "g"} width="160" height="160" patternUnits="userSpaceOnUse">
-              <image href={grain} width="160" height="160" />
-            </pattern>
-          )}
+          <pattern id={uid + "g"} width="160" height="160" patternUnits="userSpaceOnUse">
+            <image href="/images/paper-grain.png" width="160" height="160" />
+          </pattern>
           <filter id={uid + "d"} x="-5%" y="-5%" width="110%" height="120%">
             <feDropShadow dx="0" dy="3" stdDeviation="3.5" floodColor="#0a1a3a" floodOpacity=".3" />
           </filter>
@@ -959,13 +938,13 @@ export default function PushpinTearFooter({
         </defs>
         <rect className="tpf-paper" width="100%" height="100%" />
         <rect width="100%" height="100%" fill={"url(#" + uid + "v)"} style={{ mixBlendMode: "multiply" }} />
-        {grain && <rect width="100%" height="100%" fill={"url(#" + uid + "g)"} opacity=".32" />}
+        <rect width="100%" height="100%" fill={"url(#" + uid + "g)"} opacity=".32" />
         <g className="tpf-sheet-g" filter={"url(#" + uid + "d)"}>
           <path ref={rimRef} className="tpf-rim" />
           <use href={"#" + uid + "s"} className="tpf-sheet" />
         </g>
         <use href={"#" + uid + "s"} fill={"url(#" + uid + "l)"} />
-        {grain && <use href={"#" + uid + "s"} fill={"url(#" + uid + "g)"} opacity=".5" />}
+        <use href={"#" + uid + "s"} fill={"url(#" + uid + "g)"} opacity=".5" />
         <g filter={"url(#" + uid + "f)"}>
           {Array.from({ length: FLAPS * 2 }, (_, k) => (
             <path key={k} ref={(el) => { flapRefs.current[k] = el }} fill={"url(#" + uid + "fg" + k + ")"} />

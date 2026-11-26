@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import layout from './LandingSpread.module.css'
+import { paperOrange } from './paperPalette'
 import StreetScene from './StreetScene'
 import SpotIllustration from '@/components/illustrations/SpotIllustration'
 import { ArrowRight, ArrowUpRight, Check } from 'lucide-react'
@@ -80,7 +81,7 @@ function PracticeDesk() {
         <p>É usando o inglês que ele começa a fazer sentido.</p>
         <Link href="#practice-demo" className={layout.underlink}>Experimente <ArrowRight size={18} /></Link>
       </div>
-      <div className={layout.notebook}>
+      <div className={layout.notebook} style={{ backgroundColor: paperOrange }} data-practice-notebook>
         <div className={layout.binding} aria-hidden="true">{[0, 1, 2, 3, 4].map(i => <i key={i} />)}</div>
         <div id="practice-demo" className={styles.demoWrap}><PracticePreview /></div>
       </div>

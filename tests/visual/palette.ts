@@ -116,10 +116,6 @@ export async function checkArtwork(page: Page) {
   const paths = await page.locator('picture source, img, svg image').evaluateAll(nodes =>
     nodes.flatMap(node => {
       const single = node.getAttribute('src') ?? node.getAttribute('href') ?? node.getAttribute('xlink:href')
-      // The poster makes its own grain tile on a 160 × 160 canvas.
-      if (node.matches('footer.tpf .tpf-stage pattern image') &&
-          node.getAttribute('width') === '160' && node.getAttribute('height') === '160' &&
-          single?.startsWith('data:image/png;base64,')) return []
       const variants = (node.getAttribute('srcset') ?? '').split(',').map(candidate => candidate.trim().split(/\s+/)[0])
       return [single, ...variants].filter((path): path is string => Boolean(path)).map(path => {
         // Next adds a deployment query to local assets in dev. Compare their files.

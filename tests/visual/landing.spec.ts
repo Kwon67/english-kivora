@@ -125,6 +125,10 @@ for (const [width, height] of [[390, 844], [768, 1024], [1440, 900]]) {
       for (const scene of ['#revisoes', '#conversacao']) {
         await expect(page.locator(scene).locator('[data-art-motion="illustration"]').first()).toHaveCSS('filter', 'none')
       }
+      const notebook = page.locator('[data-practice-notebook]')
+      await expect(notebook).toHaveCSS('background-color', 'rgb(255, 74, 28)')
+      await expect(notebook).toHaveCSS('transform', 'none')
+      expect(await notebook.evaluate(el => getComputedStyle(el, '::before').backgroundImage)).toContain('/images/paper-grain.png')
       await expect(page.locator('footer')).toHaveCSS('background-color', 'rgb(255, 74, 28)')
       await expect(page.locator('footer .tpf-paper')).toHaveCSS('fill', 'rgb(241, 237, 228)')
       const violations = new Set<string>()

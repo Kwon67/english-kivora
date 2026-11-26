@@ -51,7 +51,22 @@
 .deskIntro>p:not(.label),.guideIntro>p:not(.label),.blitz>div>p:not(.label),.caption>p:not(.label) {
   max-width:39ch; margin-block:18px; line-height:1.5; font-size:clamp(16px,1.25vw,21px);
 }
-.notebook { position:relative; background:var(--landing-coral); padding:clamp(18px,3.5vw,54px) clamp(18px,3vw,45px) clamp(18px,3vw,45px) clamp(36px,5vw,76px); border-radius:var(--landing-panel-radius); }
+.notebook {
+  position:relative;
+  isolation:isolate;
+  padding:clamp(18px,3.5vw,54px) clamp(18px,3vw,45px) clamp(18px,3vw,45px) clamp(36px,5vw,76px);
+  border-radius:var(--landing-panel-radius);
+}
+.notebook::before {
+  content:'';
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  border-radius:inherit;
+  background-image:url('/images/paper-grain.png');
+  opacity:.5;
+  pointer-events:none;
+}
 .notebook > div[id] { container:practice / inline-size; padding:clamp(16px,2.5vw,36px); border:0; border-radius:8px 20px 20px 8px; background:white; }
 .binding { position:absolute; inset:12% auto 12% 0; display:flex; flex-direction:column; justify-content:space-between; }
 .binding i { width:clamp(18px,3vw,44px); height:7px; border:1.5px solid var(--ink); border-radius:8px; transform:translateX(-18%); background:var(--cream); }

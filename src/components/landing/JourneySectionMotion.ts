@@ -21,10 +21,10 @@ export function setupSectionMotion(root: HTMLElement) {
       .from(stops, { y: -16, rotation: -9, scale: .84, transformOrigin: '50% 85%', ease: 'back.out(1.45)', stagger: .105, clearProps: 'transform' }, .04)
   }
 
-  const exercise = root.querySelector('#practice-demo')
-  if (exercise) {
-    entrance(exercise, 'kivora-practice-desk')
-      .from(exercise, { y: 18, rotation: -1.5, clearProps: 'transform' })
+  const notebook = root.querySelector('[data-practice-notebook]')
+  if (notebook) {
+    entrance(notebook, 'kivora-practice-desk')
+      .from(notebook, { y: 18, clearProps: 'transform' })
   }
 
   const memory = root.querySelector('#revisoes')
