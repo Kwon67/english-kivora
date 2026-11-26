@@ -57,7 +57,7 @@
   padding:clamp(18px,3.5vw,54px) clamp(18px,3vw,45px) clamp(18px,3vw,45px) clamp(36px,5vw,76px);
   border-radius:var(--landing-panel-radius);
 }
-.notebook::before {
+.notebook::before, .notebook > div[id]::before {
   content:'';
   position:absolute;
   inset:0;
@@ -67,7 +67,15 @@
   opacity:.5;
   pointer-events:none;
 }
-.notebook > div[id] { container:practice / inline-size; padding:clamp(16px,2.5vw,36px); border:0; border-radius:8px 20px 20px 8px; background:white; }
+.notebook > div[id] {
+  position:relative;
+  isolation:isolate;
+  container:practice / inline-size;
+  padding:clamp(16px,2.5vw,36px);
+  border:0;
+  border-radius:8px 20px 20px 8px;
+}
+.notebook > div[id]::before { opacity:.32; }
 .binding { position:absolute; inset:12% auto 12% 0; display:flex; flex-direction:column; justify-content:space-between; }
 .binding i { width:clamp(18px,3vw,44px); height:7px; border:1.5px solid var(--ink); border-radius:8px; transform:translateX(-18%); background:var(--cream); }
 .fieldNotes { display:grid; grid-template-columns:1fr 1fr; gap:var(--gap); padding-bottom:var(--chapter-space); }

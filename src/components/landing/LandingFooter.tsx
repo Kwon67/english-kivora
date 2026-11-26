@@ -4,7 +4,7 @@ import BrandMark from '@/components/ui/BrandMark'
 import PushpinTearFooter from '@/components/ui/pushpin-tear-footer'
 import { saveRegistrationEmail } from '@/features/auth/lib/registrationEmailDraft'
 import styles from './LandingFooter.module.css'
-import { paperOrange } from './paperPalette'
+import { paperCream, paperOrange } from './paperPalette'
 
 const email = 'kivora.dev@outlook.com'
 const contact = 'mailto:' + email
@@ -22,7 +22,7 @@ export default function LandingFooter({ year }: { year: number }) {
       logoHref="#main-content"
       topHref="#main-content"
       sheet={paperOrange}
-      paper="#f1ede4"
+      paper={paperCream}
       paperInk="#1b1712"
       fontSans="var(--font-kivora), Arial, sans-serif"
       seed={23}

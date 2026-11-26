@@ -129,6 +129,14 @@ for (const [width, height] of [[390, 844], [768, 1024], [1440, 900]]) {
       await expect(notebook).toHaveCSS('background-color', 'rgb(255, 74, 28)')
       await expect(notebook).toHaveCSS('transform', 'none')
       expect(await notebook.evaluate(el => getComputedStyle(el, '::before').backgroundImage)).toContain('/images/paper-grain.png')
+      const practicePage = notebook.locator('#practice-demo')
+      await expect(practicePage).toHaveCSS('background-color', 'rgb(241, 237, 228)')
+      const grain = await practicePage.evaluate(el => {
+        const style = getComputedStyle(el, '::before')
+        return { image: style.backgroundImage, opacity: style.opacity }
+      })
+      expect(grain.image).toContain('/images/paper-grain.png')
+      expect(grain.opacity).toBe('0.32')
       await expect(page.locator('footer')).toHaveCSS('background-color', 'rgb(255, 74, 28)')
       await expect(page.locator('footer .tpf-paper')).toHaveCSS('fill', 'rgb(241, 237, 228)')
       const violations = new Set<string>()

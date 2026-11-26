@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import layout from './LandingSpread.module.css'
-import { paperOrange } from './paperPalette'
+import { paperCream, paperOrange } from './paperPalette'
 import StreetScene from './StreetScene'
 import SpotIllustration from '@/components/illustrations/SpotIllustration'
 import { ArrowRight, ArrowUpRight, Check } from 'lucide-react'
@@ -83,7 +83,9 @@ function PracticeDesk() {
       </div>
       <div className={layout.notebook} style={{ backgroundColor: paperOrange }} data-practice-notebook>
         <div className={layout.binding} aria-hidden="true">{[0, 1, 2, 3, 4].map(i => <i key={i} />)}</div>
-        <div id="practice-demo" className={styles.demoWrap}><PracticePreview /></div>
+        <div id="practice-demo" className={styles.demoWrap} style={{ backgroundColor: paperCream }}>
+          <PracticePreview />
+        </div>
       </div>
     </section>
   )
