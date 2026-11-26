@@ -106,6 +106,30 @@ for (const [width, height] of [[390, 844], [768, 1024], [1440, 900]]) {
           .map(item => item.textContent)
       })
       expect(overlaps).toEqual([])
+      const ctaCorners = await poster.evaluate(el => {
+        const footer = el.getBoundingClientRect()
+        return Array.from(el.querySelectorAll('.tpf-big')).flatMap(link => {
+          const bounds = link.getBoundingClientRect()
+          // Allow for the underline's extra offset on hover and the focus outline.
+          const y = bounds.bottom - footer.top + 10
+          return [bounds.left, (bounds.left + bounds.right) / 2, bounds.right]
+            .map(x => ({ x: x - footer.left, y }))
+        })
+      })
+      const exposedCorners = await poster.evaluate((_, { paths, corners }) => {
+        const context = document.createElement('canvas').getContext('2d')!
+        return paths.findIndex(path => {
+          const sheet = new Path2D(path)
+          return corners.some(({ x, y }) => !context.isPointInPath(sheet, x, y))
+        })
+      }, {
+        paths: Array.from({ length: 48 }, (_, i) => {
+          const tear = makeTear(23 + i)
+          return sheetD(tear.ys, w, h, tear.rim)
+        }),
+        corners: ctaCorners,
+      })
+      expect(exposedCorners).toBe(-1)
       await poster.screenshot({ path: testInfo.outputPath('rodape-' + width + '.png') })
 
       await pin.click()

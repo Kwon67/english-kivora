@@ -12,6 +12,10 @@
 }
 .poster :global(.tpf-pill) input::placeholder { opacity: .7; }
 .poster a:global(.tpf-big) { text-decoration-line: underline; }
+@container (max-width: 620px) {
+  .poster :global(.tpf-col) { top: 30%; }
+  .poster a:global(.tpf-big) { font-size: clamp(20px, 5.6cqw, 24px); }
+}
 .poster :global(.tpf-top) { scroll-margin-top: 96px; }
 .poster :is(a, button):focus-visible {
   outline: 2px solid var(--tpf-on-paper);
