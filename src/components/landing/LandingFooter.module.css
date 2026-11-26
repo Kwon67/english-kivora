@@ -1,3 +1,8 @@
+.poster {
+  border-radius: var(--landing-panel-radius) var(--landing-panel-radius) 0 0;
+  corner-shape: round;
+}
+
 /* Dark small print on the vermilion sheet; the controls keep the poster's white ink. */
 .poster :is(:global(.tpf-flank), :global(.tpf-col), :global(.tpf-status), :global(.tpf-mail)),
 .poster :global(.tpf-news) label,
