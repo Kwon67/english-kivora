@@ -13,7 +13,10 @@
 .poster :global(.tpf-pill) input::placeholder { opacity: .7; }
 .poster a:global(.tpf-big) { text-decoration-line: underline; }
 .poster :global(.tpf-top) { scroll-margin-top: 96px; }
-.poster :is(a, button, input):focus-visible {
+.poster :is(a, button):focus-visible {
   outline: 2px solid var(--tpf-on-paper);
   outline-offset: 3px;
+}
+.poster :global(.tpf-pill) input:focus-visible {
+  outline: none;
 }

@@ -60,7 +60,11 @@ for (const [width, height] of [[390, 844], [768, 1024], [1440, 900]]) {
       await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(5)
 
       const email = 'estudante+rodape@example.org'
-      await poster.getByRole('textbox', { name: 'Comece seu cadastro gratuito' }).fill(email)
+      const emailField = poster.getByRole('textbox', { name: 'Comece seu cadastro gratuito' })
+      await emailField.focus()
+      await expect(emailField).toHaveCSS('outline-style', 'none')
+      await expect(poster.locator('.tpf-pill')).not.toHaveCSS('box-shadow', 'none')
+      await emailField.fill(email)
       await poster.getByRole('button', { name: 'Continuar para o cadastro' }).click()
       await expect(page).toHaveURL(url => url.pathname === '/register' && !url.search)
       await expect(page.getByRole('textbox', { name: 'Email', exact: true })).toHaveValue(email)
