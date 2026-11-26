@@ -27,6 +27,12 @@ export function setupSectionMotion(root: HTMLElement) {
       .from(notebook, { y: 18, clearProps: 'transform' })
   }
 
+  const footerTop = root.querySelector('#rodape .tpf-top')
+  if (footerTop) {
+    entrance(footerTop, 'kivora-footer', 'top bottom')
+      .from(footerTop, { y: 8, immediateRender: false, clearProps: 'transform' })
+  }
+
   const memory = root.querySelector('#revisoes')
   if (memory) {
     const growth = gsap.timeline({ defaults: { ease: ease.linear }, scrollTrigger: {

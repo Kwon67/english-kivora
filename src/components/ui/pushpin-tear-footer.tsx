@@ -388,6 +388,7 @@ const CSS =
   ":where(.tpf) :focus-visible{outline:1.5px solid currentColor;outline-offset:4px;border-radius:4px}" +
   ".tpf .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}" +
   ".tpf-stage{position:absolute;left:0;top:0;max-width:none;display:block;pointer-events:none;z-index:0}" +
+  ".tpf-stage:not([viewBox]){visibility:hidden}" +
   ".tpf.is-hit .tpf-sheet-g{animation:tpf-hit .32s cubic-bezier(.3,.7,.4,1)}" +
   ".tpf-sheet{fill:var(--tpf-sheet)}.tpf-paper{fill:var(--tpf-paper)}.tpf-rim{fill:var(--tpf-rim)}" +
   ".tpf-ico{width:1.35em;height:1.35em;display:block;max-width:none;flex:none}" +
@@ -716,11 +717,11 @@ export default function PushpinTearFooter({
     if (!s.raf && typeof requestAnimationFrame !== "undefined") s.raf = requestAnimationFrame(frame)
   }, [s, frame])
 
-  // size
-  React.useEffect(() => {
+  // Paint the whole sheet before revealing the SVG's paper backdrop.
+  React.useLayoutEffect(() => {
     const el = rootRef.current
     if (!el) return
-    const ro = new ResizeObserver(() => {
+    const measure = () => {
       s.W = el.clientWidth
       s.H = el.clientHeight
       const svg = svgRef.current
@@ -729,6 +730,11 @@ export default function PushpinTearFooter({
         svg.setAttribute("height", String(s.H))
         svg.setAttribute("viewBox", "0 0 " + s.W + " " + s.H)
       }
+    }
+    measure()
+    frame(performance.now())
+    const ro = new ResizeObserver(() => {
+      measure()
       kick()
     })
     ro.observe(el)
@@ -737,7 +743,7 @@ export default function PushpinTearFooter({
       cancelAnimationFrame(s.raf)
       s.raf = 0
     }
-  }, [s, kick])
+  }, [s, frame, kick])
 
   // visibility
   React.useEffect(() => {

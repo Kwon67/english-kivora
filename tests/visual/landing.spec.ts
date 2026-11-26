@@ -38,11 +38,9 @@ for (const [width, height] of [[390, 844], [768, 1024], [1440, 900]]) {
 
     test('rodapé rasgado, teclado e cadastro', async ({ page }) => {
       const poster = page.locator('footer#rodape')
-      const surface = page.locator('[data-motion-surface]', { has: poster })
       await expect(poster).toHaveCSS('border-radius', '24px 24px 0px 0px')
-      await expect(surface).toHaveCSS('opacity', '1')
       await poster.scrollIntoViewIfNeeded()
-      await expect(surface).toHaveCSS('transform', 'none')
+      await expect(poster.locator('.tpf-top')).not.toHaveAttribute('style', /transform/)
       await expect(poster).toHaveClass(/\bs3\b/)
       const pin = poster.getByRole('button', { name: /Puxar o alfinete/ })
       const ridge = poster.locator('.tpf-rim')
@@ -75,14 +73,24 @@ for (const [width, height] of [[390, 844], [768, 1024], [1440, 900]]) {
     test('queda do alfinete, novo rasgo e contato', async ({ page, context }, testInfo) => {
       await page.emulateMedia({ reducedMotion: 'no-preference' })
       const poster = page.locator('footer#rodape')
-      const surface = page.locator('[data-motion-surface]', { has: poster })
       const ridge = poster.locator('.tpf-rim')
       const pin = poster.getByRole('button', { name: /Puxar o alfinete/ })
-      await expect(surface).toHaveCSS('opacity', '0')
-      await poster.scrollIntoViewIfNeeded()
+      await expect(poster.locator('.tpf-stage')).toHaveAttribute('viewBox', /^0 0 [1-9]/)
+      await expect(ridge).toHaveAttribute('d', /^M/)
+      const opacity = await poster.evaluate(el => {
+        const sample = () => {
+          let opacity = 1
+          for (let node: Element | null = el; node; node = node.parentElement) {
+            opacity *= Number(getComputedStyle(node).opacity)
+          }
+          return opacity
+        }
+        const before = sample()
+        el.scrollIntoView({ block: 'start', behavior: 'instant' })
+        return new Promise<number[]>(resolve => requestAnimationFrame(() => resolve([before, sample()])))
+      })
+      expect(opacity).toEqual([1, 1])
       await expect(poster).toHaveClass(/\bs2\b/)
-      await expect(surface).toHaveCSS('opacity', '1')
-      await expect(surface).toHaveCSS('transform', 'none')
       await expect(poster.locator('.tpf-drop')).toHaveCSS('animation-name', 'tpf-drop')
       const [w, h] = await poster.evaluate(el => [el.clientWidth, el.clientHeight])
       await expect(ridge).toHaveAttribute('d', sheetD(makeTear(23).ys, w, h))

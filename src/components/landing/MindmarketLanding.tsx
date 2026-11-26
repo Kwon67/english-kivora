@@ -7,7 +7,6 @@ import { ArrowRight, ArrowUpRight, Check } from 'lucide-react'
 import LandingFAQ from './LandingFAQ'
 import LandingNavigation from './LandingNavigation'
 import LandingFooter from './LandingFooter'
-import MotionSurface from '@/components/motion/MotionSurface'
 import LevelExplorer from './LevelExplorer'
 import PracticePreview from './PracticePreview'
 import styles from './MindmarketLanding.module.css'
@@ -188,9 +187,7 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: SceneAss
             <LandingFAQ items={faqs} />
           </section>
         </main>
-        <MotionSurface onScroll>
-          <LandingFooter year={new Date().getUTCFullYear()} />
-        </MotionSurface>
+        <LandingFooter year={new Date().getUTCFullYear()} />
       </div>
     </JourneyMotion>
   )
