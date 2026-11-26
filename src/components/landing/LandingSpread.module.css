@@ -1,14 +1,14 @@
 /* Public lesson spreads. Layout and illustration layers are independent of the scroll path. */
-.spread, .colophon {
+.spread {
   --sheet: min(1350px, calc(100% - 2 * var(--gutter)));
   --chapter-space: clamp(58px, 7.2vw, 120px);
   --rule: 1px solid var(--landing-ink);
 }
-.spread :is(p,figure), .colophon p { margin:0; }
+.spread :is(p,figure) { margin:0; }
 .spread :is(.desk,.fieldNotes,.guide,.membership,.questions) {
   width:var(--sheet); margin-inline:auto;
 }
-.spread h2,.colophon h2 {
+.spread h2 {
   font-family:var(--font-kivora),Arial,sans-serif; font-size:clamp(44px,5.6vw,94px);
   font-weight:500; letter-spacing:-.075em; line-height:.96; text-wrap:balance;
 }
@@ -133,86 +133,6 @@
 .questions>div:first-child img { width:72px; margin-bottom:15px; }
 .questions h2 { max-width:10ch; }
 .questions>div:nth-child(2) { grid-column:auto; border:0; padding:0 clamp(16px,2.5vw,40px); border-radius:var(--landing-panel-radius); }
-.colophon {
-  padding:clamp(30px,5vw,72px) max(var(--gutter), calc((100vw - 1350px) / 2)) 24px;
-  background:var(--landing-yellow);
-  color:var(--ink);
-}
-.signoff {
-  display:grid;
-  grid-template-columns:minmax(0,1fr) auto;
-  align-items:end;
-  gap:clamp(24px,4vw,56px);
-  padding:clamp(24px,5vw,72px);
-  border:var(--rule);
-  border-radius:clamp(24px,4vw,44px);
-  corner-shape:squircle;
-  background:var(--cream);
-}
-.colophon .signoff h2 {
-  font-size:clamp(38px,6vw,92px);
-  max-width:17ch;
-  text-wrap:pretty;
-}
-.signoff i { font-family:Georgia,serif; font-weight:400; }
-.colophon .signoff .journeyCta {
-  width:fit-content;
-  max-width:100%;
-  min-height:56px;
-  gap:clamp(12px,2vw,22px);
-  padding:6px 6px 6px 18px;
-  border:var(--rule);
-  font-size:clamp(15px,1.5vw,18px);
-  line-height:1.2;
-}
-.journeyCta [data-action-icon] {
-  flex:none;
-  width:42px;
-  height:42px;
-  background:var(--landing-green);
-}
-.colophon .signoff .journeyCta:is(:focus-visible,:active) {
-  color:var(--ink);
-  background:var(--landing-green);
-}
-@media (hover:hover) {
-  .colophon .signoff .journeyCta:hover {
-    color:var(--ink);
-    background:var(--landing-green);
-  }
-}
-.footerMap {
-  padding:clamp(28px,5vw,60px) 0;
-  display:grid;
-  grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,1fr));
-  gap:clamp(20px,4vw,48px);
-}
-.footerMap nav { display:flex; flex-direction:column; align-items:flex-start; }
-.colophon .footerMap h3 {
-  margin:0 0 8px;
-  font:500 11px/1.4 var(--font-kivora-mono),monospace;
-  letter-spacing:.06em;
-  text-transform:uppercase;
-}
-.footerMap nav a,.credit a {
-  display:inline-flex;
-  align-items:center;
-  min-height:44px;
-}
-.colophon :is(.footerMap nav,.credit) a:hover { text-decoration:underline; text-underline-offset:4px; }
-.footerMap>a { align-self:start; width:fit-content; }
-.credit {
-  border-top:1px solid color-mix(in srgb,var(--ink) 40%,transparent);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding-top:12px;
-  font-size:13px;
-}
-.credit a { gap:6px; }
-
-
 @media(max-width:900px) {
   .spread .headline h1 { font-size:clamp(65px,10.7vw,90px); }
   .headline { padding-top:102px; }
@@ -222,7 +142,6 @@
   .deskIntro,.guideIntro { max-width:40rem; }
   .guideIntro h2 br { display:none; }
   .questions>div:first-child { display:flex; align-items:center; gap:20px; }
-  .signoff { grid-template-columns:minmax(0,1fr); justify-items:start; }
 }
 @media(max-width:600px) {
   .headline { padding-top:92px; }
@@ -244,9 +163,6 @@
   .planNote { align-items:flex-start; flex-direction:column; }
   .planNote>span { max-width:none; }
   .questions>div:first-child img { width:52px; }
-  .footerMap { grid-template-columns:repeat(2,minmax(0,1fr)); }
-  .footerMap>a { grid-column:1 / -1; }
-  .credit { flex-wrap:wrap; align-items:center; padding-bottom:env(safe-area-inset-bottom); }
 }
 @media(max-width:359px) {
   .notebook { padding-inline:26px 12px; }

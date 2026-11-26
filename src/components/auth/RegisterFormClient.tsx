@@ -3,7 +3,8 @@
 import HydratedAuthForm from '@/components/auth/HydratedAuthForm'
 import ResendConfirmation from './ResendConfirmation'
 
-import { type FormEvent, useRef, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { takeRegistrationEmail } from '@/features/auth/lib/registrationEmailDraft'
 import Link from 'next/link'
 import { AlertCircle, ArrowLeft, CheckCircle2, Eye, EyeOff, Loader2, Mail } from 'lucide-react'
 import { requestSignupVerification } from '@/app/signup-actions'
@@ -27,6 +28,11 @@ const statusBaseClass = 'flex w-full items-start gap-3 rounded-container border 
 
 export default function RegisterFormClient() {
   const submitLock = useRef(false)
+  const emailField = useRef<HTMLInputElement>(null)
+  useEffect(() => {
+    const draft = takeRegistrationEmail()
+    if (draft && emailField.current && !emailField.current.value) emailField.current.value = draft
+  }, [])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -140,6 +146,7 @@ export default function RegisterFormClient() {
           <div className={inputShellClass()}>
             <input
               id="register-email"
+              ref={emailField}
               name="email"
               defaultValue={details.email}
               maxLength={254}

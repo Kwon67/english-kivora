@@ -18,6 +18,10 @@
     "ff705d",
     "ffffff"
   ],
+  "footerColors": [
+    "ff4a1c", "f1ede4", "1b1712", "0d1c38", "001033", "0a1a3a",
+    "091630", "5b616b", "f4f5f7", "a3a9b2", "4a4f57", "0b1a33"
+  ],
   "artwork": {
     "/images/journey-2026/conversation-1536.avif": "9711cc0bc7eb455035aefab6b84dedd204460d6e2e01dc28e8d3b115b1da7785",
     "/images/journey-2026/conversation-1536.jxl": "cb0c4e8267ca878fe9fe67221a48b01010150b05a639ecbef9f90096ea247a33",

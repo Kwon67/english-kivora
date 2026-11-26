@@ -5,7 +5,7 @@ import SpotIllustration from '@/components/illustrations/SpotIllustration'
 import { ArrowRight, ArrowUpRight, Check } from 'lucide-react'
 import LandingFAQ from './LandingFAQ'
 import LandingNavigation from './LandingNavigation'
-import LandingWordmark from './LandingWordmark'
+import LandingFooter from './LandingFooter'
 import LevelExplorer from './LevelExplorer'
 import PracticePreview from './PracticePreview'
 import styles from './MindmarketLanding.module.css'
@@ -164,31 +164,6 @@ function Membership() {
   )
 }
 
-function Colophon() {
-  return (
-    <footer id="rodape" className={layout.colophon}>
-      <div className={layout.signoff}>
-        <h2>Um pequeno <i lang="en">hello.</i><br />Um mundo de possibilidades.</h2>
-        <Action className={layout.journeyCta}>Começar minha jornada</Action>
-      </div>
-      <div className={layout.footerMap}>
-        <Link href="/" aria-label="Kivora English, início"><LandingWordmark /></Link>
-        <nav aria-labelledby="footer-explore">
-          <h3 id="footer-explore">Explore a Kivora</h3>
-          {links.map(link => <Link key={link.href} href={link.href}>{link.label}</Link>)}
-        </nav>
-        <nav aria-labelledby="footer-account">
-          <h3 id="footer-account">Conta e informações</h3>
-          <Link href="/login">Entrar</Link>
-          <Link href="/privacy">Privacidade</Link>
-          <Link href="/terms">Termos de uso</Link>
-        </nav>
-      </div>
-      <div className={layout.credit}><span>© {new Date().getFullYear()} Kivora English</span><Link href="#hero-title">Voltar ao início <ArrowUpRight size={15} aria-hidden="true" /></Link></div>
-    </footer>
-  )
-}
-
 type SceneAssets = Partial<Record<'memory' | 'conversation', string>>
 
 export default function MindmarketLanding({ riveAssets }: { riveAssets: SceneAssets }) {
@@ -209,7 +184,7 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: SceneAss
             <LandingFAQ items={faqs} />
           </section>
         </main>
-        <Colophon />
+        <LandingFooter year={new Date().getUTCFullYear()} />
       </div>
     </JourneyMotion>
   )

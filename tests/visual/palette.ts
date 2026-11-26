@@ -4,10 +4,10 @@ import { resolve } from 'node:path'
 import { expect, type Page } from '@playwright/test'
 import reference from './palette.json'
 
-type Sample = { color: string; element: string; property: string }
+type Sample = { color: string; element: string; property: string; inFooter: boolean }
 export async function readPaint(page: Page) {
   return page.evaluate((artwork: string[]) => {
-    const samples = new Map<string, { color: string; element: string; property: string }>()
+    const samples = new Map<string, { color: string; element: string; property: string; inFooter: boolean }>()
     const canvas = document.createElement('canvas').getContext('2d', { willReadFrequently: true })!
     const normalized = new Map<string, string>()
     const colors = /(?:rgba?|hsla?|hwb|(?:ok)?l(?:ab|ch)|color)\([^()]*\)/gi
@@ -17,6 +17,7 @@ export async function readPaint(page: Page) {
       'flood-color', 'lighting-color', '-webkit-text-fill-color', '-webkit-text-stroke-color']
     const root = document.querySelector('[data-ribbon-journey]')!.parentElement!
     for (const el of [root, ...root.querySelectorAll('*')]) {
+      const inFooter = el.closest('footer.tpf') !== null
       for (const pseudo of [null, '::before', '::after', ...(el.tagName === 'DIALOG' ? ['::backdrop'] : [])]) {
         const style = getComputedStyle(el, pseudo)
         if (pseudo?.startsWith('::') && pseudo !== '::backdrop' && style.content === 'none') continue
@@ -44,7 +45,8 @@ export async function readPaint(page: Page) {
               color = Array.from(canvas.getImageData(0, 0, 1, 1).data.slice(0, 3), n => n.toString(16).padStart(2, '0')).join('')
               normalized.set(token, color)
             }
-            if (!samples.has(color)) samples.set(color, { color, element: el.tagName + '.' + (el.getAttribute('class') ?? '') + (pseudo ?? '') + ' ' + (el.textContent ?? '').trim().slice(0, 24) + ' [' + token + ']', property })
+            const key = (inFooter ? 'footer:' : 'page:') + color
+            if (!samples.has(key)) samples.set(key, { color, inFooter, element: el.tagName + '.' + (el.getAttribute('class') ?? '') + (pseudo ?? '') + ' ' + (el.textContent ?? '').trim().slice(0, 24) + ' [' + token + ']', property })
           }
         }
       }
@@ -95,10 +97,11 @@ export async function visitPaintStates(page: Page, collect: (samples: Sample[]) 
 }
 
 // Accept exact original pigments and their sRGB shades/tints to black/white.
-export function allowed(color: string) {
+export function allowed(color: string, inFooter = false) {
   const rgb = (hex: string) => [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16))
   const target = rgb(color)
-  return reference.colors.some(base => {
+  const palette = inFooter ? [...reference.colors, ...reference.footerColors] : reference.colors
+  return palette.some(base => {
     if (base === color) return true
     const channels = rgb(base)
     return [0, 255].some(endpoint => {
@@ -113,6 +116,10 @@ export async function checkArtwork(page: Page) {
   const paths = await page.locator('picture source, img, svg image').evaluateAll(nodes =>
     nodes.flatMap(node => {
       const single = node.getAttribute('src') ?? node.getAttribute('href') ?? node.getAttribute('xlink:href')
+      // The poster makes its own grain tile on a 160 × 160 canvas.
+      if (node.matches('footer.tpf .tpf-stage pattern image') &&
+          node.getAttribute('width') === '160' && node.getAttribute('height') === '160' &&
+          single?.startsWith('data:image/png;base64,')) return []
       const variants = (node.getAttribute('srcset') ?? '').split(',').map(candidate => candidate.trim().split(/\s+/)[0])
       return [single, ...variants].filter((path): path is string => Boolean(path)).map(path => {
         // Next adds a deployment query to local assets in dev. Compare their files.
