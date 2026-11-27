@@ -4,7 +4,7 @@ for (const [width, height] of [[390, 844], [768, 1024], [1440, 900]]) {
   test('paleta e composição editorial em ' + width + 'px', async ({ page }, testInfo) => {
     await page.setViewportSize({ width, height })
     await page.goto('/')
-    await expect(page.locator('header')).toHaveCSS('background-color', 'rgb(243, 236, 218)')
+    await expect(page.locator('header')).toHaveCSS('background-color', 'rgb(248, 245, 237)')
     await expect(page.locator('h1')).toHaveCSS('color', 'rgb(39, 41, 40)')
     await expect(page.getByRole('link', { name: 'Começar grátis' }).first()).toHaveCSS('background-color', 'rgb(61, 99, 77)')
     await page.evaluate(async () => {

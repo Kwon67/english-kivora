@@ -1,9 +1,9 @@
 .page {
   --forest: #3d634d;
-  --ivory: #f3ecda;
+  --ivory: #f8f5ed;
   --ink: #272928;
   --line: #c8c7b7;
-  --paper: #fcfaf5;
+  --paper: #fdfcf9;
   --paper-background: var(--paper);
   --brand-highlight: var(--forest);
   --color-brand-dark: var(--ink);
@@ -43,7 +43,7 @@
 .secondary,.inlineAction { background: transparent; }
 .page .secondary:hover,.page .inlineAction:hover { background: #e6e8dc; }
 .phone { margin: 0; position: relative; container-type: inline-size; }
-.phone img { width: 100%; height: auto; display: block; mask-image: linear-gradient(to right, transparent, black 8%, black 94%, transparent), linear-gradient(to bottom, transparent, black 5%, black 93%, transparent); mask-composite: intersect; }
+.phone img { filter: brightness(1.05) saturate(.8); width: 100%; height: auto; display: block; mask-image: linear-gradient(to right, transparent, black 8%, black 94%, transparent), linear-gradient(to bottom, transparent, black 5%, black 93%, transparent); mask-composite: intersect; }
 .phraseCard { position: absolute; left: 37.8%; width: 33.8%; top: 64.6%; height: 27.7%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 1cqw; }
 .flipPhrase { display: grid; justify-items: center; gap: .55cqw; max-width: 100%; padding: 0 3%; line-height: 1.16; }
 .cardLabel,.eyebrow,.exampleLabel,.sessionTop,.demoNote { font-family: var(--font-kivora-mono), monospace; }
@@ -89,7 +89,7 @@
 .demoGrades button { flex-direction: column; gap: 1px; }
 .demoGrades span,.demoNote { font-size: 12px; }
 .demoNote { margin-top: 22px; }
-.conversation { background: #f5f1e5; }
+.conversation { background: #f9f7f0; }
 .conversation .wrap { position: relative; padding-block: clamp(40px,5vw,72px); }
 .cafe { display: block; width: 100%; height: auto; }
 .conversationCopy { position: absolute; left: 4%; top: 13%; max-width: 35%; }
