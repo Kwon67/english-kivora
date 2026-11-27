@@ -5,7 +5,7 @@ import { Flip, gsap, useGSAP } from '@/lib/gsap'
 import { useLandingLite } from './useLandingLite'
 import { duration, ease } from '@/lib/motion-tokens'
 import Link from 'next/link'
-import { ArrowRight, Check, Compass } from 'lucide-react'
+import { ArrowUpRight, Compass } from 'lucide-react'
 import styles from './LearningLanding.module.css'
 
 const levels = [
@@ -76,8 +76,7 @@ export default function LevelExplorer() {
     <div ref={panel} id="level-example" className={styles.levelExample} data-tone={current.tone} aria-live="polite" aria-atomic="true">
       <div data-level-stamp className={styles.levelStamp} aria-hidden="true"><Compass size={24} /><strong>{current.level}</strong></div>
       <div><p className={styles.exampleLabel}>{current.label}</p><h3 lang="en">“{current.phrase}”</h3><p>{current.goal}</p></div>
-      <Link href="/register" transitionTypes={['kivora-auth']} className={styles.roundLink} aria-label={`Começar a aprender inglês: ${current.level}`}><ArrowRight size={23} /></Link>
+      <Link href="/register" className={styles.levelSignup}>Criar conta <ArrowUpRight size={17} aria-hidden="true" /></Link>
     </div>
-    <p className={styles.pathNote}><Check size={16} aria-hidden="true" /> Seu ponto de partida respeita o que você já sabe.</p>
   </div>
 }

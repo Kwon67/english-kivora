@@ -13,7 +13,11 @@
   --brand-sky: #8fcaff;
   --brand-coral: #ffb4a7;
   --brand-butter: #f5e211;
-  --kivora-paper: #f5f1e4;
+  --kivora-paper: #f1ede4;
+  /* Match the footer's 160px grain tile at 32% opacity. */
+  --paper-wash: color-mix(in srgb, var(--kivora-paper) 68%, transparent);
+  --paper-background: linear-gradient(var(--paper-wash), var(--paper-wash)),
+    var(--kivora-paper) url('/images/paper-grain.png') repeat 0 0 / 160px 160px;
   --brand-gray: #faf9f5;
   --brand-black: #2c2e2a;
   --surface-white: #ffffff;

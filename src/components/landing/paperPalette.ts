@@ -1,2 +1,2 @@
 export const paperOrange = '#ff4a1c'
-export const paperCream = '#f1ede4'
+export { BRAND_PAPER as paperCream } from '@/lib/brandColors'

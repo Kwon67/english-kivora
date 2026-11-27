@@ -258,7 +258,7 @@
 }
 
 html {
-  background: var(--color-bg-primary);
+  background: var(--paper-background);
   -webkit-text-size-adjust: 100%;
   text-rendering: optimizeLegibility;
   scroll-behavior: smooth;

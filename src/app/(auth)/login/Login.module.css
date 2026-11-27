@@ -1,8 +1,8 @@
 main.login:global(.premium-auth) {
   --ink:#2c2e2a;
-  --cream:#f5f1e4;
+  --cream:var(--kivora-paper);
   --leaf:var(--brand-highlight);
-  background:var(--cream);
+  background:var(--paper-background);
   color:var(--ink);
   font-family:var(--font-kivora),sans-serif;
   padding-block:12px;

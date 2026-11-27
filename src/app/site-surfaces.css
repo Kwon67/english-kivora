@@ -1,7 +1,7 @@
 /* Shared page canvas; illustrations, progress and status keep their semantic accents. */
 body.premium-theme,
-.premium-theme :is(.premium-app, .admin-premium-shell, main#main-content, main.landing-light, main.premium-auth, main[data-kivora-workspace="offline"]) {
-  background-color: var(--kivora-paper);
+.premium-theme :is(.premium-app, .admin-premium-shell, .home-mobile-optimized, .game-shell, main#main-content, main.landing-light, main.premium-auth, main[data-kivora-workspace="offline"]) {
+  background: var(--paper-background);
 }
 .premium-theme :is(.premium-auth-form, .workspace-feedback, .pwa-notice-card, .subscription-alert) {
   background: #fffef8;

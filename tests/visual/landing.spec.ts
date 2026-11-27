@@ -145,15 +145,16 @@ for (const [width, height] of [[390, 844], [768, 1024], [1440, 900]]) {
     })
 
     test('paleta e ilustrações', async ({ page }) => {
-      const cream = 'rgb(245, 241, 228)'
+      const cream = 'rgb(241, 237, 228)'
       await expect(page.locator('body')).toHaveCSS('background-color', cream)
+      await expect(page.locator('main#main-content')).toHaveCSS('background-image', /paper-grain\.png/)
       const hero = page.getByRole('region', { name: 'Seu inglês. Um mundo mais aberto.' })
       expect(await hero.evaluate(el => getComputedStyle(el, '::before').backgroundColor)).toBe(cream)
       const cta = hero.getByRole('link', { name: 'Começar grátis' })
       await expect(cta).toHaveCSS('background-color', 'rgb(44, 46, 42)')
       await expect(cta).toHaveCSS('color', 'rgb(255, 255, 255)')
       await expect(hero.locator('[data-hero-keyword]')).toHaveCSS('color', 'rgb(44, 46, 42)')
-      await expect(hero.locator('figcaption button')).toHaveCSS('background-color', 'rgb(245, 226, 17)')
+      await expect(hero.locator('figcaption > div')).toHaveCSS('background-color', 'rgb(245, 226, 17)')
       for (const scene of ['#revisoes', '#conversacao']) {
         await expect(page.locator(scene).locator('[data-art-motion="illustration"]').first()).toHaveCSS('filter', 'none')
       }

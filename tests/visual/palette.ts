@@ -60,7 +60,7 @@ export async function visitPaintStates(page: Page, collect: (samples: Sample[]) 
   await sample()
   await page.locator('header a[href="/login"]').focus()
   await sample()
-  for (const link of [page.locator('header a[href="/register"]'), page.locator('footer a').last(), page.locator('[data-landing-plan]').first()]) {
+  for (const link of [page.locator('header a[href="/register"]'), page.locator('footer a').last(), page.locator('#precos a')]) {
     if (await link.isVisible()) { await link.hover(); await sample() }
   }
   const menu = page.getByRole('button', { name: 'Abrir menu' })

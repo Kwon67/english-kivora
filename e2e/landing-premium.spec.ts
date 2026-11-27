@@ -41,7 +41,8 @@ test.describe('Kivora public experience', () => {
     await page.getByRole('button', { name: 'Relembrar', exact: true }).click()
     await page.getByRole('button', { name: 'Revelar significado' }).click()
     await expect(page.getByText('um pouco mais perto', { exact: true })).toBeVisible()
-    await page.getByRole('button', { name: 'Experimentar de novo' }).click()
+    await page.getByRole('button', { name: 'Próxima expressão' }).click()
+    await expect(page.getByRole('heading', { name: 'around the corner' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Revelar significado' })).toBeVisible()
   })
 
@@ -61,13 +62,12 @@ test.describe('Kivora public experience', () => {
 
   test('planos e FAQ mantêm suas ações', async ({ page }) => {
     const pricing = page.locator('#precos')
-    await expect(pricing.locator('article')).toHaveCount(2)
-    await expect(pricing.getByText('Em breve')).toBeVisible()
+    await expect(pricing.getByRole('heading', { name: 'Plano gratuito' })).toBeVisible()
     await expect(pricing.getByRole('link')).toHaveAttribute('href', '/register')
     const faq = page.locator('details').filter({ hasText: 'Como funciona o AI Tutor?' })
     await faq.locator('summary').click()
     await expect(faq).toHaveAttribute('open', '')
-    await expect(faq.locator('p')).toContainText('converse por voz ou texto')
+    await expect(faq.locator('p')).toContainText('converse por texto ou voz')
     await faq.locator('summary').click()
     await expect(faq).not.toHaveAttribute('open', '')
   })

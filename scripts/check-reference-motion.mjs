@@ -27,12 +27,12 @@ for (const engine of (process.env.MOTION_ENGINES?.split(',') || ['chromium', 'we
   await firstVisitFAQ.locator('summary').click()
   await page.waitForTimeout(650)
   const name = `${engine}-${mobile ? 'mobile' : 'desktop'}`
-  const wave = page.locator('[data-hero-glint]')
+  const wave = page.locator('[data-hero-birds]')
   await page.locator('[data-hero-art]').scrollIntoViewIfNeeded()
   await page.waitForTimeout(150)
   const firstWave = await wave.evaluate(el => getComputedStyle(el).transform)
   await page.waitForTimeout(600)
-  assert.notEqual(await wave.evaluate(el => getComputedStyle(el).transform), firstWave, 'The decorative star moves while the hero is in view')
+  assert.notEqual(await wave.evaluate(el => getComputedStyle(el).transform), firstWave, 'The birds move while the hero is in view')
   const ribbon = () => page.evaluate(readRibbonState)
   if (mobile) {
     const state = await page.evaluate(auditStaticRibbonScroll)
@@ -127,22 +127,16 @@ for (const engine of (process.env.MOTION_ENGINES?.split(',') || ['chromium', 'we
   assert.equal(await page.locator('dialog[open]').count(), 0)
   assert(await page.getByRole('button', { name: 'Abrir menu', exact: true }).evaluate(el => el === document.activeElement))
 
-  const free = page.locator('[data-landing-plan="standard"]')
-  // A sticky card may already be under the next card. Return to the stack's
-  // document position, as a user scrolling upward would, before choosing Free.
-  await page.locator('[data-plan-stack]').evaluate(el => scrollTo(0, el.getBoundingClientRect().top + scrollY - 105))
-  await page.waitForTimeout(300)
-  await free.getByRole('link', { name: 'Começar grátis', exact: true }).click({ trial: true })
-  const pro = page.locator('[data-landing-plan="featured"]')
-  await pro.scrollIntoViewIfNeeded()
-  await pro.getByRole('link', { name: 'Assinar Pro', exact: true }).click({ trial: true })
-  assert.equal(await pro.getByRole('link', { name: 'Assinar Pro', exact: true }).getAttribute('href'), '/register?plan=pro')
+  const signup = page.locator('#precos').getByRole('link', { name: 'Começar grátis', exact: true })
+  await signup.scrollIntoViewIfNeeded()
+  await signup.click({ trial: true })
+  assert.equal(await signup.getAttribute('href'), '/register')
   await page.screenshot({ path: `${out}/${name}-stack.png` })
 
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.evaluate(() => scrollTo(0, 0))
   await page.waitForTimeout(350)
-  const allMotion = () => page.locator('[data-art-motion],[data-journey-prop],[data-word-belt],[data-hero-glint],[data-title-line]').evaluateAll(elements => elements.map(el => `${el.getAttribute('transform')}|${getComputedStyle(el).transform}`))
+  const allMotion = () => page.locator('[data-art-motion],[data-journey-prop],[data-word-belt],[data-hero-birds],[data-title-line]').evaluateAll(elements => elements.map(el => `${el.getAttribute('transform')}|${getComputedStyle(el).transform}`))
   const reduced = await allMotion()
   await page.waitForTimeout(400)
   assert.deepEqual(await allMotion(), reduced, 'Reduced motion stops all scene loops and decorative travel')

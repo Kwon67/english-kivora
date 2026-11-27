@@ -2,8 +2,9 @@ import Link from 'next/link'
 import layout from './LandingSpread.module.css'
 import { paperCream, paperOrange } from './paperPalette'
 import StreetScene from './StreetScene'
+import BrandMark from '@/components/ui/BrandMark'
 import SpotIllustration from '@/components/illustrations/SpotIllustration'
-import { ArrowRight, ArrowUpRight, Check } from 'lucide-react'
+import { ArrowRight, ArrowUpRight } from 'lucide-react'
 import LandingFAQ from './LandingFAQ'
 import LandingNavigation from './LandingNavigation'
 import LandingFooter from './LandingFooter'
@@ -17,24 +18,22 @@ import JourneyMotion from './JourneyMotion'
 import { ConversationScene, MemoryScene } from './JourneyArt'
 
 const links = [
-  { href: '#seu-caminho', label: 'Seu caminho' },
   { href: '#como-funciona', label: 'Como funciona' },
-  { href: '#precos', label: 'Planos' },
+  { href: '#seu-caminho', label: 'Seu nível' },
+  { href: '#precos', label: 'Plano gratuito' },
   { href: '#faq', label: 'Dúvidas' },
 ]
 
-const includedFeatures = ['Modos de prática e flashcards', 'Tutor e Blitz com IA', 'Coleções e progresso de estudo', 'Ranking semanal']
-
 const faqs = [
-  ['Preciso saber inglês para começar?', 'Não. Você pode começar pelo A1 ou encontrar um ponto de partida compatível com o que já sabe. As trilhas organizam seu caminho do básico ao avançado.'],
-  ['O que torna as revisões inteligentes?', 'Você tenta lembrar antes de ver a resposta e informa como foi. A Kivora usa seu histórico e essa resposta para calcular o próximo intervalo: o que está difícil volta mais cedo; o que está consolidado ganha espaço.'],
-  ['Como funciona o AI Tutor?', 'Escolha uma situação, como pedir um café ou participar de uma entrevista, e converse por voz ou texto. O tutor dá dicas durante a prática. A entrada por voz depende do suporte do navegador.'],
-  ['Posso assinar o Pro agora?', 'As novas assinaturas estão indisponíveis. Você pode criar uma conta gratuita e usar as ferramentas de estudo.'],
-  ['Funciona no celular?', 'Sim. Use no navegador ou adicione à tela inicial para ter a Kivora sempre por perto.'],
+  ['Preciso saber inglês para começar?', 'Você pode começar do zero, no A1, ou escolher seu nível.'],
+  ['O que torna as revisões inteligentes?', 'Você indica o que lembrou. A Kivora usa seu histórico para trazer as palavras difíceis de volta mais cedo.'],
+  ['Como funciona o AI Tutor?', 'Escolha uma situação e converse por texto ou voz. O tutor dá dicas durante a conversa. O modo de voz depende do navegador.'],
+  ['Posso assinar o Pro agora?', 'Por enquanto, os novos cadastros são pelo plano gratuito.'],
+  ['Funciona no celular?', 'Sim. Abra no navegador ou adicione a Kivora à tela inicial.'],
 ]
 
-function Action({ href = '/register', children, className = '', magnetic }: { href?: string; children: React.ReactNode; className?: string; magnetic?: boolean }) {
-  return <Link href={href} data-magnetic={magnetic ? true : undefined} className={`${styles.action} ${className}`}><span>{children}</span><span data-action-icon className={styles.actionIcon}><ArrowUpRight size={22} strokeWidth={1.8} aria-hidden="true" /></span></Link>
+function Action({ id, children }: { id?: string; children: React.ReactNode }) {
+  return <Link id={id} href="/register" className={styles.action}><span>{children}</span><span data-action-icon className={styles.actionIcon}><ArrowUpRight size={22} strokeWidth={1.8} aria-hidden="true" /></span></Link>
 }
 
 function HeroWord({ children, underline = false }: { children: string; underline?: boolean }) {
@@ -54,18 +53,17 @@ function Opening() {
           <span data-title-line><HeroWord>Um</HeroWord>{' '}<HeroWord>mundo</HeroWord></span>{' '}
           <span data-title-line><HeroWord>mais</HeroWord>{' '}<HeroWord underline>aberto.</HeroWord></span>
         </h1>
-        <p>Treine o ouvido com frases em inglês e revise o vocabulário com flashcards.</p>
-        <Action>Começar grátis</Action>
+        <p>Ouça frases em inglês. Revise com flashcards.</p>
+        <Action id="hero-signup">Começar grátis</Action>
       </div>
       <figure className={layout.panorama} data-hero-art>
         <div className={layout.landscape}><StreetScene /></div>
-        <div className={layout.student} data-hero-glint aria-hidden="true" />
         <figcaption className={layout.ticket} data-hero-card-stage><HeroFlashcard /></figcaption>
       </figure>
       <nav className={layout.index} aria-label="Percorrer a jornada">
         {[
-          ['Praticar', '#como-funciona'], ['Revisar', '#revisoes'], ['Conversar', '#conversacao'],
-        ].map(([label, href]) => <Link key={href} href={href}>{label}<ArrowRight aria-hidden="true" size={18} /></Link>)}
+          ['Praticar', '#practice-choose'], ['Revisar', '#practice-recall'], ['Conversação', '#conversacao'],
+        ].map(([label, href]) => <a key={href} href={href}>{label}<ArrowRight aria-hidden="true" size={18} /></a>)}
       </nav>
     </section>
   )
@@ -77,10 +75,11 @@ function PracticeDesk() {
       <div className={layout.deskIntro}>
         <p className={layout.label}>Prática de inglês</p>
         <h2 id="practice-title">Menos decorar.<br />Mais descobrir.</h2>
-        <p>É usando o inglês que ele começa a fazer sentido.</p>
-        <Link href="#practice-demo" className={layout.underlink}>Experimente <ArrowRight size={18} /></Link>
       </div>
       <div className={layout.notebook} style={{ backgroundColor: paperOrange }} data-practice-notebook>
+        <div className={layout.coverWindow} aria-hidden="true">
+          <div className={layout.cover} data-notebook-cover style={{ backgroundColor: paperOrange }}><BrandMark showSubtitle={false} /></div>
+        </div>
         <div className={layout.binding} aria-hidden="true">{[0, 1, 2, 3, 4].map(i => <i key={i} />)}</div>
         <div id="practice-demo" className={styles.demoWrap} style={{ backgroundColor: paperCream }}>
           <PracticePreview />
@@ -98,20 +97,20 @@ function FieldNotes({ riveAssets }: { riveAssets: SceneAssets }) {
         <div className={layout.caption}>
           <p className={layout.label}>Revisão espaçada</p>
           <h2 id="memory-title">Uma memória que <span data-mark>floresce.</span></h2>
-          <p>A revisão espaçada usa suas respostas para trazer cada palavra de volta na hora certa.</p>
-          <Link href="/register" className={layout.underlink}>Cultivar meu vocabulário <ArrowUpRight size={17} /></Link>
+          <p>As palavras mais difíceis voltam primeiro.</p>
+          <a href="#practice-recall" className={layout.underlink}>Revisar palavras <ArrowUpRight size={17} /></a>
         </div>
       </section>
       <section id="conversacao" className={layout.field} aria-labelledby="conversation-title">
         <figure className={layout.plate}>
           <ConversationScene riveSrc={riveAssets.conversation} />
-          <figcaption><span lang="en" data-type>“I’d like a coffee, please.”</span><small>Seu próximo pedido pode ser em inglês.</small></figcaption>
+          <figcaption><span lang="en" data-type>“I’d like a coffee, please.”</span></figcaption>
         </figure>
         <div className={layout.caption}>
           <p className={layout.label}>Conversação com IA</p>
-          <h2 id="conversation-title">Uma conversa. <span data-mark>Tantas portas.</span></h2>
-          <p>Um café. Uma viagem. Uma nova oportunidade. Pratique situações reais por voz ou texto com o tutor de IA.</p>
-          <Link href="/register" className={layout.underlink}>Dar voz ao meu inglês <ArrowUpRight size={17} /></Link>
+          <h2 id="conversation-title">Um café, <span data-mark>por favor.</span></h2>
+          <p>Faça seu pedido por voz ou texto com o tutor.</p>
+          <Link href="/register" className={layout.underlink}>Criar conta para conversar <ArrowUpRight size={17} /></Link>
         </div>
       </section>
     </div>
@@ -122,11 +121,11 @@ function CourseGuide() {
   return (
     <section id="seu-caminho" className={layout.guide} aria-labelledby="path-title">
       <div className={layout.guideIntro}>
-        <p className={layout.label}>Seu caminho · A1 a C2</p>
-        <h2 id="path-title">Encontre{' '}<br />sua voz.</h2>
-        <p>Da primeira palavra à conversa que flui. Um caminho de inglês que começa onde você está.</p>
+        <p className={layout.label}>Do A1 ao C2</p>
+        <h2 id="path-title">Escolha seu nível.</h2>
+        <p>Explore as frases de cada etapa.</p>
       </div>
-      <div className={styles.levelWrap}><LevelExplorer /></div>
+      <div className={styles.levelWrap} style={{ backgroundColor: paperOrange }}><LevelExplorer /></div>
     </section>
   )
 }
@@ -135,18 +134,10 @@ function BlitzBoard() {
   return (
     <section className={layout.blitz} aria-labelledby="blitz-title">
       <div>
-        <p className={layout.label}>Blitz</p>
-        <h2 id="blitz-title">O seu inglês<br />entra no jogo.</h2>
-        <p>Desafios rápidos, combos e ranking semanal. Uma dose de diversão para manter a prática viva.</p>
-        <Link href="/register" className={layout.underlink}>Conhecer o Blitz <ArrowUpRight size={17} /></Link>
+        <h2 id="blitz-title">Blitz</h2>
+        <p>Some pontos no desafio semanal de inglês.</p>
       </div>
-      <div className={layout.scoreboard} data-ranking>
-        <header>Ranking simulado <span>PTS</span></header>
-        <ol>{[['Lia', '320'], ['Você', '280'], ['Caio', '240']].map(([name, score]) =>
-          <li key={name}><span>{name}</span><strong data-score={score}>{score}</strong></li>
-        )}</ol>
-        <p>Combo simulado <strong data-score="008">008</strong></p>
-      </div>
+      <Link href="/register" className={layout.underlink}>Criar conta para jogar <ArrowUpRight size={17} /></Link>
     </section>
   )
 }
@@ -154,15 +145,11 @@ function BlitzBoard() {
 function Membership() {
   return (
     <section id="precos" className={layout.membership} aria-labelledby="pricing-title">
-      <header><p className={layout.label}>Planos</p><h2 id="pricing-title">Seu ritmo. Seu plano.</h2><p>Crie sua conta e use as ferramentas de estudo.</p></header>
-      <div className={layout.comparison}>
-        <table>
-          <caption className="sr-only">Recursos incluídos nos planos Free e Pro</caption>
-          <thead><tr><td /><th scope="col" data-landing-plan="standard">Free<small>R$0 para sempre</small></th><th scope="col" data-landing-plan="featured">Pro<small>Em breve</small></th></tr></thead>
-          <tbody>{includedFeatures.map(feature => <tr key={feature}><th scope="row">{feature}</th>{['Free', 'Pro'].map(plan => <td key={plan}><Check size={20} aria-hidden="true" /><span className="sr-only">Incluído</span></td>)}</tr>)}</tbody>
-        </table>
-        <div className={layout.planNote}><span>Novas assinaturas Pro indisponíveis no momento.</span><Action>Começar grátis</Action></div>
+      <div>
+        <h2 id="pricing-title">Plano gratuito</h2>
+        <p>Flashcards, tutor de IA, Blitz e acompanhamento do seu progresso.</p>
       </div>
+      <Action>Começar grátis</Action>
     </section>
   )
 }
@@ -183,7 +170,7 @@ export default function MindmarketLanding({ riveAssets }: { riveAssets: SceneAss
           <BlitzBoard />
           <Membership />
           <section id="faq" className={layout.questions} aria-labelledby="faq-title">
-            <div><SpotIllustration motif="question" /><h2 id="faq-title">Mais alguma descoberta?</h2></div>
+            <div><SpotIllustration motif="question" /><h2 id="faq-title">Dúvidas frequentes</h2></div>
             <LandingFAQ items={faqs} />
           </section>
         </main>

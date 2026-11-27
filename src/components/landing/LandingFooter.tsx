@@ -45,12 +45,12 @@ export default function LandingFooter({ year }: { year: number }) {
       columns={[
         {
           title: 'Explore',
-          links: [{ label: 'Seu caminho', href: '#seu-caminho' }, { label: 'Como funciona', href: '#como-funciona' }],
-          cta: { label: 'Praticar', href: '#practice-demo' },
+          links: [{ label: 'Como funciona', href: '#como-funciona' }, { label: 'Seu nível', href: '#seu-caminho' }],
+          cta: { label: 'Praticar', href: '#practice-choose' },
         },
         {
           title: 'Sua conta',
-          links: [{ label: 'Planos', href: '#precos' }, { label: 'Dúvidas', href: '#faq' }],
+          links: [{ label: 'Plano gratuito', href: '#precos' }, { label: 'Dúvidas', href: '#faq' }],
           cta: { label: 'Entrar', href: '/login' },
         },
       ]}

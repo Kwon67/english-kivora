@@ -9,6 +9,7 @@ const TTS_MAX_ENTRIES = 60
 
 const PRECACHE_URLS = [
   OFFLINE_URL,
+  '/images/paper-grain.png',
   '/manifest.webmanifest',
   '/icon-192.png?v=4',
   '/icon-512.png?v=4',

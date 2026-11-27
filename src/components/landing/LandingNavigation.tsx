@@ -17,6 +17,7 @@ export default function LandingNavigation({ links }: { links: { href: string; la
   const animation = useRef<gsap.core.Timeline | null>(null)
   const closing = useRef(false)
   const [open, setOpen] = useState(false)
+  const [pastHeroSignup, setPastHeroSignup] = useState(false)
   const engine = useLandingScroll()
   const afterClose = useRef<(() => void) | undefined>(undefined)
   const router = useRouter()
@@ -62,6 +63,16 @@ export default function LandingNavigation({ links }: { links: { href: string; la
   })
 
   useEffect(() => {
+    const signup = document.getElementById('hero-signup')
+    if (!signup) return
+    const observer = new IntersectionObserver(([entry]) => {
+      setPastHeroSignup(!entry.isIntersecting && entry.boundingClientRect.bottom <= 0)
+    })
+    observer.observe(signup)
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
     if (!open) return
     const previous = document.body.style.overflow
     document.body.style.overflow = 'hidden'
@@ -85,7 +96,11 @@ export default function LandingNavigation({ links }: { links: { href: string; la
       <nav aria-label="Navegação principal" className={styles.nav}>
         <Link href="/" aria-label="Kivora English, início" className={styles.brand}><LandingWordmark /></Link>
         <div className={styles.navLinks}>{links.map(link => <Link key={link.href} href={link.href}>{link.label}</Link>)}</div>
-        <div className={styles.navActions}><Link href="/login" transitionTypes={['kivora-auth']} className={styles.login}>Entrar <ArrowUpRight size={15} aria-hidden="true" /></Link><Link href="/register" className={styles.navCta}>Começar grátis <ArrowUpRight size={17} aria-hidden="true" /></Link><button ref={trigger} className={styles.menuTrigger} aria-label="Abrir menu" aria-expanded={open} aria-controls="kivora-mobile-menu" onClick={show}>Menu <span className={styles.menuGlyph} aria-hidden="true" /></button></div>
+        <div className={styles.navActions}>
+          <Link href="/login" transitionTypes={['kivora-auth']} className={styles.login}>Entrar <ArrowUpRight size={15} aria-hidden="true" /></Link>
+          <Link href="/register" data-past-hero={pastHeroSignup} className={styles.navCta}>Começar grátis <ArrowUpRight size={17} aria-hidden="true" /></Link>
+          <button ref={trigger} className={styles.menuTrigger} aria-label="Abrir menu" aria-expanded={open} aria-controls="kivora-mobile-menu" onClick={show}>Menu <span className={styles.menuGlyph} aria-hidden="true" /></button>
+        </div>
       </nav>
     </header>
     <dialog data-lenis-prevent ref={dialog} id="kivora-mobile-menu" aria-labelledby="mobile-menu-title" className={styles.mobileMenu} onKeyDown={event => {

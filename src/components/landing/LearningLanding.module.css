@@ -59,17 +59,12 @@
 .levels button > small { font-size:11px; color:var(--kivora-muted); }
 .levels button[aria-pressed='true'] { background:var(--tone-soft); border-color:var(--tone-accent); color:var(--tone-ink); box-shadow:0 3px 0 var(--tone-accent); transform:translateY(-3px); }
 .levels button:hover:not([aria-pressed='true']) { background:var(--tone-soft); transform:translateY(-3px); }
-.levelExample { display:flex; align-items:center; gap:26px; min-height:180px; margin-top:24px; padding:28px 32px; background:white; border:1px solid var(--kivora-line); border-radius:20px; }
+.levelExample { display:grid; grid-template-columns:auto minmax(0,1fr); align-items:start; gap:26px; min-height:180px; margin-top:24px; padding:28px 32px; background:white; border:1px solid var(--kivora-line); border-radius:20px; }
 .levelStamp { display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; flex:none; width:96px; height:104px; background:var(--tone-soft); color:var(--tone-ink); border-radius:48px 48px 20px 20px; }
 .levelStamp strong { font-size:25px; }
-.levelExample > div:nth-child(2) { flex:1; }
 .levelExample h3 { font-family:var(--font-body); font-size:23px; font-weight:500; line-height:1.4; margin:8px 0; }
 .levelExample p:last-child { font-size:13px; color:var(--kivora-muted); line-height:1.65; }
-.roundLink { display:grid; place-items:center; flex:none; width:48px; height:48px; background:var(--tone-soft); color:var(--tone-ink); border-radius:50%; corner-shape:round; }
-.roundLink:hover { box-shadow:0 0 0 1px var(--tone-accent); }
-.pathExplorer > .pathNote { margin-block-start:20px; }
-.pathNote { display:flex; align-items:center; justify-content:center; gap:7px; color:var(--kivora-muted); font-size:12px; }
-.pathNote svg { color:var(--kivora-success); flex:none; }
+.levelExample .levelSignup { grid-column:2; justify-self:start; display:inline-flex; align-items:center; gap:8px; min-height:44px; font-weight:600; text-decoration:underline; text-underline-offset:.32em; }
 .practiceGrid,.recallGrid,.conversationGrid,.progressGrid { display:grid; grid-template-columns:1fr 1fr; gap:90px; align-items:center; max-width:1248px; margin:auto; padding:104px 36px; }
 .methodList { list-style:none; padding:0; display:grid; gap:24px; margin-top:32px; }
 .methodList li { display:flex; align-items:flex-start; gap:15px; }
@@ -189,8 +184,7 @@
   .levels button { padding:14px 8px; } .levels button > span { font-size:24px; } .levels button > small { font-size:10px; }
   .levelExample { padding:20px; gap:16px; align-items:flex-start; min-height:220px; position:relative; }
   .levelStamp { width:49px; height:69px; border-radius:28px 28px 12px 12px; gap:2px; } .levelStamp svg { width:18px; } .levelStamp strong { font-size:20px; }
-  .levelExample h3 { font-size:19px; } .levelExample p:last-child { font-size:12px; } .levelExample .roundLink { position:absolute; bottom:12px; left:20px; width:40px; height:40px; }
-  .pathNote { font-size:11px; justify-content:flex-start; line-height:1.6; }
+  .levelExample h3 { font-size:19px; } .levelExample p:last-child { font-size:12px; }
   .practiceGrid,.recallGrid,.conversationGrid,.progressGrid { grid-template-columns:1fr; gap:40px; padding:64px 22px; }
   .practiceFrame { margin-inline:2px; } .practiceFrame::before { inset:12px -8px -9px 8px; transform:rotate(2deg); }
   .handNote { font-size:18px; margin-top:26px; } .handNote svg { transform:rotate(70deg); } .labPanel { padding:24px; min-height:475px; }
@@ -205,7 +199,7 @@
   .hero { padding-inline:18px; } .hero h1.title { font-size:48px; } .heroDescription { font-size:15px; } .heroActions { align-items:stretch; flex-direction:column; } .heroActions .textLink { justify-content:center; }
   .heroPractice { margin-inline:0; padding:16px; } .practiceMeta { font-size:9px; } .heroPhrase { font-size:20px; }
   .sectionInner,.practiceGrid,.recallGrid,.conversationGrid,.progressGrid { padding-inline:18px; } .labPanel { padding:20px 16px; } .primary { padding-inline:18px; gap:12px; }
-  .labActions .primary { font-size:13px; } .levelExample { gap:12px; padding:18px 14px; } .levelStamp { width:38px; } .levelExample .roundLink { left:14px; }
+  .labActions .primary { font-size:13px; } .levelExample { gap:12px; padding:18px 14px; } .levelStamp { width:38px; }
   .chatSample > p { font-size:13px; padding:10px; } .planVisual { padding:22px 18px; } .planVisual li strong { font-size:13px; }
 }
 @media(prefers-reduced-motion:reduce) {

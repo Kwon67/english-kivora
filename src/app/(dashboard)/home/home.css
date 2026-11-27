@@ -1,6 +1,6 @@
 /* /home shares the review engine. Keep its landing treatment local to this route. */
 body.premium-theme:has(.learning-home) {
-  --home-paper: #f5f1e4;
+  --home-paper: var(--kivora-paper);
   --home-ink: #2c2e2a;
   --home-leaf: var(--brand-highlight);
   --home-line: #c7c1b1;

@@ -5,9 +5,8 @@ import { createContext, useContext, useRef, useState, ViewTransition, type React
 import type Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import { gsap, useGSAP } from '@/lib/gsap'
-import { duration, ease } from '@/lib/motion-tokens'
+import { ease } from '@/lib/motion-tokens'
 import styles from './MindmarketLanding.module.css'
-import { playLandingSound } from './landingSound'
 import { useLandingLite } from './useLandingLite'
 import { setupHeroMotion } from './HeroMotion'
 import { setupSectionMotion } from './JourneySectionMotion'
@@ -102,24 +101,9 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
 
     media.add('(prefers-reduced-motion: no-preference)', () => {
       setupSectionMotion(container)
-      const loops = new Map<Element, { animation: gsap.core.Animation; visible: boolean }>()
-      const sync = () => loops.forEach(loop => loop.animation.paused(!loop.visible || document.hidden))
-      const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => { const loop = loops.get(entry.target); if (loop) loop.visible = entry.isIntersecting })
-        sync()
-      })
-      const loop = (element: Element, animation: gsap.core.Animation) => {
-        loops.set(element, { animation: animation.pause(), visible: false }); observer.observe(element)
-      }
-      document.addEventListener('visibilitychange', sync)
       for (const scene of select('[data-art-scene]')) {
         gsap.from(scene, { y: 32, scale: .97, duration: 1, ease: ease.reveal, scrollTrigger: { trigger: scene, start: 'top 96%', toggleActions: 'play none none none' } })
-        const illustration = scene.querySelector('[data-art-motion="illustration"]')
-        loop(scene, gsap.to(illustration, { y: -7, rotation: .35, duration: duration.illustration, ease: ease.loop, repeat: -1, yoyo: true }))
       }
-      const hero = container.querySelector('[aria-labelledby="hero-title"]')!
-      loop(hero, gsap.to(select('[data-hero-glint]'), { y: -5, rotation: 3, duration: 4, ease: 'sine.inOut', repeat: -1, yoyo: true }))
-      return () => { observer.disconnect(); document.removeEventListener('visibilitychange', sync) }
     })
     return () => {
       media.revert()
@@ -133,8 +117,6 @@ export default function JourneyMotion({ children }: { children: ReactNode }) {
     {smooth && !lite && <LandingLenis engineRef={engine} />}
     <ViewTransition name="landing" default="none" exit={lite ? 'none' : { 'kivora-auth': 'kivora-auth-exit', default: 'none' }}>
       <div ref={root} className={styles.page} onClickCapture={event => {
-        if (event.target instanceof Element && !event.target.closest('[data-sound-feedback]')
-          && event.target.closest('a[href], button:not(:disabled), summary')) playLandingSound('click')
         if (!engine.current || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return
         const anchor = event.target instanceof Element && event.target.closest<HTMLAnchorElement>('a[href^="#"]')
         if (anchor && !anchor.closest('dialog') && !anchor.target && !anchor.hasAttribute('download') && scrollToAnchor(engine.current, anchor.hash)) event.preventDefault()

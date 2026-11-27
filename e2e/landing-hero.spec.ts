@@ -58,10 +58,9 @@ test('o cartão mantém a escala desde o primeiro quadro', async ({ page }) => {
 })
 
 for (const activation of ['click', 'Enter', 'Space'] as const) {
-  test(`o flashcard revela a tradução uma vez com ${activation}`, async ({ page, hasTouch }) => {
+  test(`o flashcard alterna entre inglês e português com ${activation}`, async ({ page, hasTouch }) => {
     await page.goto('/')
     const card = page.getByRole('button', { name: 'Revelar tradução' })
-    await expect(card).toHaveAttribute('aria-pressed', 'false')
     await expect(card).toHaveAccessibleDescription('Is this seat taken?')
     await expect(card.getByText('Este lugar está ocupado?')).toHaveCount(0)
     if (activation === 'click') {
@@ -71,12 +70,11 @@ for (const activation of ['click', 'Enter', 'Space'] as const) {
       await card.focus()
       await card.press(activation)
     }
-    await expect(card).toHaveAccessibleDescription('Este lugar está ocupado?')
-    await expect(card).toHaveAttribute('aria-pressed', 'true')
-    await expect(card).toBeDisabled()
-    await expect(card).toHaveCSS('transform', 'none')
-    await card.press('Enter')
-    await expect(card.getByText('Este lugar está ocupado?')).toBeVisible()
+    const translated = page.getByRole('button', { name: 'Voltar ao inglês' })
+    await expect(translated).toHaveAccessibleDescription('Este lugar está ocupado?')
+    await expect(translated).toBeFocused()
+    await translated.press('Enter')
+    await expect(card).toHaveAccessibleDescription('Is this seat taken?')
   })
 }
 
@@ -90,14 +88,26 @@ test('movimento reduzido revela a tradução com fade, sem girar o cartão', asy
     const start = performance.now()
     do {
       await new Promise(requestAnimationFrame)
-      const { opacity, transform } = getComputedStyle(button)
+      const { opacity, transform } = getComputedStyle(button.parentElement!)
       frames.push({ opacity: Number(opacity), transform })
     } while (performance.now() - start < 500)
     return frames
   })
   expect(samples.some(frame => frame.opacity < 1)).toBe(true)
   expect(samples.every(frame => frame.transform === 'none')).toBe(true)
-  await expect(card).toHaveAccessibleDescription('Este lugar está ocupado?')
+  await expect(page.getByRole('button', { name: 'Voltar ao inglês' })).toHaveAccessibleDescription('Este lugar está ocupado?')
+})
+
+test('o cadastro do cabeçalho aparece quando o da hero sai da tela no desktop', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  const signup = page.locator('header a[href="/register"]')
+  await expect(signup).toBeHidden()
+  await page.locator('#pricing-title').scrollIntoViewIfNeeded()
+  await expect(signup).toBeInViewport()
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
+  await expect(signup).toBeHidden()
 })
 
 test('o cabeçalho do celular mantém logo e Menu durante a rolagem', async ({ page }) => {
@@ -117,7 +127,7 @@ test('o cabeçalho do celular mantém logo e Menu durante a rolagem', async ({ p
   await expect(page.getByRole('dialog').getByRole('link', { name: 'Começar grátis' })).toBeVisible()
 })
 
-test('o brilho pausa fora da tela e respeita movimento reduzido', async ({ page }) => {
+test('o movimento dos pássaros pausa fora da tela e respeita movimento reduzido', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'hardwareConcurrency', { value: 8 })
     Object.defineProperty(navigator, 'deviceMemory', { value: 8 })
@@ -125,18 +135,18 @@ test('o brilho pausa fora da tela e respeita movimento reduzido', async ({ page 
   })
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.goto('/')
-  const glint = page.locator('[data-hero-glint]')
-  const matrix = () => glint.evaluate(el => getComputedStyle(el).transform)
+  const birds = page.locator('[data-hero-birds]')
+  const matrix = () => birds.evaluate(el => getComputedStyle(el).transform)
   const first = await matrix()
   await expect.poll(matrix).not.toBe(first)
   await page.locator('#como-funciona').scrollIntoViewIfNeeded()
-  await expect(glint).not.toBeInViewport()
+  await expect(birds).not.toBeInViewport()
   await page.waitForTimeout(120)
   const paused = await matrix()
   await page.waitForTimeout(300)
   expect(await matrix()).toBe(paused)
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await expect(glint).toHaveCSS('transform', 'none')
+  await expect(birds).toHaveCSS('transform', 'none')
 })
 
 test('o CTA aceita o primeiro toque ou clique durante a entrada', async ({ page, hasTouch }) => {
@@ -336,4 +346,33 @@ test('o título revela as palavras uma vez e fica estável, sem controles', asyn
     return text
   })
   expect(selected).toBe(headline)
+})
+
+test('ouvir a frase carrega o áudio sob demanda e mantém a face do flashcard', async ({ page }) => {
+  const requests: string[] = []
+  page.on('request', request => {
+    if (request.url().endsWith('/brand/is-this-seat-taken-siren.mp3')) requests.push(request.url())
+  })
+  await page.goto('/')
+  const listen = page.getByRole('button', { name: 'Ouvir frase' })
+  const player = page.locator('[data-hero-card-stage] audio')
+  await expect(listen).toBeVisible()
+  expect(requests).toHaveLength(0)
+  await listen.press('Enter')
+  await expect.poll(() => player.evaluate(node => (node as HTMLAudioElement).ended)).toBe(true)
+  expect(requests.length).toBeGreaterThan(0)
+  await expect(listen).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Revelar tradução' })).toHaveAccessibleDescription('Is this seat taken?')
+})
+
+test('atalhos abrem o exercício indicado, inclusive em visitas diretas', async ({ page }) => {
+  await page.goto('/#practice-recall')
+  const recall = page.getByRole('button', { name: 'Relembrar', exact: true })
+  await expect(recall).toHaveAttribute('aria-pressed', 'true')
+  const index = page.getByRole('navigation', { name: 'Percorrer a jornada' })
+  await index.getByRole('link', { name: 'Praticar', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Escolher', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await page.getByRole('link', { name: 'Revisar palavras' }).click()
+  await expect(recall).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('button', { name: 'Revelar significado' })).toBeInViewport()
 })

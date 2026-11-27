@@ -961,14 +961,12 @@ export default function PushpinTearFooter({
       {/* ---- on the sheet ---- */}
       <div id={contactId} className="tpf-z tpf-top">
         <div className="tpf-row tpf-h" style={H(0)}>
-          {topHref ? (
-            <A href={topHref} className="tpf-ib tpf-up" label={labels.top}><Icon name="chevL" /></A>
-          ) : (
+          {!topHref && (
             <button type="button" className="tpf-ib tpf-up" onClick={toTop} aria-label={labels.top} title={labels.top}>
               <Icon name="chevL" />
             </button>
           )}
-          <span style={{ width: ".6em" }} />
+          {!topHref && <span style={{ width: ".6em" }} />}
           {socials.map((l, i) => (
             <A key={i} href={l.href} className="tpf-ib" label={l.label}>
               <Icon name={l.icon} />
@@ -1092,6 +1090,7 @@ export default function PushpinTearFooter({
 
       <div className="tpf-z tpf-foot tpf-ink">
         <span className="tpf-p" style={H(3)}>{copyright}</span>
+        {topHref && <A href={topHref} className="tpf-ib tpf-up" label={labels.top}><Icon name="chevL" /></A>}
         {credit && <span className="tpf-credit tpf-p" style={H(4)}>{credit}</span>}
         <A href={handle.href} className="tpf-handle tpf-p" style={H(5)}>{handle.label}</A>
       </div>

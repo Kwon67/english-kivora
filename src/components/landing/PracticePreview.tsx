@@ -3,7 +3,7 @@
 import { useLandingLite } from './useLandingLite'
 import FeedbackConfetti from './FeedbackConfetti'
 import { playLandingSound } from './landingSound'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, Check, Lightbulb, RotateCcw } from 'lucide-react'
 import { gsap, useGSAP } from '@/lib/gsap'
 import { duration, ease } from '@/lib/motion-tokens'
@@ -60,6 +60,15 @@ const reviewGrades = [
 
 export default function PracticePreview() {
   const [mode, setMode] = useState<'choose' | 'build' | 'recall'>('choose')
+  useEffect(() => {
+    const openLinkedMode = () => {
+      if (location.hash === '#practice-recall') setMode('recall')
+      if (location.hash === '#practice-choose') setMode('choose')
+    }
+    openLinkedMode()
+    window.addEventListener('hashchange', openLinkedMode)
+    return () => window.removeEventListener('hashchange', openLinkedMode)
+  }, [])
   const [selected, setSelected] = useState<number[]>([])
   const [checked, setChecked] = useState(false)
   const [recallIndex, setRecallIndex] = useState(0)
@@ -81,20 +90,20 @@ export default function PracticePreview() {
 
   return <div data-practice-lab className={styles.lab}>
     <div className={styles.labTabs} aria-label="Escolha uma prática">
-      <button aria-pressed={mode === 'choose'} onClick={() => setMode('choose')}>Escolher</button>
+      <button id="practice-choose" onFocus={() => { if (location.hash === '#practice-choose') setMode('choose') }} aria-pressed={mode === 'choose'} onClick={() => setMode('choose')}>Escolher</button>
       <button aria-pressed={mode === 'build'} onClick={() => setMode('build')}>Montar</button>
-      <button aria-pressed={mode === 'recall'} onClick={() => setMode('recall')}>Relembrar</button>
+      <button id="practice-recall" onFocus={() => { if (location.hash === '#practice-recall') setMode('recall') }} aria-pressed={mode === 'recall'} onClick={() => setMode('recall')}>Relembrar</button>
     </div>
     <div ref={panel} className={styles.labPanel}>
-      {mode !== 'choose' && <span className={styles.exampleLabel}>EXEMPLO INTERATIVO · {mode === 'build' ? 'CONSTRUÇÃO DE FRASES' : 'RECORDAÇÃO ATIVA'}</span>}
+      {mode !== 'choose' && <span className={styles.exampleLabel}>{mode === 'build' ? 'CONSTRUÇÃO DE FRASES' : 'RECORDAÇÃO ATIVA'}</span>}
       {mode === 'choose' ? <GrammarPreview /> : mode === 'build' ? <>
         <h3>Um café, por favor.</h3>
-        <p>Toque nas partes para construir seu pedido em inglês.</p>
+        <p>Monte seu pedido em inglês.</p>
         <div className={styles.sentence} aria-label="Sua frase" aria-live="polite" lang="en">
-          {selected.length ? selected.map((part, index) => <button key={part} aria-label={`Remover ${parts[part]}`} disabled={checked && correct} onClick={() => { setSelected(selected.filter((_, i) => i !== index)); setChecked(false) }}>{parts[part]}</button>) : <span>Sua frase começa aqui…</span>}
+          {selected.length ? selected.map((part, index) => <button key={part} aria-label={`Remover ${parts[part]}`} disabled={checked && correct} onClick={() => { setSelected(selected.filter((_, i) => i !== index)); setChecked(false) }}>{parts[part]}</button>) : <span>Sua frase…</span>}
         </div>
         <div className={styles.wordBank} lang="en">{parts.map((part, index) => <button key={part} disabled={selected.includes(index)} onClick={() => { setSelected([...selected, index]); setChecked(false) }}>{part}<span aria-hidden="true">+</span></button>)}</div>
-        <div className={styles.labFeedback} aria-live="polite" data-correct={checked && correct}>{checked && correct && <FeedbackConfetti />}{checked ? correct ? <><Check size={20} /><span>Isso! <strong>Can I have</strong> abre um pedido educado. Você já pode usar essa frase.</span></> : <><Lightbulb size={20} /><span>Comece com “Can I have”, depois acrescente o pedido. Toque em uma parte para reorganizar.</span></> : <span>Você aprende usando a língua, uma decisão por vez.</span>}</div>
+        <div className={styles.labFeedback} aria-live="polite" data-correct={checked && correct}>{checked && correct && <FeedbackConfetti />}{checked ? correct ? <><Check size={20} /><span><strong>Can I have</strong> inicia um pedido educado.</span></> : <><Lightbulb size={20} /><span>Comece com “Can I have”. Toque nas partes para reorganizar.</span></> : <span>Toque numa parte da frase para removê-la.</span>}</div>
         <div className={styles.labActions}><button className={styles.primary} disabled={selected.length !== 3 || checked && correct} data-sound-feedback onClick={() => { playLandingSound(correct ? 'correct' : 'wrong'); setChecked(true) }}>Verificar frase <Check size={18} /></button><button className={styles.reset} aria-label="Recomeçar frase" onClick={() => { setSelected([]); setChecked(false) }}><RotateCcw size={19} /></button></div>
       </> : <>
         <h3 lang="en">{recallCard.phrase}</h3>
@@ -103,11 +112,11 @@ export default function PracticePreview() {
         {!revealed ? <button className={styles.primary} onClick={() => setRevealed(true)}>Revelar significado <ArrowRight size={18} /></button> : <>
           <p className={styles.gradeLabel}>Como foi lembrar?</p>
           <div className={styles.demoGrades}>{reviewGrades.map(item => <button key={item.grade} data-review-grade data-tone={item.tone} aria-pressed={grade === item.grade} onClick={() => setGrade(item.grade)}><strong>{item.label}</strong><span>{formatMinutesEstimate(scheduleReview(item.grade, demoState).intervalMinutes)}</span></button>)}</div>
-          <div className={styles.labFeedback} aria-live="polite">{grade !== null ? <><Check size={20} /><span>Neste exemplo, a palavra voltaria em <strong>{formatMinutesEstimate(scheduleReview(grade, demoState).intervalMinutes)}</strong>. Na sua conta, o intervalo considera seu histórico.</span></> : 'O próximo intervalo muda de acordo com a sua resposta.'}</div>
+          <div className={styles.labFeedback} aria-live="polite">{grade !== null ? <><Check size={20} /><span>Próxima revisão em <strong>{formatMinutesEstimate(scheduleReview(grade, demoState).intervalMinutes)}</strong> nesta demonstração.</span></> : 'Escolha como foi lembrar.'}</div>
           <button className={styles.inlineAction} onClick={() => { setRevealed(false); setGrade(null); setRecallIndex(i => (i + 1) % recallCards.length) }}>Próxima expressão <RotateCcw size={16} /></button>
         </>}
       </>}
     </div>
-    <p className={styles.demoNote}>Uma amostra para explorar. Esta prática não salva progresso.</p>
+    <p className={styles.demoNote}>Demonstração sem registro de progresso.</p>
   </div>
 }

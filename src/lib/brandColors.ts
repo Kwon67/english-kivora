@@ -2,7 +2,7 @@
  * Hex constants for non-CSS contexts (emails and manifests).
  * UI components must use theme tokens: `bg-primary`, `text-primary`, `brandUi.ts`.
  */
-export const BRAND_PAPER = '#F5F1E4'
+export const BRAND_PAPER = '#f1ede4'
 export const BRAND_PRIMARY = '#2C2E2A'
 export const BRAND_PRIMARY_HOVER = '#111111'
 export const BRAND_PRIMARY_LIGHT = '#FAF9F5'

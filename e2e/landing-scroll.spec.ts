@@ -78,8 +78,6 @@ test('reativar animações numa visita direta ao FAQ mantém a página utilizáv
   await expect(faq).toBeInViewport()
   await expect.poll(() => anchorOffset(faq)).toBeLessThan(4)
   await expect.poll(paint).toBe('1')
-  // The ranking sits above the FAQ. Wait for its entry to settle before toggling.
-  await expect(page.locator('[data-ranking] li').last()).toHaveCSS('transform', 'none')
   for (let toggle = 0; toggle < 2; toggle++) {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await expect.poll(paint).toBe('')

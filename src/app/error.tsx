@@ -16,7 +16,7 @@ export default function Error({
   }, [error])
 
   return (
-    <main className="flex min-h-screen min-h-[100svh] items-center justify-center bg-[var(--color-background)] px-6 py-16">
+    <main className="flex min-h-screen min-h-[100svh] items-center justify-center px-6 py-16">
       <Card asChild unstyled><section className={`${homeCardClass} ${homeFrostedSurface} w-full max-w-md p-8 text-center`}>
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-subtle">
           Erro inesperado

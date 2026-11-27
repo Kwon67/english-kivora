@@ -1,6 +1,5 @@
 import { gsap, SplitText } from '@/lib/gsap'
 import { ease } from '@/lib/motion-tokens'
-import { playLandingSound } from './landingSound'
 
 function entrance(trigger: Element, id: string, start = 'top 86%') {
   return gsap.timeline({
@@ -13,6 +12,14 @@ function entrance(trigger: Element, id: string, start = 'top 86%') {
 
 // These timelines are owned by JourneyMotion's reduced-motion media context.
 export function setupSectionMotion(root: HTMLElement) {
+  const birds = root.querySelector('[data-hero-birds]')
+  if (birds) {
+    gsap.to(birds, {
+      x: 8, y: -3, duration: 3.6, repeat: -1, yoyo: true, ease: 'sine.inOut',
+      scrollTrigger: { trigger: birds, start: 'top bottom', end: 'bottom top', toggleActions: 'play pause resume pause' },
+    })
+  }
+
   const rail = root.querySelector('[data-level-rail]')
   if (rail) {
     const stops = rail.querySelectorAll('button > span')
@@ -22,9 +29,13 @@ export function setupSectionMotion(root: HTMLElement) {
   }
 
   const notebook = root.querySelector('[data-practice-notebook]')
-  if (notebook) {
-    entrance(notebook, 'kivora-practice-desk')
-      .from(notebook, { y: 18, clearProps: 'transform' })
+  const cover = notebook?.querySelector('[data-notebook-cover]')
+  if (notebook && cover) {
+    entrance(notebook, 'kivora-practice-desk', 'top 74%')
+      .fromTo(cover, { autoAlpha: 1, rotationY: 0 }, {
+        rotationY: -102, duration: .9, ease: 'power2.inOut', transformPerspective: 1350,
+      })
+      .set(cover, { autoAlpha: 0 })
   }
 
   const footerTop = root.querySelector('#rodape .tpf-top')
@@ -50,23 +61,6 @@ export function setupSectionMotion(root: HTMLElement) {
     entrance(bubble, 'kivora-conversation', 'top 89%')
       .from(bubble, { scale: .93, y: 13, rotation: -2, transformOrigin: 'bottom left', duration: .4, ease: 'back.out(1.35)', clearProps: 'transform' }, 0)
       .from(text.chars, { opacity: 0, duration: .01, stagger: .036 }, .12)
-      .from(bubble.querySelector('small'), { x: 12, duration: .38, clearProps: 'transform' }, .95)
       .fromTo(conversation.querySelector('[data-mark]'), { '--paint': 0 }, { '--paint': 1, duration: .5 }, .38)
   }
-
-  const ranking = root.querySelector('[data-ranking]')
-  if (ranking) {
-    const scores = Array.from(ranking.querySelectorAll<HTMLElement>('[data-score]'))
-    const bolt = ranking.closest('section')?.querySelector('[data-float] img')
-    const blitz = entrance(ranking, 'kivora-blitz-scoreboard', 'top 89%')
-    if (bolt) blitz.from(bolt, { scale: 1.25, rotation: -17, duration: .32, ease: 'back.out(2)', clearProps: 'transform' }, 0)
-    scores.forEach((score, i) => {
-      const label = score.dataset.score!
-      const beat = i * .105
-      blitz.from(score.parentElement, { x: i % 2 ? 19 : -19, duration: .32, clearProps: 'transform' }, beat)
-        .fromTo(score, { textContent: '000' }, { scrambleText: { text: label, chars: '0123456789' }, duration: .42, immediateRender: false }, beat)
-    })
-    blitz.call(() => playLandingSound('combo', false))
-  }
-
 }
