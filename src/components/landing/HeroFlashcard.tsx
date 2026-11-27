@@ -25,7 +25,6 @@ export default function HeroFlashcard() {
     <button type="button" className={styles.flipPhrase}
       aria-labelledby="hero-flip-action" aria-describedby="hero-phrase"
       onClick={() => { setTranslated(previous => !previous) }}>
-      <span className={styles.cardLabel}>Inglês no café</span>
       <strong key={String(translated)} className={translated !== null ? styles.flipped : undefined} id="hero-phrase" lang={translated ? 'pt-BR' : 'en'} aria-live="polite">
         {translated ? 'Este lugar está ocupado?' : 'Is this seat taken?'}
       </strong>

@@ -34,8 +34,7 @@ export default function EditorialLanding() {
         <div className={styles.wrap}>
           <div data-hero-copy className={styles.heroCopy}>
             <h1 id="hero-title">Seu inglês,<br /> no mundo real.</h1>
-            <p>Aprenda inglês com frases que você vai usar. Pratique com flashcards, revise no seu ritmo e converse com um tutor de IA.</p>
-            <div className={styles.actions}><Signup /><a href="#practice-choose" className={styles.secondary}>Experimentar uma prática</a></div>
+            <Signup />
           </div>
           <figure data-phone className={styles.phone}>
             <Image src="/images/editorial/hero.webp" width={1402} height={1122} alt="Uma conversa no balcão de um café, na tela do celular." preload />

@@ -17,7 +17,7 @@ export default function EditorialMotion({ children }: { children: ReactNode }) {
     const media = gsap.matchMedia()
     media.add('(prefers-reduced-motion: no-preference)', () => {
       page.dataset.motion = 'active'
-      gsap.from(page.querySelectorAll('#hero-title, [data-hero-copy] > p, [data-hero-copy] > div'), {
+      gsap.from(page.querySelectorAll('[data-hero-copy] > *'), {
         y: 13, duration: duration.panel, stagger: .07, ease: ease.reveal, clearProps: 'transform',
       })
       gsap.to(progress.current, {

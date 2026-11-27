@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 
 test('escolher oferece explicação, tentativa e próxima questão', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('link', { name: 'Experimentar uma prática' }).click()
+  await page.getByRole('button', { name: /^Escolher/ }).click()
   await page.getByRole('button', { name: 'an', exact: true }).click()
   await page.getByRole('button', { name: 'Confirmar' }).click()
   await expect(page.getByRole('status').filter({ hasText: 'Vamos entender?' })).toBeVisible()
