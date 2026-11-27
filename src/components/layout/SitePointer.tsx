@@ -1,14 +1,16 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
 import { useEffect, useRef } from 'react'
 import { useLandingLite } from '@/components/landing/useLandingLite'
 import styles from '@/components/landing/LandingPolish.module.css'
 
 export default function SitePointer() {
+  const pathname = usePathname()
   const lite = useLandingLite()
   const pointer = useRef<HTMLSpanElement>(null)
   useEffect(() => {
-    if (lite) return
+    if (lite || pathname === '/') return
     const surface = document.documentElement
     const dot = pointer.current!
     const media = matchMedia('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)')
@@ -80,7 +82,7 @@ export default function SitePointer() {
       document.removeEventListener('scroll', schedule, true)
       media.removeEventListener('change', stop)
     }
-  }, [lite])
+  }, [lite, pathname])
 
-  return <span ref={pointer} className={styles.pointer} aria-hidden="true" />
+  return pathname === '/' ? null : <span ref={pointer} className={styles.pointer} aria-hidden="true" />
 }

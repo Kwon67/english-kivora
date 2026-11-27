@@ -1,6 +1,31 @@
 # Animação da landing Kivora
 
-## Linha de base
+## Landing editorial
+
+A rota inicial usa a arte verde e marfim do Kivora English. Esta tabela registra as tecnologias de movimento presentes no projeto e onde entram na experiência.
+
+| Tecnologia | Aplicação |
+| --- | --- |
+| GSAP e a integração React `useGSAP` | Entrada do título e das ações, inclinação do celular em ponteiros precisos e confete de acerto na paleta editorial. |
+| ScrollTrigger | Progresso de leitura, entrada dos três cartões e deslocamento das ilustrações do café e do caderno. Abertura de exercícios e do FAQ recalcula as posições. |
+| Flip | O indicador verde percorre os níveis A1–C2 ao selecionar outro exemplo. |
+| SplitText, ScrambleTextPlugin, CustomEase e DrawSVGPlugin | Plugins registrados para segmentação de texto, troca de caracteres, curvas e desenho de traços. Observer, Draggable, InertiaPlugin e MorphSVGPlugin estão disponíveis por importação assíncrona. |
+| @use-gesture/react | Deslizar horizontalmente sobre a frase do explorador seleciona o nível vizinho. As setas do teclado, Home, End e os seis botões também funcionam. |
+| CSS, SVG e APIs do navegador | Keyframes na tradução do flashcard, nos painéis, no diálogo e no FAQ. O projeto também usa Web Animations API, CSS scroll timelines, View Transitions e requestAnimationFrame. |
+| Lenis | Integração existente com o ticker do GSAP para rolagem suavizada. A landing editorial acompanha a rolagem nativa. |
+| Rive Canvas/React e dotLottie Web/React | Players para animações vetoriais e máquinas de estado Rive. A arte editorial usa as sete imagens WebP da refatoração. |
+| Three.js, React Three Fiber e Drei | Renderização de cenas 3D, com WebGPU, WebGL2 e materiais TSL. Rapier adiciona física; postprocessing e React Three Postprocessing cuidam dos efeitos. |
+| Theatre.js Core, R3F e Studio, Leva | Sequenciamento de cenas e ferramentas de autoria e ajuste. Draco, Meshopt, KTX2 e glTF Transform apoiam a preparação e leitura de modelos. |
+| Spline Runtime/React e Unicorn Studio | Adaptadores de cenas interativas e projetos de designer. |
+| canvas-confetti | Motor de partículas disponível no aplicativo. Os acertos na landing reutilizam o componente de confete DOM do projeto, animado por GSAP. |
+
+A prática **Conversa no café** abre um diálogo nativo com três expressões, correção, nova tentativa e avanço. Com movimento reduzido ou no modo leve, a leitura e os exercícios continuam disponíveis. Os testes públicos verificam também troca de preferência durante a visita, gesto horizontal, Escape e retorno de foco.
+
+## Histórico da landing anterior
+
+As seções seguintes documentam a implementação anterior e suas medições.
+
+### Linha de base
 
 O commit `169ed13a` contém o manifesto original (`git show 169ed13a:package.json`). O projeto usa pnpm 12.21.0, Next 16.4.6, React e React DOM 19.3.1, Tailwind 4.3.5 e Playwright Test 1.65.1. A rota pública monta MindmarketLanding. As imagens de referência em tests/visual/baseline vêm do build de produção desse commit.
 

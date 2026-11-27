@@ -2,35 +2,12 @@
 
 import { useRef, useState } from 'react'
 import { Volume2 } from 'lucide-react'
-import { gsap, useGSAP } from '@/lib/gsap'
-import styles from './MindmarketLanding.module.css'
+import styles from './Editorial.module.css'
 
 export default function HeroFlashcard() {
-  const card = useRef<HTMLDivElement>(null)
   const audio = useRef<HTMLAudioElement>(null)
   const [sound, setSound] = useState<'ready' | 'playing' | 'error'>('ready')
-  const interacted = useRef(false)
-  const [pressed, setPressed] = useState(false)
-  const [translated, setTranslated] = useState(false)
-
-  useGSAP(() => {
-    if (!interacted.current) return
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)')
-    const face = card.current
-    const flip = gsap.timeline()
-    if (reduced.matches) {
-      flip.to(face, { opacity: .25, duration: .1 })
-        .call(() => setTranslated(pressed))
-        .to(face, { opacity: 1, duration: .14, clearProps: 'opacity' })
-    } else {
-      flip.to(face, { rotationY: 90, duration: .19, ease: 'power2.in' })
-        .call(() => setTranslated(pressed))
-        .fromTo(face, { rotationY: -90 }, { rotationY: 0, duration: .24, ease: 'power2.out', immediateRender: false, clearProps: 'transform' })
-    }
-    const finish = () => flip.progress(1)
-    reduced.addEventListener('change', finish)
-    return () => reduced.removeEventListener('change', finish)
-  }, { dependencies: [pressed], scope: card, revertOnUpdate: true })
+  const [translated, setTranslated] = useState<boolean | null>(null)
 
   async function playPhrase() {
     const player = audio.current
@@ -44,12 +21,11 @@ export default function HeroFlashcard() {
     }
   }
 
-  return <div className={styles.phraseCard} ref={card}>
+  return <div className={styles.phraseCard}>
     <button type="button" className={styles.flipPhrase}
       aria-labelledby="hero-flip-action" aria-describedby="hero-phrase"
-      onClick={() => { interacted.current = true; setPressed(previous => !previous) }}>
-      <span className={styles.cardLabel}>Flashcard · Viagem</span>
-      <strong id="hero-phrase" lang={translated ? 'pt-BR' : 'en'} aria-live="polite">
+      onClick={() => { setTranslated(previous => !previous) }}>
+      <strong key={String(translated)} className={translated !== null ? styles.flipped : undefined} id="hero-phrase" lang={translated ? 'pt-BR' : 'en'} aria-live="polite">
         {translated ? 'Este lugar está ocupado?' : 'Is this seat taken?'}
       </strong>
       <span id="hero-flip-action" className={styles.cardHint}>{translated ? 'Voltar ao inglês' : 'Revelar tradução'} <span aria-hidden="true">↻</span></span>

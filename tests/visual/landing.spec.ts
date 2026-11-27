@@ -1,191 +1,22 @@
-import { mkdir } from 'node:fs/promises'
-import { join } from 'node:path'
-import sharp from 'sharp'
 import { expect, test } from '@playwright/test'
-import { allowed, checkArtwork, readPaint, visitPaintStates } from './palette'
-import { makeTear, sheetD } from '../../src/components/ui/pushpin-tear-footer'
 
-const directory = 'tests/visual'
 for (const [width, height] of [[390, 844], [768, 1024], [1440, 900]]) {
-  test.describe(`${width}px`, () => {
-    test.use({ viewport: { width, height } })
-    test.beforeEach(async ({ page }) => {
-      await page.goto('/')
-      await expect(page.getByRole('heading', { level: 1 })).toContainText('Seu inglês.')
-      await page.evaluate(async () => {
-        await document.fonts.ready
-        await Promise.all(Array.from(document.images, async image => {
-          image.loading = 'eager'
-          await image.decode()
-        }))
-      })
-    })
-    test('antes e depois', async ({ page }) => {
-      await mkdir(join(directory, 'after'), { recursive: true })
-      await mkdir(join(directory, 'comparison'), { recursive: true })
-      const name = `landing-${width}.png`
-      const before = join(directory, 'baseline', name)
-      const after = join(directory, 'after', name)
-      await page.screenshot({ path: after, fullPage: true, animations: 'disabled' })
-      const [old, current] = await Promise.all([sharp(before).metadata(), sharp(after).metadata()])
-      expect(current.width).toBe(width)
-      const gap = 16, header = 48
-      const label = Buffer.from(`<svg width="${width * 2 + gap}" height="${header}"><g fill="#2c2e2a" font-family="Arial" font-size="20"><text x="12" y="31">Antes · ${width} px</text><text x="${width + gap + 12}" y="31">Depois · ${width} px</text></g></svg>`)
-      await sharp({ create: { width: width * 2 + gap, height: header + Math.max(old.height!, current.height!), channels: 3, background: '#f5f4eb' } })
-        .composite([{ input: label, top: 0, left: 0 }, { input: before, left: 0, top: header }, { input: after, left: width + gap, top: header }])
-        .png().toFile(join(directory, 'comparison', name))
-    })
-
-    test('rodapé rasgado, teclado e cadastro', async ({ page }) => {
-      const poster = page.locator('footer#rodape')
-      await expect(poster).toHaveCSS('border-radius', '24px 24px 0px 0px')
-      await poster.scrollIntoViewIfNeeded()
-      await expect(poster.locator('.tpf-top')).not.toHaveAttribute('style', /transform/)
-      await expect(poster).toHaveClass(/\bs3\b/)
-      const pin = poster.getByRole('button', { name: /Puxar o alfinete/ })
-      const ridge = poster.locator('.tpf-rim')
-      await expect(ridge).toHaveAttribute('d', /^M/)
-      const previous = await ridge.getAttribute('d')
-      await pin.focus()
-      await page.keyboard.press('Enter')
-      await expect(ridge).not.toHaveAttribute('d', previous!)
-      await expect(poster.locator('.tpf-drop')).toHaveCSS('animation-name', 'none')
-
-      for (const link of ['Privacidade', 'Termos de uso', 'Voltar ao início']) {
-        await expect(poster.getByRole('link', { name: link, exact: true })).toBeVisible()
-      }
-      await poster.getByRole('link', { name: 'Voltar ao início' }).click()
-      await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(5)
-
-      const email = 'estudante+rodape@example.org'
-      const emailField = poster.getByRole('textbox', { name: 'Comece seu cadastro gratuito' })
-      await emailField.focus()
-      await expect(emailField).toHaveCSS('outline-style', 'none')
-      await expect(poster.locator('.tpf-pill')).not.toHaveCSS('box-shadow', 'none')
-      await emailField.fill(email)
-      await poster.getByRole('button', { name: 'Continuar para o cadastro' }).click()
-      await expect(page).toHaveURL(url => url.pathname === '/register' && !url.search)
-      await expect(page.getByRole('textbox', { name: 'Email', exact: true })).toHaveValue(email)
-      await page.goBack()
-      await expect(poster.getByRole('textbox')).toBeEditable()
-    })
-
-    test('queda do alfinete, novo rasgo e contato', async ({ page, context }, testInfo) => {
-      await page.emulateMedia({ reducedMotion: 'no-preference' })
-      const poster = page.locator('footer#rodape')
-      const ridge = poster.locator('.tpf-rim')
-      const pin = poster.getByRole('button', { name: /Puxar o alfinete/ })
-      await expect(poster.locator('.tpf-stage')).toHaveAttribute('viewBox', /^0 0 [1-9]/)
-      await expect(ridge).toHaveAttribute('d', /^M/)
-      const opacity = await poster.evaluate(el => {
-        const sample = () => {
-          let opacity = 1
-          for (let node: Element | null = el; node; node = node.parentElement) {
-            opacity *= Number(getComputedStyle(node).opacity)
-          }
-          return opacity
-        }
-        const before = sample()
-        el.scrollIntoView({ block: 'start', behavior: 'instant' })
-        return new Promise<number[]>(resolve => requestAnimationFrame(() => resolve([before, sample()])))
-      })
-      expect(opacity).toEqual([1, 1])
-      await expect(poster).toHaveClass(/\bs2\b/)
-      await expect(poster.locator('.tpf-drop')).toHaveCSS('animation-name', 'tpf-drop')
-      const [w, h] = await poster.evaluate(el => [el.clientWidth, el.clientHeight])
-      await expect(ridge).toHaveAttribute('d', sheetD(makeTear(23).ys, w, h))
-      await expect(poster.locator('.tpf-word span')).toBeVisible()
-      await expect.poll(() => poster.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true)
-      const overlaps = await poster.evaluate(el => {
-        const collides = (a: Element, b: Element) => {
-          const x = a.getBoundingClientRect(), y = b.getBoundingClientRect()
-          return x.width > 0 && x.left < y.right && x.right > y.left && x.top < y.bottom && x.bottom > y.top
-        }
-        return [...el.querySelectorAll('.tpf-side, .tpf-flank')]
-          .filter(item => collides(item, el.querySelector(item.matches('.tpf-side') ? '.tpf-brand' : '.tpf-news')!))
-          .map(item => item.textContent)
-      })
-      expect(overlaps).toEqual([])
-      const ctaCorners = await poster.evaluate(el => {
-        const footer = el.getBoundingClientRect()
-        return Array.from(el.querySelectorAll('.tpf-big')).flatMap(link => {
-          const bounds = link.getBoundingClientRect()
-          // Allow for the underline's extra offset on hover and the focus outline.
-          const y = bounds.bottom - footer.top + 10
-          return [bounds.left, (bounds.left + bounds.right) / 2, bounds.right]
-            .map(x => ({ x: x - footer.left, y }))
-        })
-      })
-      const exposedCorners = await poster.evaluate((_, { paths, corners }) => {
-        const context = document.createElement('canvas').getContext('2d')!
-        return paths.findIndex(path => {
-          const sheet = new Path2D(path)
-          return corners.some(({ x, y }) => !context.isPointInPath(sheet, x, y))
-        })
-      }, {
-        paths: Array.from({ length: 48 }, (_, i) => {
-          const tear = makeTear(23 + i)
-          return sheetD(tear.ys, w, h, tear.rim)
-        }),
-        corners: ctaCorners,
-      })
-      expect(exposedCorners).toBe(-1)
-      await poster.screenshot({ path: testInfo.outputPath('rodape-' + width + '.png') })
-
-      await pin.click()
-      await expect(pin).toHaveAttribute('data-pin', 'lift')
-      await expect(pin).toHaveAttribute('data-pin', 'stab')
-      await expect(ridge).toHaveAttribute('d', sheetD(makeTear(24).ys, w, h))
-      await expect(pin).toHaveAttribute('data-pin', 'idle')
-
-      await context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: new URL(page.url()).origin })
-      await poster.getByRole('button', { name: /Copiar e-mail/ }).click()
-      await expect(poster.getByRole('status')).toHaveText('E-mail copiado')
-      expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('kivora.dev@outlook.com')
-    })
-
-    test('paleta e ilustrações', async ({ page }) => {
-      const cream = 'rgb(241, 237, 228)'
-      await expect(page.locator('body')).toHaveCSS('background-color', cream)
-      await expect(page.locator('main#main-content')).toHaveCSS('background-image', /paper-grain\.png/)
-      const hero = page.getByRole('region', { name: 'Seu inglês. Um mundo mais aberto.' })
-      expect(await hero.evaluate(el => getComputedStyle(el, '::before').backgroundColor)).toBe(cream)
-      const cta = hero.getByRole('link', { name: 'Começar grátis' })
-      await expect(cta).toHaveCSS('background-color', 'rgb(44, 46, 42)')
-      await expect(cta).toHaveCSS('color', 'rgb(255, 255, 255)')
-      await expect(hero.locator('[data-hero-keyword]')).toHaveCSS('color', 'rgb(44, 46, 42)')
-      await expect(hero.locator('figcaption > div')).toHaveCSS('background-color', 'rgb(245, 226, 17)')
-      for (const scene of ['#revisoes', '#conversacao']) {
-        await expect(page.locator(scene).locator('[data-art-motion="illustration"]').first()).toHaveCSS('filter', 'none')
-      }
-      const notebook = page.locator('[data-practice-notebook]')
-      await expect(notebook).toHaveCSS('background-color', 'rgb(255, 74, 28)')
-      await expect(notebook).toHaveCSS('transform', 'none')
-      expect(await notebook.evaluate(el => getComputedStyle(el, '::before').backgroundImage)).toContain('/images/paper-grain.png')
-      const practicePage = notebook.locator('#practice-demo')
-      await expect(practicePage).toHaveCSS('background-color', 'rgb(241, 237, 228)')
-      const grain = await practicePage.evaluate(el => {
-        const style = getComputedStyle(el, '::before')
-        return { image: style.backgroundImage, opacity: style.opacity }
-      })
-      expect(grain.image).toContain('/images/paper-grain.png')
-      expect(grain.opacity).toBe('0.32')
-      await expect(page.locator('footer')).toHaveCSS('background-color', 'rgb(255, 74, 28)')
-      await expect(page.locator('footer .tpf-paper')).toHaveCSS('fill', 'rgb(241, 237, 228)')
-      const violations = new Set<string>()
-      await visitPaintStates(page, samples => samples.forEach(sample => {
-        if (!allowed(sample.color, sample.inFooter)) violations.add(`#${sample.color} · ${sample.property} · ${sample.element}`)
+  test('paleta e composição editorial em ' + width + 'px', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width, height })
+    await page.goto('/')
+    await expect(page.locator('header')).toHaveCSS('background-color', 'rgb(248, 245, 237)')
+    await expect(page.locator('h1')).toHaveCSS('color', 'rgb(39, 41, 40)')
+    await expect(page.getByRole('link', { name: 'Começar grátis' }).first()).toHaveCSS('background-color', 'rgb(61, 99, 77)')
+    await page.evaluate(async () => {
+      await document.fonts.ready
+      await Promise.all(Array.from(document.images, image => {
+        image.loading = 'eager'
+        return image.decode()
       }))
-      await checkArtwork(page)
-      expect([...violations]).toEqual([])
-      if (width === 390) {
-        // Exercise the same browser sampling path with an intentional violation.
-        const injected = await page.addStyleTag({ content: '#hero-title { color: #ff00ff !important }' })
-        try {
-          await expect(page.locator('#hero-title')).toHaveCSS('color', 'rgb(255, 0, 255)')
-          expect((await readPaint(page)).filter(sample => !allowed(sample.color, sample.inFooter)).map(sample => sample.color)).toContain('ff00ff')
-        } finally { await injected.evaluate(style => { style.parentNode?.removeChild(style) }) }
-      }
     })
+    await expect(page.locator('#inicio img[src*="/images/editorial/"]')).toHaveCount(7)
+    const capture = await page.screenshot({ fullPage: true })
+    await testInfo.attach('Landing ' + width, { body: capture, contentType: 'image/png' })
+    expect(capture).toMatchSnapshot('editorial-' + width + '.png', { maxDiffPixelRatio: 0.005 })
   })
 }

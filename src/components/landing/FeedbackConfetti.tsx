@@ -4,8 +4,8 @@ import { useRef } from 'react'
 import { useLandingLite } from './useLandingLite'
 import { gsap, useGSAP } from '@/lib/gsap'
 
-const colors = ['var(--landing-green)', 'var(--landing-surface-leaf)', 'var(--yellow)', 'var(--landing-forest)', 'var(--paper)', 'var(--ink)']
-export default function FeedbackConfetti() {
+const defaultColors = ['var(--landing-green)', 'var(--landing-surface-leaf)', 'var(--yellow)', 'var(--landing-forest)', 'var(--paper)', 'var(--ink)']
+export default function FeedbackConfetti({ colors = defaultColors }: { colors?: readonly string[] }) {
   const ref = useRef<HTMLSpanElement>(null)
   const lite = useLandingLite()
   useGSAP(() => {
@@ -20,7 +20,7 @@ export default function FeedbackConfetti() {
       })
     })
     return () => media.revert()
-  }, { scope: ref, dependencies: [lite], revertOnUpdate: true })
+  }, { scope: ref, dependencies: [lite, colors], revertOnUpdate: true })
   if (lite) return null
   return <span ref={ref} aria-hidden="true" style={{ position: 'relative', width: 0, height: 0 }}>
     {colors.map(color => <i key={color} style={{ backgroundColor: color, position: 'absolute', height: 6, width: 4, opacity: 0 }} />)}
