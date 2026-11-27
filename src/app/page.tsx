@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { publicSiteOrigin } from '@/lib/publicSite'
-import { getLandingRiveAssets } from '@/components/landing/landingRiveAssets'
-import MindmarketLanding from '@/components/landing/MindmarketLanding'
+import EditorialLanding from '@/components/landing/EditorialLanding'
 
 const socialImage = {
   url: publicSiteOrigin + '/images/kivora-social-2026.png',
@@ -36,5 +35,5 @@ export const metadata: Metadata = {
 }
 
 export default function LandingPage() {
-  return <MindmarketLanding riveAssets={getLandingRiveAssets()} />
+  return <EditorialLanding />
 }

@@ -8,6 +8,7 @@ export default defineConfig({
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:3100',
     browserName: 'chromium',
+    launchOptions: { executablePath: process.env.KIVORA_CHROME_EXECUTABLE },
     reducedMotion: 'reduce',
     deviceScaleFactor: 1,
     serviceWorkers: 'block',

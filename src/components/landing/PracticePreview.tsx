@@ -1,46 +1,13 @@
 'use client'
 
-import { useLandingLite } from './useLandingLite'
-import FeedbackConfetti from './FeedbackConfetti'
 import { playLandingSound } from './landingSound'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowRight, Check, Lightbulb, RotateCcw } from 'lucide-react'
-import { gsap, useGSAP } from '@/lib/gsap'
-import { duration, ease } from '@/lib/motion-tokens'
 import { formatMinutesEstimate, scheduleReview, type SchedulingState } from '@/features/review/lib/learningSteps'
 import { REVIEW_GRADE } from '@/features/review/lib/reviewGrades'
-import styles from './LearningLanding.module.css'
+import styles from './Editorial.module.css'
+import Image from 'next/image'
 import GrammarPreview from './GrammarPreview'
-
-const examples = [
-  { phrase: 'Can I have a coffee, please?', answer: 'Um café, por favor.', other: 'Onde fica a cafeteria?', tip: '“Can I have…” é uma forma educada de fazer um pedido.' },
-  { phrase: 'Nice to meet you!', answer: 'Prazer em conhecer você!', other: 'Até a próxima!', tip: 'Use esta expressão quando conhecer alguém.' },
-  { phrase: 'Could you say that again?', answer: 'Pode repetir, por favor?', other: 'Você já terminou?', tip: 'Pedir para repetir também faz parte de uma boa conversa.' },
-]
-
-export function ConversationPreview() {
-  const [index, setIndex] = useState(0)
-  const [answer, setAnswer] = useState<boolean | null>(null)
-  const question = examples[index]
-  const next = useRef<HTMLButtonElement>(null)
-  const firstAnswer = useRef<HTMLButtonElement>(null)
-
-  function choose(correct: boolean) {
-    setAnswer(correct)
-    if (correct) requestAnimationFrame(() => next.current?.focus({ preventScroll: true }))
-  }
-
-  return <div className={styles.heroPractice}>
-    <div className={styles.practiceMeta}><span><i /> INGLÊS NA VIDA REAL</span><span>0{index + 1} / 03</span></div>
-    <p className={styles.heroPhrase} lang="en">“{question.phrase}”</p>
-    <p className={styles.practicePrompt}>O que você diria em português?</p>
-    <div className={styles.heroChoices}>
-      {[question.answer, question.other].map((text, option) => <button key={text} type="button" ref={option === 0 ? firstAnswer : undefined} disabled={answer === true} data-result={answer === true && option === 0 ? 'correct' : answer === false && option === 1 ? 'retry' : undefined} onClick={() => choose(option === 0)}><span>{text}</span>{answer === true && option === 0 ? <Check size={17} aria-hidden="true" /> : <span aria-hidden="true">{option + 1}</span>}</button>)}
-    </div>
-    <div className={styles.heroFeedback} aria-live="polite" aria-atomic="true">{answer === true ? <><Check size={17} aria-hidden="true" /><span>{question.tip}</span></> : answer === false ? <><Lightbulb size={17} aria-hidden="true" /><span>Quase! Pense na intenção da frase e tente de novo.</span></> : <span>Experimente. Aprender começa com uma tentativa.</span>}</div>
-    {answer === true && <button ref={next} className={styles.inlineAction} onClick={() => { setIndex((index + 1) % examples.length); setAnswer(null); requestAnimationFrame(() => firstAnswer.current?.focus({ preventScroll: true })) }}>Próxima expressão <ArrowRight size={17} aria-hidden="true" /></button>}
-  </div>
-}
 
 const recallCards = [
   { phrase: 'a little closer', translation: 'um pouco mais perto' },
@@ -58,12 +25,19 @@ const reviewGrades = [
   { label: 'Fácil', grade: REVIEW_GRADE.EASY, tone: 'listening' },
 ] as const
 
+const practiceModes = [
+  { key: 'choose', label: 'Escolher', description: 'Complete a frase com a palavra certa.', width: 531, height: 451 },
+  { key: 'build', label: 'Montar', description: 'Coloque as palavras em ordem para fazer seu pedido.', width: 596, height: 484 },
+  { key: 'recall', label: 'Relembrar', description: 'Teste a memória e descubra quando revisar.', width: 453, height: 488 },
+] as const
+
 export default function PracticePreview() {
-  const [mode, setMode] = useState<'choose' | 'build' | 'recall'>('choose')
+  const [mode, setMode] = useState<'choose' | 'build' | 'recall' | null>(null)
   useEffect(() => {
     const openLinkedMode = () => {
-      if (location.hash === '#practice-recall') setMode('recall')
-      if (location.hash === '#practice-choose') setMode('choose')
+      if (location.hash === '#practice-recall' || location.hash === '#revisoes') setMode('recall')
+      if (location.hash === '#practice-choose' || location.hash === '#practice-demo') setMode('choose')
+      if (location.hash === '#practice-build') setMode('build')
     }
     openLinkedMode()
     window.addEventListener('hashchange', openLinkedMode)
@@ -75,26 +49,25 @@ export default function PracticePreview() {
   const recallCard = recallCards[recallIndex]
   const [revealed, setRevealed] = useState(false)
   const [grade, setGrade] = useState<number | null>(null)
-  const panel = useRef<HTMLDivElement>(null)
   const correct = selected.every((item, index) => item === correctOrder[index]) && selected.length === 3
 
-  const lite = useLandingLite()
-  useGSAP(() => {
-    if (lite) return
-    const media = gsap.matchMedia()
-    media.add('(prefers-reduced-motion: no-preference)', () => {
-      gsap.from(panel.current, { rotationY: -5, x: 6, transformOrigin: 'left center', transformPerspective: 900, duration: duration.feedback, ease: ease.out, clearProps: 'transform,transformOrigin' })
-    })
-    return () => media.revert()
-  }, { scope: panel, dependencies: [mode, revealed, checked, recallIndex, lite], revertOnUpdate: true })
-
-  return <div data-practice-lab className={styles.lab}>
-    <div className={styles.labTabs} aria-label="Escolha uma prática">
-      <button id="practice-choose" onFocus={() => { if (location.hash === '#practice-choose') setMode('choose') }} aria-pressed={mode === 'choose'} onClick={() => setMode('choose')}>Escolher</button>
-      <button aria-pressed={mode === 'build'} onClick={() => setMode('build')}>Montar</button>
-      <button id="practice-recall" onFocus={() => { if (location.hash === '#practice-recall') setMode('recall') }} aria-pressed={mode === 'recall'} onClick={() => setMode('recall')}>Relembrar</button>
+  return <div id="practice-demo" data-practice-lab className={styles.lab}>
+    <div className={styles.cards} aria-label="Escolha uma prática">
+      {practiceModes.map(({ key, label, description, width, height }) => <button
+        type="button" id={'practice-' + key} key={key} aria-expanded={mode === key}
+        aria-controls="practice-panel" className={styles.practiceCard}
+        onClick={() => {
+          const next = mode === key ? null : key
+          setMode(next)
+          history.replaceState(history.state, '', next ? '#practice-' + next : '#como-funciona')
+        }}>
+        <span id={key === 'recall' ? 'revisoes' : undefined} className={styles.cardHeading}>{label}<ArrowRight aria-hidden="true" size={23} /></span>
+        <span className={styles.cardDescription}>{description}</span>
+        <Image src={'/images/editorial/' + key + '.webp'} alt="" width={width} height={height} />
+      </button>)}
     </div>
-    <div ref={panel} className={styles.labPanel}>
+    <div id="practice-panel" hidden={!mode} className={styles.labPanel}>
+      {mode && <>
       {mode !== 'choose' && <span className={styles.exampleLabel}>{mode === 'build' ? 'CONSTRUÇÃO DE FRASES' : 'RECORDAÇÃO ATIVA'}</span>}
       {mode === 'choose' ? <GrammarPreview /> : mode === 'build' ? <>
         <h3>Um café, por favor.</h3>
@@ -103,7 +76,7 @@ export default function PracticePreview() {
           {selected.length ? selected.map((part, index) => <button key={part} aria-label={`Remover ${parts[part]}`} disabled={checked && correct} onClick={() => { setSelected(selected.filter((_, i) => i !== index)); setChecked(false) }}>{parts[part]}</button>) : <span>Sua frase…</span>}
         </div>
         <div className={styles.wordBank} lang="en">{parts.map((part, index) => <button key={part} disabled={selected.includes(index)} onClick={() => { setSelected([...selected, index]); setChecked(false) }}>{part}<span aria-hidden="true">+</span></button>)}</div>
-        <div className={styles.labFeedback} aria-live="polite" data-correct={checked && correct}>{checked && correct && <FeedbackConfetti />}{checked ? correct ? <><Check size={20} /><span><strong>Can I have</strong> inicia um pedido educado.</span></> : <><Lightbulb size={20} /><span>Comece com “Can I have”. Toque nas partes para reorganizar.</span></> : <span>Toque numa parte da frase para removê-la.</span>}</div>
+        <div className={styles.labFeedback} aria-live="polite" data-correct={checked && correct}>{checked ? correct ? <><Check size={20} /><span><strong>Can I have</strong> inicia um pedido educado.</span></> : <><Lightbulb size={20} /><span>Comece com “Can I have”. Toque nas partes para reorganizar.</span></> : <span>Toque numa parte da frase para removê-la.</span>}</div>
         <div className={styles.labActions}><button className={styles.primary} disabled={selected.length !== 3 || checked && correct} data-sound-feedback onClick={() => { playLandingSound(correct ? 'correct' : 'wrong'); setChecked(true) }}>Verificar frase <Check size={18} /></button><button className={styles.reset} aria-label="Recomeçar frase" onClick={() => { setSelected([]); setChecked(false) }}><RotateCcw size={19} /></button></div>
       </> : <>
         <h3 lang="en">{recallCard.phrase}</h3>
@@ -116,7 +89,8 @@ export default function PracticePreview() {
           <button className={styles.inlineAction} onClick={() => { setRevealed(false); setGrade(null); setRecallIndex(i => (i + 1) % recallCards.length) }}>Próxima expressão <RotateCcw size={16} /></button>
         </>}
       </>}
+      <p className={styles.demoNote}>Demonstração sem registro de progresso.</p>
+      </>}
     </div>
-    <p className={styles.demoNote}>Demonstração sem registro de progresso.</p>
   </div>
 }

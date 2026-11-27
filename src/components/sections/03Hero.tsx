@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { ArrowDown, ArrowRight, Headphones, MessageCircle, RotateCcw } from 'lucide-react'
 import ConversationIllustration from '@/components/illustrations/ConversationIllustration'
 import LearningMotion from '@/components/landing/LearningMotion'
-import { ConversationPreview } from '@/components/landing/PracticePreview'
+import ConversationPreview from '@/components/landing/ConversationPreview'
 import styles from '@/components/landing/LearningLanding.module.css'
 
 export default function Hero() {
