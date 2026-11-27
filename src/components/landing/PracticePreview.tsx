@@ -1,5 +1,7 @@
 'use client'
 
+import FeedbackConfetti from './FeedbackConfetti'
+import { editorialConfetti } from './paperPalette'
 import { playLandingSound } from './landingSound'
 import { useEffect, useState } from 'react'
 import { ArrowRight, Check, Lightbulb, RotateCcw } from 'lucide-react'
@@ -66,7 +68,7 @@ export default function PracticePreview() {
         <Image src={'/images/editorial/' + key + '.webp'} alt="" width={width} height={height} />
       </button>)}
     </div>
-    <div id="practice-panel" hidden={!mode} className={styles.labPanel}>
+    <div key={mode} id="practice-panel" hidden={!mode} className={styles.labPanel}>
       {mode && <>
       {mode !== 'choose' && <span className={styles.exampleLabel}>{mode === 'build' ? 'CONSTRUÇÃO DE FRASES' : 'RECORDAÇÃO ATIVA'}</span>}
       {mode === 'choose' ? <GrammarPreview /> : mode === 'build' ? <>
@@ -76,7 +78,7 @@ export default function PracticePreview() {
           {selected.length ? selected.map((part, index) => <button key={part} aria-label={`Remover ${parts[part]}`} disabled={checked && correct} onClick={() => { setSelected(selected.filter((_, i) => i !== index)); setChecked(false) }}>{parts[part]}</button>) : <span>Sua frase…</span>}
         </div>
         <div className={styles.wordBank} lang="en">{parts.map((part, index) => <button key={part} disabled={selected.includes(index)} onClick={() => { setSelected([...selected, index]); setChecked(false) }}>{part}<span aria-hidden="true">+</span></button>)}</div>
-        <div className={styles.labFeedback} aria-live="polite" data-correct={checked && correct}>{checked ? correct ? <><Check size={20} /><span><strong>Can I have</strong> inicia um pedido educado.</span></> : <><Lightbulb size={20} /><span>Comece com “Can I have”. Toque nas partes para reorganizar.</span></> : <span>Toque numa parte da frase para removê-la.</span>}</div>
+        <div className={styles.labFeedback} aria-live="polite" data-correct={checked && correct}>{checked && correct && <FeedbackConfetti colors={editorialConfetti} />}{checked ? correct ? <><Check size={20} /><span><strong>Can I have</strong> inicia um pedido educado.</span></> : <><Lightbulb size={20} /><span>Comece com “Can I have”. Toque nas partes para reorganizar.</span></> : <span>Toque numa parte da frase para removê-la.</span>}</div>
         <div className={styles.labActions}><button className={styles.primary} disabled={selected.length !== 3 || checked && correct} data-sound-feedback onClick={() => { playLandingSound(correct ? 'correct' : 'wrong'); setChecked(true) }}>Verificar frase <Check size={18} /></button><button className={styles.reset} aria-label="Recomeçar frase" onClick={() => { setSelected([]); setChecked(false) }}><RotateCcw size={19} /></button></div>
       </> : <>
         <h3 lang="en">{recallCard.phrase}</h3>

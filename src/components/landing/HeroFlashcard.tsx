@@ -7,7 +7,7 @@ import styles from './Editorial.module.css'
 export default function HeroFlashcard() {
   const audio = useRef<HTMLAudioElement>(null)
   const [sound, setSound] = useState<'ready' | 'playing' | 'error'>('ready')
-  const [translated, setTranslated] = useState(false)
+  const [translated, setTranslated] = useState<boolean | null>(null)
 
   async function playPhrase() {
     const player = audio.current
@@ -24,9 +24,9 @@ export default function HeroFlashcard() {
   return <div className={styles.phraseCard}>
     <button type="button" className={styles.flipPhrase}
       aria-labelledby="hero-flip-action" aria-describedby="hero-phrase"
-      onClick={() => setTranslated(previous => !previous)}>
+      onClick={() => { setTranslated(previous => !previous) }}>
       <span className={styles.cardLabel}>Inglês no café</span>
-      <strong id="hero-phrase" lang={translated ? 'pt-BR' : 'en'} aria-live="polite">
+      <strong key={String(translated)} className={translated !== null ? styles.flipped : undefined} id="hero-phrase" lang={translated ? 'pt-BR' : 'en'} aria-live="polite">
         {translated ? 'Este lugar está ocupado?' : 'Is this seat taken?'}
       </strong>
       <span id="hero-flip-action" className={styles.cardHint}>{translated ? 'Voltar ao inglês' : 'Revelar tradução'} <span aria-hidden="true">↻</span></span>

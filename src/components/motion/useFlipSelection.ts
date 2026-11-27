@@ -13,10 +13,10 @@ export function useFlipSelection(initial: number, duration: number, ease: string
   const select = useCallback((value: number) => {
     if (selected.current === value) return
     selected.current = value
-    previous.current = indicator.current && !matchMedia('(prefers-reduced-motion: reduce)').matches
+    previous.current = duration > 0 && indicator.current && !matchMedia('(prefers-reduced-motion: reduce)').matches
       ? Flip.getState(indicator.current) : null
     setIndex(value)
-  }, [])
+  }, [duration])
   useGSAP(() => {
     const state = previous.current
     previous.current = null

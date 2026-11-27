@@ -1,5 +1,7 @@
 'use client'
 
+import FeedbackConfetti from './FeedbackConfetti'
+import { editorialConfetti } from './paperPalette'
 import { playLandingSound } from './landingSound'
 import { useRef, useState } from 'react'
 import { ArrowRight, Check, Lightbulb, RotateCcw } from 'lucide-react'
@@ -23,7 +25,7 @@ export default function GrammarPreview() {
     <div className={styles.progress} role="progressbar" aria-label="Exemplos de gramática" aria-valuemin={0} aria-valuemax={questions.length} aria-valuenow={index + (confirmed && correct ? 1 : 0)}><span style={{ transform: `scaleX(${(index + (confirmed && correct ? 1 : 0)) / questions.length})` }} /></div>
     <div data-exercise-question><p className={styles.instruction}>Escolha a opção correta.</p><p className={styles.question} lang="en">{question.before} <span className={styles.questionBlank}>{selected || '\u00a0'}</span> {question.after}</p><p className={styles.translation}>{question.translation}</p></div>
     <div className={`${styles.options} ${styles.shortOptions}`} aria-label="Alternativas" lang="en">{question.choices.map((option, i) => <button ref={i === 0 ? firstOption : undefined} key={option} className={styles.option} aria-pressed={selected === option} disabled={confirmed} data-result={confirmed ? option === question.answer ? 'correct' : option === selected ? 'wrong' : 'muted' : undefined} onClick={() => setSelected(option)}><span>{option}</span>{selected === option && <span className={styles.selection}><Check size={15} aria-hidden="true" /></span>}</button>)}</div>
-    {confirmed && <div data-exercise-feedback className={styles.feedback} data-correct={correct} role="status">{correct ? <Check size={19} aria-hidden="true" /> : <Lightbulb size={19} aria-hidden="true" />}<p><strong>{correct ? 'Muito bem! ' : 'Vamos entender? '}</strong>{question.explanation}</p></div>}
+    {confirmed && <div data-exercise-feedback className={styles.feedback} data-correct={correct} role="status">{correct && <FeedbackConfetti colors={editorialConfetti} />}{correct ? <Check size={19} aria-hidden="true" /> : <Lightbulb size={19} aria-hidden="true" />}<p><strong>{correct ? 'Muito bem! ' : 'Vamos entender? '}</strong>{question.explanation}</p></div>}
     <button className={styles.confirm} disabled={!selected} data-sound-feedback={confirmed ? undefined : true} onClick={() => {
       if (!confirmed) { playLandingSound(correct ? 'correct' : 'wrong'); setConfirmed(true) }
       else {

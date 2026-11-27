@@ -12,7 +12,7 @@
   font: 400 16px/1.5 var(--font-kivora), Arial, sans-serif;
 }
 :global(html):has(.page) { scroll-behavior: auto; }
-.page *, .page *::before, .page *::after { animation: none !important; transition: none !important; }
+.page :is(a,button,input) { transition: none; }
 .page :is(h1,h2,h3) { color: var(--ink); font-family: inherit; font-weight: 620; letter-spacing: -.06em; line-height: 1.03; }
 .page h2 { font-size: clamp(36px, 4.2vw, 60px); }
 .page :is(button,summary) { cursor: pointer; }
@@ -184,4 +184,36 @@
   .nav .secondary { padding-inline: 10px; }
   .brand svg { width: 29px; height: 29px; }
   .brand :global(.font-heading) { font-size: 24px; }
+}
+
+.readingProgress { position: fixed; z-index: 12; inset: 0 0 auto; height: 3px; background: var(--forest); pointer-events: none; transform-origin: left; transform: scaleX(0); }
+.cafePrompt { position: absolute; z-index: 1; right: 6%; bottom: 9%; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 9px 15px; border: 1px solid var(--forest); border-radius: 24px; color: var(--forest); background: var(--paper); font-weight: 600; }
+.cafePrompt:hover { color: white; background: var(--forest); }
+.cafeDialog { margin: auto; width: min(460px, calc(100% - 36px)); max-height: 85dvh; overflow-y: auto; border: 1px solid var(--forest); border-radius: 8px; padding: clamp(20px, 4vw, 32px); background: var(--paper); color: var(--ink); }
+.cafeDialog::backdrop { background: rgb(24 36 29 / .5); }
+.dialogHeader,.practiceMeta,.heroChoices button,.heroFeedback { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.dialogHeader > h2 { font-size: clamp(25px, 3vw, 32px); }
+.dialogHeader button { display: grid; place-items: center; width: 44px; height: 44px; }
+.practiceMeta { margin-top: 20px; font: 12px/1.5 var(--font-kivora-mono), monospace; color: var(--forest); }
+.heroChoices { display: grid; gap: 8px; margin-block: 16px; }
+.heroChoices button { min-height: 44px; text-align: left; padding: 8px 12px; border: 1px solid var(--line); border-radius: 3px; }
+.heroChoices button[data-result=correct] { background: var(--forest); color: white; }
+.heroChoices button[data-result=retry] { border-style: dashed; border-color: var(--ink); }
+.heroFeedback { justify-content: flex-start; font-size: 14px; }
+.heroFeedback svg { flex-shrink: 0; }
+.cafeDialog .inlineAction { margin-top: 16px; }
+.levelButtons button { position: relative; isolation: isolate; }
+.levelButtons button[aria-pressed=true] { background: transparent; }
+.levelIndicator { position: absolute; z-index: -1; inset: 0; border-radius: inherit; background: var(--forest); pointer-events: none; }
+.swipeExample { touch-action: pan-y pinch-zoom; }
+@keyframes editorialFace { from { transform: perspective(480px) rotateY(-68deg); opacity: .7; } }
+@keyframes editorialOpen { from { transform: translateY(7px); opacity: .65; } }
+@media (prefers-reduced-motion: no-preference) {
+  .page[data-motion=active] .flipped { animation: editorialFace .32s ease-out; }
+  .page[data-motion=active] :is(.cafeDialog[open],.labPanel:not([hidden]),.faq details[open] p,.swipeExample h3,.navLinks[data-open=true]) { animation: editorialOpen .24s ease-out; }
+  .page[data-motion=active] :is(.primary,.secondary,.practiceCard img,.cardHeading svg,.faq svg) { transition: transform .22s ease, background-color .18s ease; }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .page[data-motion=active] .practiceCard:hover img { transform: translateY(-4px) rotate(-3deg); }
+  .page[data-motion=active] .practiceCard:hover .cardHeading svg { transform: translateX(4px); }
 }

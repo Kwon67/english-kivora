@@ -11,6 +11,6 @@ A primeira imagem fornecida orientou a distribuição do conteúdo. A segunda de
 
 As capturas de referência da implementação estão em [tests/visual/landing.spec.ts-snapshots](tests/visual/landing.spec.ts-snapshots/). A segunda execução reproduziu as três capturas dentro da tolerância do teste.
 
-O build de produção e os 28 testes funcionais em Chromium desktop e toque passaram. A verificação cobriu teclado, navegação, reprodução de áudio, exercícios, níveis, FAQ e a transferência do e-mail para o cadastro. A página pública foi testada até a abertura dos formulários de autenticação.
+O build de produção e os 34 testes funcionais em Chromium desktop e toque passaram. A verificação cobriu teclado, navegação, reprodução de áudio, exercícios, níveis, FAQ e a transferência do e-mail para o cadastro, o diálogo do café e a barra de leitura. A troca para movimento reduzido interrompe os efeitos durante a visita. As capturas da segunda etapa foram feitas com movimento reduzido. A página pública foi testada até a abertura dos formulários de autenticação.
 
 final result: passed

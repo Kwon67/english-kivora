@@ -1,3 +1,5 @@
+import CafePractice from './CafePractice'
+import EditorialMotion from './EditorialMotion'
 import Image from 'next/image'
 import { ArrowRight, ArrowUpRight, Plus } from 'lucide-react'
 import BrandMark from '@/components/ui/BrandMark'
@@ -25,17 +27,17 @@ function Signup() {
 }
 
 export default function EditorialLanding() {
-  return <div className={styles.page} id="inicio">
+  return <EditorialMotion>
     <header className={styles.header}><div className={styles.wrap}><Wordmark /><Navigation /></div></header>
     <main id="main-content">
       <section className={styles.hero} aria-labelledby="hero-title">
         <div className={styles.wrap}>
-          <div className={styles.heroCopy}>
+          <div data-hero-copy className={styles.heroCopy}>
             <h1 id="hero-title">Seu inglês,<br /> no mundo real.</h1>
             <p>Aprenda inglês com frases que você vai usar. Pratique com flashcards, revise no seu ritmo e converse com um tutor de IA.</p>
             <div className={styles.actions}><Signup /><a href="#practice-choose" className={styles.secondary}>Experimentar uma prática</a></div>
           </div>
-          <figure className={styles.phone}>
+          <figure data-phone className={styles.phone}>
             <Image src="/images/editorial/hero.webp" width={1402} height={1122} alt="Uma conversa no balcão de um café, na tela do celular." preload />
             <HeroFlashcard />
           </figure>
@@ -50,13 +52,14 @@ export default function EditorialLanding() {
         <PracticePreview />
       </div></section>
       <section className={styles.conversation} id="conversacao"><div className={styles.wrap}>
-        <Image className={styles.cafe} src="/images/editorial/cafe.webp" width={1920} height={640} alt="Dois estudantes conversam com o barista em um café." />
+        <CafePractice />
+        <Image data-scroll-art className={styles.cafe} src="/images/editorial/cafe.webp" width={1920} height={640} alt="Dois estudantes conversam com o barista em um café." />
         <div className={styles.conversationCopy}><p className={styles.eyebrow}>Conversação com IA</p>
           <h2>Um café,<br />por favor.</h2><p>Como você faria esse pedido em inglês? Pratique por voz ou texto com o tutor.</p>
           <a className={styles.secondary} href="/register">Conversar com o tutor <ArrowUpRight size={16} /></a></div>
       </div></section>
       <section className={styles.guide} id="seu-caminho"><div className={styles.wrap}>
-        <Image className={styles.levelArt} src="/images/editorial/levels.webp" width={679} height={547} alt="" />
+        <Image data-scroll-art className={styles.levelArt} src="/images/editorial/levels.webp" width={679} height={547} alt="" />
         <div><p className={styles.eyebrow}>Do A1 ao C2</p><h2>Seu ponto de partida.</h2><p>Explore uma frase de cada nível.</p><LevelExplorer /></div>
       </div></section>
       <section className={styles.closing} id="precos"><div className={styles.wrap}>
@@ -74,5 +77,5 @@ export default function EditorialLanding() {
       <RegistrationForm />
       <div className={styles.legal}><span>© {new Date().getUTCFullYear()} Kivora English</span><a href="/privacy">Privacidade</a><a href="/terms">Termos de uso</a><a href="#inicio">Voltar ao início <ArrowRight size={13} /></a></div>
     </div></footer>
-  </div>
+  </EditorialMotion>
 }
